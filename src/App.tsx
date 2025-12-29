@@ -1,18 +1,18 @@
-import { useState } from 'react';
+import { FolderReader } from '@/components/FolderReader';
+import { MovieSearch } from '@/components/OmdbMovie';
 import '@/App.css';
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
     <>
-      <h1 className='text-red-600'>Hello Tailwind</h1>
-      <div className='card'>
-        <button
-          onClick={() => setCount((count) => count + 1)}
-          className='px-4 py-2 font-bold text-white bg-blue-600 rounded hover:bg-blue-700'>
-          count is {count}
-        </button>
+      <h1 className='text-3xl font-extrabold tracking-tight lg:text-4xl m-4'>
+        Local Movies
+      </h1>
+      <div className='flex items-center justify-center p-6'>
+        <MovieSearch />
+      </div>
+      <div className='flex items-center justify-center p-6'>
+        <FolderReader />
       </div>
     </>
   );
