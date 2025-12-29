@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { type MovieDetail } from '@/types/MovieDetail';
-import { movieService } from '@/services/MovieService';
+import { movieApiService } from '@/services/MovieApiService';
 import { logger } from '@/core/logger';
 import { MovieCard } from '@/components/MovieCard';
 
@@ -15,7 +15,7 @@ export const MovieSearch = () => {
   const fetchMovie = async (title: string) => {
     setLoading(true);
     try {
-      const response = await movieService.getMovieByTitle(title);
+      const response = await movieApiService.getMovieByTitle(title);
       logger.info(response.data);
       setMovie(response.data);
     } catch (error) {

@@ -1,4 +1,5 @@
 export interface MovieDetail {
+  imdbID: string;
   Title: string;
   Year: string;
   Rated: string;
@@ -21,12 +22,16 @@ export interface MovieDetail {
   Metascore: string;
   imdbRating: string;
   imdbVotes: string;
-  imdbID: string;
   Type: string;
   DVD: string;
   BoxOffice: string;
   Production: string;
   Website: string;
-  Response: string;
+  Response: 'True' | 'False';
   Error?: string;
 }
+
+export const MovieNotFound = {
+  Response: 'False',
+  Error: 'Movie not found!',
+};
