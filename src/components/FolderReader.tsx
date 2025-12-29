@@ -14,37 +14,48 @@ import { toMovieFiles } from '@/utils/MovieFileHelper';
 import { movieService } from '@/services/MovieService';
 import { logger } from '@/core/logger';
 import type { MovieDetail } from '@/types/MovieDetail';
+import { MovieCard } from '@/components/MovieCard';
 
 export const FolderReader = () => {
   const [files, setFiles] = useState<XFile[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [movieFiles, setMovieFiles] = useState<MovieFile[]>([]);
+  const [movieDetails, setMovieDetails] = useState<MovieDetail[]>([]);
 
   useEffect(() => {
     logger.info(`Files state updated: ${files.length}`);
     if (files.length === 0) return;
 
     const movieFiles: MovieFile[] = toMovieFiles(files.map((f) => f.name));
-    movieFiles.forEach((file) => {
+
+    const loadMovies = async () => {
       try {
-        logger.info(file);
-        // const response = await movieService.getMovieByTitle(file.name);
-        // movieFile.movieDetail = response.data;
-      } catch (err) {
-        setError('Failed to load products');
-        console.error(err);
+        setLoading(true);
+        // Map over the IDs to create an array of promises
+        const promises = movieFiles.map((movie) =>
+          movieService.getMovieByTitle(movie.title),
+        );
+        const results = await Promise.all(promises);
+        const movieDetails = results.map((response) => response.data);
+
+        setMovieDetails(movieDetails);
+      } catch (error) {
+        setError('Error loading movies');
+        logger.error('Error loading movies:', error);
       } finally {
         setLoading(false);
       }
-    });
+    };
+
     setMovieFiles(movieFiles);
+    loadMovies();
   }, [files]);
 
   const handleUpload = (files: XFile[]) => setFiles(files);
 
   return (
-    <Card className='w-full max-w-md'>
+    <Card className='w-full h-full'>
       <CardHeader>
         <CardTitle>Select Movies Folder</CardTitle>
         <CardDescription>
@@ -52,20 +63,14 @@ export const FolderReader = () => {
           its contents.
         </CardDescription>
         <CardAction>
-          <XFileInput text='Movies' onUpload={handleUpload} folder />
+          <XFileInput text='Movies' onUpload={handleUpload} multiple />
         </CardAction>
       </CardHeader>
-      {/* The webkitdirectory attribute enables folder selection */}
       <CardContent>
-        <div style={{ marginTop: '20px' }}>
-          <h4>Movies Found: {movieFiles.length}</h4>
-          <ul>
-            {movieFiles.map((m, index) => (
-              <li key={index}>
-                {m.title} <strong>({m.year})</strong>
-              </li>
-            ))}
-          </ul>
+        <div className='grid grid-flow-row-dense grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'>
+          {movieDetails.map((movie) => (
+            <MovieCard key={movie.imdbID} movieDetail={movie} />
+          ))}
         </div>
       </CardContent>
       <CardFooter></CardFooter>
