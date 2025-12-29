@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { movieService, type MovieDetail } from '@/services/MovieService';
+import { type MovieDetail } from '@/types/MovieDetail';
+import { movieService } from '@/services/MovieService';
+import { logger } from '@/core/logger';
 
 export const MovieSearch = () => {
   const [query, setQuery] = useState<string>('Guardians of the Galaxy Vol. 2');
@@ -13,6 +15,7 @@ export const MovieSearch = () => {
     setLoading(true);
     try {
       const response = await movieService.getMovieByTitle(title);
+      logger.info(response.data);
       setMovie(response.data);
     } catch (error) {
       console.error('Error fetching movie details:', error);

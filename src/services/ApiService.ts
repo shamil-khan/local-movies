@@ -5,7 +5,7 @@ import axios, {
   type AxiosResponse,
   type InternalAxiosRequestConfig,
 } from 'axios';
-import logger from '@/lib/logger';
+import logger from '@/core/logger';
 
 class ApiService {
   private instance: AxiosInstance;
