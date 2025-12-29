@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { type MovieDetail } from '@/types/MovieDetail';
 import { movieService } from '@/services/MovieService';
 import { logger } from '@/core/logger';
+import { MovieCard } from '@/components/MovieCard';
 
 export const MovieSearch = () => {
   const [query, setQuery] = useState<string>('Guardians of the Galaxy Vol. 2');
@@ -34,19 +35,8 @@ export const MovieSearch = () => {
       />
       <Button onClick={() => fetchMovie(query)}>Search</Button>
       {loading && <p>Loading...</p>}
-
       {movie?.Response === 'True' ? (
-        <div>
-          <h2>
-            {movie.Title} ({movie.Year})
-          </h2>
-          <p>
-            <strong>Director:</strong> {movie.Director}
-          </p>
-          <p>{movie.Plot}</p>
-          <img src={movie.Poster} alt={movie.Title} />
-          <p>IMDb Rating: {movie.imdbRating}</p>
-        </div>
+        <MovieCard key={movie.imdbID} movieDetail={movie} />
       ) : (
         movie?.Error && <p>Error: {movie.Error}</p>
       )}
