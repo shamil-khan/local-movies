@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import eslint from 'vite-plugin-eslint2';
+// import eslint from 'vite-plugin-eslint2';
 import path from 'path';
 import tailwindcss from '@tailwindcss/vite';
 
@@ -12,7 +12,7 @@ export default defineConfig({
   preview: {
     port: 6602,
   },
-  plugins: [react(), eslint(), tailwindcss()],
+  plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
