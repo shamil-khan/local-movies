@@ -1,9 +1,14 @@
-import { type MovieDetail } from '@/types/MovieDetail';
-
 export interface MovieFile {
+  imdbID?: string;
   title: string;
   year: number;
   ext: string;
   filename: string;
-  movieDetail?: MovieDetail;
 }
+
+export const movieFileSchema = {
+  title: 'title',
+  year: 'year',
+  ext: 'ext',
+  filename: 'filename',
+};
