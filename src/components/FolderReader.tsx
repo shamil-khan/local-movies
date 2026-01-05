@@ -25,6 +25,7 @@ export const FolderReader = () => {
   const [movieDetails, setMovieDetails] = useState<MovieDetail[]>([]);
 
   useEffect(() => {
+    logger.error(error, loading); //todo: have to remove:  @typescript-eslint/no-unused-vars
     logger.info(`Files state updated: ${xFiles.length}`);
     if (xFiles.length === 0) return;
 
@@ -180,6 +181,8 @@ export const FolderReader = () => {
     };
 
     processWorkflow();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [xFiles]);
 
   const handleUpload = (files: XFile[]) => setXFiles(files);
