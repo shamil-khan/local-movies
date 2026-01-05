@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { type MovieDetail } from '@/types/MovieDetail';
+import { type MovieDetail } from '@/models/MovieModel';
 import { movieApiService } from '@/services/MovieApiService';
 import { logger } from '@/core/logger';
 import { MovieCard } from '@/components/MovieCard';

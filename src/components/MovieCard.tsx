@@ -11,7 +11,8 @@ import { format, parse } from 'numerable';
 import { enIN } from 'numerable/locale';
 import { Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import type { MovieDetail } from '@/types/MovieDetail';
+
+import { type MovieDetail } from '@/models/MovieModel';
 import logger from '@/core/logger';
 
 interface MovieCardProps {

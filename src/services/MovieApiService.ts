@@ -1,5 +1,4 @@
-import { type MovieDetail } from '@/types/MovieDetail';
-import { type MoviePoster } from '@/types/MoviePoster';
+import { type MovieDetail, type MoviePoster } from '@/models/MovieModel';
 import { ApiService } from '@/services/ApiService';
 
 const baseURL = import.meta.env.MOVIE_API_URL || 'https://www.omdbapi.com';

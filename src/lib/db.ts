@@ -1,8 +1,10 @@
 // src/lib/db.ts
 import Dexie, { type EntityTable } from 'dexie';
-import { type MovieFile } from '@/types/MovieFile';
-import { type MoviePoster } from '@/types/MoviePoster';
-import { type MovieDetail } from '@/types/MovieDetail';
+import {
+  type MovieFile,
+  type MovieDetail,
+  type MoviePoster,
+} from '@/models/MovieModel';
 
 import logger from '@/core/logger';
 

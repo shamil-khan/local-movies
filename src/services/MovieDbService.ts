@@ -1,8 +1,11 @@
+import {
+  type MovieFile,
+  type MovieDetail,
+  type MoviePoster,
+  movieFileSchema,
+} from '@/models/MovieModel';
 import logger from '@/core/logger';
 import { db } from '@/lib/db';
-import { type MovieDetail } from '@/types/MovieDetail';
-import { movieFileSchema, type MovieFile } from '@/types/MovieFile';
-import { type MoviePoster } from '@/types/MoviePoster';
 
 class MovieDbService {
   test = async () => {

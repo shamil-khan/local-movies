@@ -9,14 +9,16 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { XFileInput, type XFile } from '@/components/mine/xfileinput';
-import { type MovieFile } from '@/types/MovieFile';
+import {
+  type MovieFile,
+  type MovieDetail,
+  type MoviePoster,
+} from '@/models/MovieModel';
 import { toMovieFiles } from '@/utils/MovieFileHelper';
 import { movieApiService } from '@/services/MovieApiService';
 import { logger } from '@/core/logger';
-import type { MovieDetail } from '@/types/MovieDetail';
 import { MovieCard } from '@/components/MovieCard';
 import { movieDbService } from '@/services/MovieDbService';
-import type { MoviePoster } from '@/types/MoviePoster';
 
 export const FolderReader = () => {
   const [xFiles, setXFiles] = useState<XFile[]>([]);

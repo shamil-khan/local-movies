@@ -1,4 +1,4 @@
-import { type MovieFile } from '@/types/MovieFile';
+import { type MovieFile } from '@/models/MovieModel';
 import { MovieAttributes, MovieExtensions } from '@/utils/MovieAttributes';
 import { logger } from '@/core/logger';
 
