@@ -3,7 +3,6 @@ import { db } from '@/lib/db';
 import { type MovieDetail } from '@/types/MovieDetail';
 import { movieFileSchema, type MovieFile } from '@/types/MovieFile';
 import { type MoviePoster } from '@/types/MoviePoster';
-import { Info } from 'lucide-react';
 
 class MovieDbService {
   test = async () => {
