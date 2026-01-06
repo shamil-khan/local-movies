@@ -24,9 +24,7 @@ export const XMovieCard = ({ movieDetail }: { movieDetail: MovieDetail }) => {
       <CardContent className='py-0 px-2'>
         <div className='text-center'>
           <h3 className='text-sm font-bold mb-1'>{movieDetail.Title}</h3>
-          <p className='text-xs font-semibold mb-1'>
-            {movieDetail.Year}
-          </p>
+          <p className='text-xs font-semibold mb-1'>{movieDetail.Year}</p>
           <div className='text-center mb-1'>
             <div className='flex items-center justify-center mb-1'>
               <span className='text-xs font-bold italic'>
@@ -47,17 +45,18 @@ export const XMovieCard = ({ movieDetail }: { movieDetail: MovieDetail }) => {
                 </span>
               </div>
             </div>
-            <p className='text-[0.6rem] font-medium'>{toCompact(movieDetail.imdbVotes)}</p>
+            <p className='text-[0.6rem] font-medium'>
+              {toCompact(movieDetail.imdbVotes)}
+            </p>
           </div>
-          <p className='text-xs font-medium mb-1'>
-            {movieDetail.Genre}
-          </p>
+          <p className='text-xs font-medium mb-1'>{movieDetail.Genre}</p>
           <p className='text-xs font-normal mb-1'>
-            {movieDetail.Language} <span className='font-bold ml-1'>{formatRuntime(movieDetail.Runtime)}</span>
+            {movieDetail.Language}{' '}
+            <span className='font-bold ml-1'>
+              {formatRuntime(movieDetail.Runtime)}
+            </span>
           </p>
-          <p className='text-xs font-light mb-1'>
-            {movieDetail.Country}
-          </p>
+          <p className='text-xs font-light mb-1'>{movieDetail.Country}</p>
           <p className='text-xs font-bold mb-1'>{movieDetail.Awards}</p>
           <div className='mx-auto w-32 h-48 mb-1'>
             <img
