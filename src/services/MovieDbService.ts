@@ -39,8 +39,25 @@ class MovieDbService {
     return await db.movieDetailTable.add(movieDetail);
   };
 
+  addMovie = async (
+    movieDetail: MovieDetail,
+    moviePoster: MoviePoster,
+  ): Promise<void> => {
+    await db.transaction('rw', db.movieDetailTable, db.moviePosterTable, () => {
+      db.movieDetailTable.add(movieDetail);
+      db.moviePosterTable.add(moviePoster);
+    });
+  };
+
   allMovies = async (): Promise<MovieDetail[]> => {
     return await db.movieDetailTable.toArray();
+  };
+
+  findByTitle = async (title: string): Promise<MovieDetail | undefined> => {
+    return await db.movieDetailTable
+      .where('Title')
+      .equalsIgnoreCase(title)
+      .first();
   };
 
   // findNotSaved = async (movieFiles: MovieFile[]): Promise<MovieFile[]> => {
