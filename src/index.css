@@ -121,3 +121,16 @@
     @apply bg-background text-foreground;
   }
 }
+
+/*
+todo: have to apply
+ module.exports = {
+  theme: {
+    extend: {
+      fontSize: {
+        'tiny': '0.625rem', // 10px
+        'micro': '0.5rem', // 8px
+      }
+    }
+  }
+} */
