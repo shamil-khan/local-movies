@@ -7,22 +7,35 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2 } from 'lucide-react';
 import { logger } from '@/core/logger';
+import { toast } from 'sonner';
+import { type XFile } from '@/components/mine/xfileinput';
+import { CompactFolderUpload } from '@/components/CompactFolderUpload';
 
 interface MovieSearchProps {
   onMovieAdded: () => void;
+  onFolderUpload?: (files: XFile[]) => void;
+  onLoad?: () => void;
+  selectedFiles?: XFile[];
+  folderLoading?: boolean;
+  folderError?: string | null;
 }
 
-export const MovieSearch = ({ onMovieAdded }: MovieSearchProps) => {
+export const MovieSearch = ({
+  onMovieAdded,
+  onFolderUpload,
+  onLoad,
+  selectedFiles = [],
+  folderLoading = false,
+  folderError,
+}: MovieSearchProps) => {
   const [title, setTitle] = useState('');
   const [movie, setMovie] = useState<MovieDetail | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
 
   const handleSearch = async () => {
     logger.info(`Searching for movie: ${title}`);
     try {
       setLoading(true);
-      setError(null);
       setMovie(null);
 
       logger.info('Checking local database...');
@@ -45,6 +58,7 @@ export const MovieSearch = ({ onMovieAdded }: MovieSearchProps) => {
           onMovieAdded();
         } else {
           logger.error('Movie not found in API.');
+          toast.info('No movie found.');
           movieDetail = null;
         }
       }
@@ -52,7 +66,9 @@ export const MovieSearch = ({ onMovieAdded }: MovieSearchProps) => {
       setMovie(movieDetail);
     } catch (err) {
       logger.error('An error occurred during the search:', err);
-      setError(err as Error);
+      toast.error(
+        'An error occurred during the search: ' + (err as Error).message,
+      );
     } finally {
       setLoading(false);
       logger.info('Search complete.');
@@ -61,14 +77,26 @@ export const MovieSearch = ({ onMovieAdded }: MovieSearchProps) => {
 
   return (
     <div className='p-4 space-y-4'>
-      <div className='flex w-full max-w-sm items-center space-x-2'>
+      <div className='flex w-full items-center'>
+        {onFolderUpload && (
+          <CompactFolderUpload
+            onUpload={onFolderUpload}
+            onLoad={onLoad}
+            selectedFiles={selectedFiles}
+            loading={folderLoading}
+            error={folderError}
+          />
+        )}
         <Input
           type='text'
           placeholder='Movie Title'
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          className='flex-1 rounded-none border-l-0 border-r-0'
         />
-        <Button onClick={handleSearch}>Search</Button>
+        <Button onClick={handleSearch} className='rounded-l-none'>
+          Search
+        </Button>
       </div>
       <div>
         {loading && (
@@ -76,9 +104,7 @@ export const MovieSearch = ({ onMovieAdded }: MovieSearchProps) => {
             <Loader2 className='animate-spin h-12 w-12' />
           </div>
         )}
-        {error && <div className='text-red-500'>Error: {error.message}</div>}
         {movie && <XMovieCard movieDetail={movie} />}
-        {!loading && !movie && <div>No movie found.</div>}
       </div>
     </div>
   );

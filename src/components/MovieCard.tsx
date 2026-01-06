@@ -13,21 +13,10 @@ import { Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { type MovieDetail } from '@/models/MovieModel';
-import logger from '@/core/logger';
 
 interface MovieCardProps {
   movieDetail: MovieDetail;
 }
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const toCompactLogged = (value: string) => {
-  const parsed = parse(value);
-  const compacted = format(parsed, '0.00 a', {
-    locale: enIN,
-  }).replace(/\.00$/, '');
-  logger.info(`Compacted v:${value} nv:${parsed} cmp:${compacted}`);
-  return compacted;
-};
 
 const toCompact = (value: string) =>
   format(parse(value), '0.00 a', {

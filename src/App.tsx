@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { FolderReader } from '@/components/FolderReader';
+
 import { MovieGallery } from '@/components/MovieGallery';
 import { MovieSearch } from '@/components/MovieSearch';
 import { movieDbService } from '@/services/MovieDbService';
 import { type MovieDetail } from '@/models/MovieModel';
-import { XFileInput, type XFile } from '@/components/mine/xfileinput';
+import { type XFile } from '@/components/mine/xfileinput';
 import { useMovieFolderLoader } from '@/hooks/useMovieFolderLoader';
-import { Button } from '@/components/ui/button';
+import { Toaster } from '@/components/ui/sonner';
 
 import '@/App.css';
 
@@ -41,20 +41,18 @@ function App() {
 
   return (
     <>
-      <div className='flex items-center justify-center p-6 gap-4'>
-        <XFileInput folder={true} onUpload={setSelectedFiles} text='Movies' />
-        <Button
-          onClick={() => setLoadedFiles(selectedFiles)}
-          disabled={selectedFiles.length === 0 || folderLoading}>
-          Load
-        </Button>
-        {folderLoading && <p>Loading folder...</p>}
-        {folderError && <p>Error: {folderError}</p>}
-      </div>
-      <div className='flex items-center justify-center p-6'>
-        <MovieSearch onMovieAdded={loadMovies} />
+      <div className='p-6 w-full'>
+        <MovieSearch
+          onMovieAdded={loadMovies}
+          onFolderUpload={setSelectedFiles}
+          onLoad={() => setLoadedFiles(selectedFiles)}
+          selectedFiles={selectedFiles}
+          folderLoading={folderLoading}
+          folderError={folderError}
+        />
       </div>
       <MovieGallery movies={movies} loading={loading} error={error} />
+      <Toaster />
     </>
   );
 }
