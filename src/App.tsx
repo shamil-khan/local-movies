@@ -1,22 +1,38 @@
-import { FolderReader } from '@/components/FolderReader';
-import { MovieSearch } from '@/components/OmdbMovie';
+import { useState, useEffect } from 'react';
 import { MovieGallery } from '@/components/MovieGallery';
+import { MovieSearch } from '@/components/MovieSearch';
+import { movieDbService } from '@/services/MovieDbService';
+import { type MovieDetail } from '@/models/MovieModel';
 
 import '@/App.css';
 
 function App() {
+  const [movies, setMovies] = useState<MovieDetail[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  const loadMovies = async () => {
+    try {
+      setLoading(true);
+      const movieDetails = await movieDbService.allMovies();
+      setMovies(movieDetails);
+    } catch (err) {
+      setError(err as Error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadMovies();
+  }, []);
+
   return (
     <>
-      <MovieGallery />
-      {/* <h1 className='text-3xl font-extrabold tracking-tight lg:text-4xl m-4'>
-        Local Movies
-      </h1>
       <div className='flex items-center justify-center p-6'>
-        <MovieSearch />
+        <MovieSearch onMovieAdded={loadMovies} />
       </div>
-      <div className='flex items-center justify-center p-6'>
-        <FolderReader />
-      </div> */}
+      <MovieGallery movies={movies} loading={loading} error={error} />
     </>
   );
 }
