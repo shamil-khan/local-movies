@@ -39,6 +39,10 @@ class MovieDbService {
     return await db.movieDetailTable.add(movieDetail);
   };
 
+  allMovies = async (): Promise<MovieDetail[]> => {
+    return await db.movieDetailTable.toArray();
+  };
+
   // findNotSaved = async (movieFiles: MovieFile[]): Promise<MovieFile[]> => {
   //   if (movieFiles.length === 0) {
   //     return [];

@@ -1,11 +1,14 @@
 import { FolderReader } from '@/components/FolderReader';
 import { MovieSearch } from '@/components/OmdbMovie';
+import { MovieGallery } from '@/components/MovieGallery';
+
 import '@/App.css';
 
 function App() {
   return (
     <>
-      <h1 className='text-3xl font-extrabold tracking-tight lg:text-4xl m-4'>
+      <MovieGallery />
+      {/* <h1 className='text-3xl font-extrabold tracking-tight lg:text-4xl m-4'>
         Local Movies
       </h1>
       <div className='flex items-center justify-center p-6'>
@@ -13,7 +16,7 @@ function App() {
       </div>
       <div className='flex items-center justify-center p-6'>
         <FolderReader />
-      </div>
+      </div> */}
     </>
   );
 }
