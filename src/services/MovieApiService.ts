@@ -28,6 +28,9 @@ class MovieApiService {
       `?t=${title}&year=${year}&apikey=${apiKey}`,
     );
 
+  getMovieByImdbId = async (imdbId: string) =>
+    await this.apiService.get<MovieDetail>(`?i=${imdbId}&apikey=${apiKey}`);
+
   getPoster = async (movie: {
     imdbID: string;
     Title: string;

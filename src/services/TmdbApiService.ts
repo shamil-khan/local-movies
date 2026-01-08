@@ -38,6 +38,26 @@ export interface MovieTrailer {
   official: boolean;
 }
 
+export interface TmdbMovieResult {
+  id: number;
+  title: string;
+  poster_path: string | null;
+  release_date: string;
+  overview: string;
+}
+
+interface TmdbSearchResponse {
+  page: number;
+  results: TmdbMovieResult[];
+  total_pages: number;
+  total_results: number;
+}
+
+interface TmdbExternalIdsResponse {
+  imdb_id: string | null;
+  id: number;
+}
+
 class TmdbApiService {
   private apiService: ApiService;
 
@@ -50,6 +70,53 @@ class TmdbApiService {
       },
     });
   }
+
+  /**
+   * Search for movies by title
+   */
+  search = async (query: string): Promise<TmdbMovieResult[]> => {
+    try {
+      const response = await this.apiService.get<TmdbSearchResponse>(
+        '/search/movie',
+        {
+          params: {
+            api_key: apiKey,
+            query: query,
+            include_adult: false,
+          },
+        },
+      );
+
+      return response.data.results || [];
+    } catch (error) {
+      logger.error(`Error searching for movie '${query}':`, error);
+      throw error;
+    }
+  };
+
+  /**
+   * Get external IDs (like IMDb ID) for a movie
+   */
+  getExternalIds = async (movieId: number): Promise<string | null> => {
+    try {
+      const response = await this.apiService.get<TmdbExternalIdsResponse>(
+        `/movie/${movieId}/external_ids`,
+        {
+          params: {
+            api_key: apiKey,
+          },
+        },
+      );
+
+      return response.data.imdb_id;
+    } catch (error) {
+      logger.error(
+        `Error getting external IDs for movie ID ${movieId}:`,
+        error,
+      );
+      throw error;
+    }
+  };
 
   /**
    * Find TMDb movie ID using IMDb ID
