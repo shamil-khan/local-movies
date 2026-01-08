@@ -1,8 +1,11 @@
+import logger from '@/core/logger';
 import { type MovieDetail, type MoviePoster } from '@/models/MovieModel';
 import { ApiService } from '@/services/ApiService';
 
-const baseURL = import.meta.env.MOVIE_API_URL || 'https://www.omdbapi.com';
-const apiKey = import.meta.env.MOVIE_API_KEY || '';
+const baseURL = import.meta.env.VITE_MOVIE_API_URL;
+const apiKey = import.meta.env.VITE_MOVIE_API_KEY;
+logger.info(`MovieApiService: baseURL: ${baseURL}`);
+logger.info(`MovieApiService: apiKey: ${apiKey}`);
 
 class MovieApiService {
   private apiService: ApiService;
