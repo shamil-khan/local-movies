@@ -1,14 +1,26 @@
-import { type MovieDetail } from '@/models/MovieModel';
+import { type MovieDetail, type MovieUserStatus } from '@/models/MovieModel';
 import { XMovieCard } from '@/components/XMovieCard';
 import { Loader2 } from 'lucide-react';
 
 interface MovieGalleryProps {
   movies: MovieDetail[];
+  userStatuses: Record<string, MovieUserStatus>;
   loading: boolean;
   error: Error | null;
+  onDelete?: (imdbID: string) => void;
+  onToggleFavorite?: (imdbID: string) => void;
+  onToggleWatched?: (imdbID: string) => void;
 }
 
-export const MovieGallery = ({ movies, loading, error }: MovieGalleryProps) => {
+export const MovieGallery = ({
+  movies,
+  userStatuses,
+  loading,
+  error,
+  onDelete,
+  onToggleFavorite,
+  onToggleWatched,
+}: MovieGalleryProps) => {
   if (error) {
     return (
       <div className='flex items-center justify-center h-64'>
@@ -28,7 +40,14 @@ export const MovieGallery = ({ movies, loading, error }: MovieGalleryProps) => {
       {movies.length > 0 ? (
         <div className='grid grid-flow-row-dense grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'>
           {movies.map((movie) => (
-            <XMovieCard key={movie.imdbID} movieDetail={movie} />
+            <XMovieCard
+              key={movie.imdbID}
+              movieDetail={movie}
+              userStatus={userStatuses[movie.imdbID]}
+              onDelete={onDelete}
+              onToggleFavorite={onToggleFavorite}
+              onToggleWatched={onToggleWatched}
+            />
           ))}
         </div>
       ) : (

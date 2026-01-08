@@ -14,6 +14,14 @@ export interface MoviePoster {
   blob: Blob;
 }
 
+export interface MovieUserStatus {
+  id?: number;
+  imdbID: string;
+  isFavorite: boolean;
+  isWatched: boolean;
+  updatedAt: Date;
+}
+
 export interface MovieDetail {
   imdbID: string;
   Title: string;

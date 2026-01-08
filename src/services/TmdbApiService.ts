@@ -5,7 +5,9 @@ const baseURL = 'https://api.themoviedb.org/3';
 const apiKey = import.meta.env.VITE_TMDB_API_KEY;
 
 logger.info(`TmdbApiService: baseURL: ${baseURL}`);
-logger.info(`TmdbApiService: apiKey: ${apiKey ? '***configured***' : 'NOT SET'}`);
+logger.info(
+  `TmdbApiService: apiKey: ${apiKey ? '***configured***' : 'NOT SET'}`,
+);
 
 interface TmdbFindResponse {
   movie_results: Array<{
@@ -84,9 +86,7 @@ class TmdbApiService {
   /**
    * Get movie videos (trailers) using TMDb movie ID
    */
-  private getMovieVideos = async (
-    movieId: number,
-  ): Promise<TmdbVideo[]> => {
+  private getMovieVideos = async (movieId: number): Promise<TmdbVideo[]> => {
     try {
       const response = await this.apiService.get<TmdbVideosResponse>(
         `/movie/${movieId}/videos`,
@@ -108,9 +108,7 @@ class TmdbApiService {
    * Get YouTube trailer for a movie using IMDb ID
    * Returns the first official trailer, or the first trailer if no official one exists
    */
-  getTrailerByImdbId = async (
-    imdbId: string,
-  ): Promise<MovieTrailer | null> => {
+  getTrailerByImdbId = async (imdbId: string): Promise<MovieTrailer | null> => {
     try {
       // Step 1: Find TMDb movie ID
       const movieId = await this.findMovieByImdbId(imdbId);

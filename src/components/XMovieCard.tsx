@@ -1,4 +1,4 @@
-import { type MovieDetail } from '@/models/MovieModel';
+import { type MovieDetail, type MovieUserStatus } from '@/models/MovieModel';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Dialog,
@@ -6,14 +6,29 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { format, parse } from 'numerable';
 import { en } from 'numerable/locale';
-import { Star, Award, Play, Loader2, AlertCircle } from 'lucide-react';
+import {
+  Star,
+  Award,
+  Play,
+  Loader2,
+  AlertCircle,
+  Trash2,
+  Heart,
+  Eye,
+} from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { tmdbApiService, type MovieTrailer } from '@/services/TmdbApiService';
 import logger from '@/core/logger';
+import { Button } from '@/components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 const toCompact = (value: string) =>
   format(parse(value), '0.00 a', { locale: en }).replace(/\.00$/, '');
@@ -29,7 +44,21 @@ const formatRuntime = (runtime: string) => {
   return runtime;
 };
 
-export const XMovieCard = ({ movieDetail }: { movieDetail: MovieDetail }) => {
+interface XMovieCardProps {
+  movieDetail: MovieDetail;
+  userStatus?: MovieUserStatus;
+  onDelete?: (imdbID: string) => void;
+  onToggleFavorite?: (imdbID: string) => void;
+  onToggleWatched?: (imdbID: string) => void;
+}
+
+export const XMovieCard = ({
+  movieDetail,
+  userStatus,
+  onDelete,
+  onToggleFavorite,
+  onToggleWatched,
+}: XMovieCardProps) => {
   const [open, setOpen] = useState(false);
   const [trailer, setTrailer] = useState<MovieTrailer | null>(null);
   const [loading, setLoading] = useState(false);
@@ -77,9 +106,9 @@ export const XMovieCard = ({ movieDetail }: { movieDetail: MovieDetail }) => {
   };
 
   return (
-    <Card className='w-full'>
-      <CardContent className='py-0 px-2'>
-        <div className='text-center'>
+    <Card className='w-full overflow-visible group'>
+      <CardContent className='py-0 px-2 h-full'>
+        <div className='text-center relative h-full flex flex-col'>
           <h3 className='text-sm font-bold mb-1'>{movieDetail.Title}</h3>
           <p className='text-xs font-semibold mb-1'>{movieDetail.Year}</p>
           <div className='text-center mb-1'>
@@ -116,21 +145,23 @@ export const XMovieCard = ({ movieDetail }: { movieDetail: MovieDetail }) => {
           <p className='text-xs font-light mb-1'>{movieDetail.Country}</p>
           <p className='text-xs font-bold mb-1'>{movieDetail.Awards}</p>
 
-          <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogTrigger asChild>
-              <div className='relative mx-auto w-32 h-48 mb-1 cursor-pointer group'>
-                <img
-                  src={movieDetail.Poster}
-                  alt={movieDetail.Title}
-                  className='w-full h-full object-cover rounded-md transition-opacity group-hover:opacity-75'
-                />
-                <div className='absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity'>
-                  <div className='bg-black/60 rounded-full p-3'>
-                    <Play className='w-8 h-8 text-white fill-white' />
-                  </div>
-                </div>
+          <div
+            className='relative mx-auto w-32 h-48 mb-1 cursor-pointer group/image'
+            onClick={() => setOpen(true)}>
+            <img
+              src={movieDetail.Poster}
+              alt={movieDetail.Title}
+              className='w-full h-full object-cover rounded-md transition-opacity group-hover/image:opacity-75'
+            />
+            <div className='absolute inset-0 flex items-center justify-center opacity-0 group-hover/image:opacity-100 transition-opacity'>
+              <div className='bg-black/60 rounded-full p-3'>
+                <Play className='w-8 h-8 text-white fill-white' />
               </div>
-            </DialogTrigger>
+            </div>
+          </div>
+
+          <Dialog open={open} onOpenChange={handleOpenChange}>
+            {/* No Trigger - Controlled by state */}
             <DialogContent className='sm:max-w-[700px]'>
               <DialogHeader>
                 <DialogTitle>
@@ -165,7 +196,9 @@ export const XMovieCard = ({ movieDetail }: { movieDetail: MovieDetail }) => {
 
                 {trailer && !loading && (
                   <div className='flex flex-col gap-4'>
-                    <div className='relative w-full' style={{ paddingTop: '56.25%' }}>
+                    <div
+                      className='relative w-full'
+                      style={{ paddingTop: '56.25%' }}>
                       <iframe
                         className='absolute top-0 left-0 w-full h-full rounded-lg'
                         src={`https://www.youtube.com/embed/${trailer.youtubeKey}`}
@@ -189,6 +222,85 @@ export const XMovieCard = ({ movieDetail }: { movieDetail: MovieDetail }) => {
           </Dialog>
 
           <p className='text-xs font-normal'>{movieDetail.Plot}</p>
+
+          {/* Bottom Action Bar - Overlay */}
+          <div
+            className='absolute bottom-0 left-0 right-0 flex justify-center gap-2 py-2 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-t from-background via-background/95 to-transparent'
+            onClick={(e) => e.stopPropagation()}>
+            <TooltipProvider>
+              <Tooltip delayDuration={300}>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant='ghost'
+                    size='icon'
+                    className='h-8 w-8 hover:bg-muted rounded-full'
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onToggleFavorite?.(movieDetail.imdbID);
+                    }}>
+                    <Heart
+                      className={`w-4 h-4 ${userStatus?.isFavorite ? 'fill-red-500 text-red-500' : 'text-muted-foreground'}`}
+                    />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    {userStatus?.isFavorite
+                      ? 'Remove from Favorites'
+                      : 'Add to Favorites'}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip delayDuration={300}>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant='ghost'
+                    size='icon'
+                    className='h-8 w-8 hover:bg-muted rounded-full'
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onToggleWatched?.(movieDetail.imdbID);
+                    }}>
+                    <Eye
+                      className={`w-4 h-4 ${userStatus?.isWatched ? 'fill-blue-500 text-blue-500' : 'text-muted-foreground'}`}
+                    />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    {userStatus?.isWatched
+                      ? 'Mark as Unwatched'
+                      : 'Mark as Watched'}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip delayDuration={300}>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant='ghost'
+                    size='icon'
+                    className='h-8 w-8 hover:bg-destructive hover:text-white text-muted-foreground rounded-full'
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (
+                        confirm(
+                          `Are you sure you want to delete "${movieDetail.Title}"?`,
+                        )
+                      ) {
+                        onDelete?.(movieDetail.imdbID);
+                      }
+                    }}>
+                    <Trash2 className='w-4 h-4' />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Delete Movie</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </div>
       </CardContent>
     </Card>

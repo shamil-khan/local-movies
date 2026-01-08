@@ -73,6 +73,10 @@ export class LocalMovieAppDB extends Dexie {
       moviePosterTable: `++id, ${moviePosterSchema}`,
       movieDetailTable: `++id, ${movieDetailSchema}`,
     });
+
+    this.version(0.2).stores({
+      movieUserStatusTable: `++id, imdbID`,
+    });
     logger.success('LocalMovieAppDB created successfully');
   }
 }

@@ -60,19 +60,54 @@ class MovieDbService {
       .first();
   };
 
-  // findNotSaved = async (movieFiles: MovieFile[]): Promise<MovieFile[]> => {
-  //   if (movieFiles.length === 0) {
-  //     return [];
-  //   }
+  deleteMovie = async (imdbID: string): Promise<void> => {
+    await db.transaction(
+      'rw',
+      db.movieDetailTable,
+      db.moviePosterTable,
+      db.movieUserStatusTable,
+      () => {
+        db.movieDetailTable.where('imdbID').equals(imdbID).delete();
+        db.moviePosterTable.where('imdbID').equals(imdbID).delete();
+        db.movieUserStatusTable.where('imdbID').equals(imdbID).delete();
+      },
+    );
+  };
 
-  //   const result: MovieFile[] = [];
-  //   for (const movieFile of movieFiles) {
-  //     const exists = await this.fileExists(movieFile.filename);
-  //     if (!exists) result.push(movieFile);
-  //   }
+  updateUserStatus = async (
+    imdbID: string,
+    status: Partial<
+      Omit<
+        import('@/models/MovieModel').MovieUserStatus,
+        'id' | 'imdbID' | 'updatedAt'
+      >
+    >,
+  ): Promise<void> => {
+    const existing = await db.movieUserStatusTable
+      .where('imdbID')
+      .equals(imdbID)
+      .first();
 
-  //   return result;
-  // };
+    if (existing) {
+      await db.movieUserStatusTable.update(existing.id!, {
+        ...status,
+        updatedAt: new Date(),
+      });
+    } else {
+      await db.movieUserStatusTable.add({
+        imdbID,
+        isFavorite: status.isFavorite ?? false,
+        isWatched: status.isWatched ?? false,
+        updatedAt: new Date(),
+      });
+    }
+  };
+
+  allUserStatuses = async (): Promise<
+    import('@/models/MovieModel').MovieUserStatus[]
+  > => {
+    return await db.movieUserStatusTable.toArray();
+  };
 }
 
 export const movieDbService = new MovieDbService();
