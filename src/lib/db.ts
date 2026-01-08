@@ -4,6 +4,7 @@ import {
   type MovieFile,
   type MovieDetail,
   type MoviePoster,
+  type MovieUserStatus,
 } from '@/models/MovieModel';
 
 import logger from '@/core/logger';
@@ -64,6 +65,7 @@ export class LocalMovieAppDB extends Dexie {
   movieFileTable!: EntityTable<MovieFileWithId, 'id'>;
   moviePosterTable!: EntityTable<MoviePosterWithId, 'id'>;
   movieDetailTable!: EntityTable<MovieDetailWithId, 'id'>;
+  movieUserStatusTable!: EntityTable<MovieUserStatus, 'id'>;
 
   constructor() {
     super('LocalMovieAppDB');
