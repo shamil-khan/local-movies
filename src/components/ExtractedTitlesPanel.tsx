@@ -1,4 +1,4 @@
-import { X, Film, CheckCircle, Download } from 'lucide-react';
+import { X, Film, CheckCircle, Download, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { type ExtractedTitle } from '@/App';
 import {
@@ -7,6 +7,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { CategorySelector } from '@/components/CategorySelector';
 
 interface ExtractedTitlesPanelProps {
   titles: ExtractedTitle[];
@@ -18,6 +19,9 @@ interface ExtractedTitlesPanelProps {
   panelIcon?: React.ReactNode;
   headerColor?: string; // e.g. "text-primary", "text-green-600", "text-red-600"
   badgeColor?: string; // e.g. "bg-primary/10 text-primary"
+  selectedCategoryIds?: number[];
+  onCategoryChange?: (categoryIds: number[]) => void;
+  showCategorySelector?: boolean;
 }
 
 export const ExtractedTitlesPanel = ({
@@ -30,6 +34,9 @@ export const ExtractedTitlesPanel = ({
   panelIcon = <Film className='w-4 h-4' />,
   headerColor = 'text-primary',
   badgeColor = 'bg-primary/10 text-primary',
+  selectedCategoryIds = [],
+  onCategoryChange,
+  showCategorySelector = false,
 }: ExtractedTitlesPanelProps) => {
   if (titles.length === 0) return null;
 
@@ -76,6 +83,19 @@ export const ExtractedTitlesPanel = ({
           </Button>
         </div>
       </div>
+
+      {showCategorySelector && onCategoryChange && (
+        <div className='p-3 border-b border-border bg-muted/20'>
+          <div className='flex items-center gap-2 mb-2'>
+            <Tag className='w-4 h-4 text-muted-foreground' />
+            <span className='text-sm font-medium'>Categories</span>
+          </div>
+          <CategorySelector
+            selectedCategoryIds={selectedCategoryIds}
+            onCategoryChange={onCategoryChange}
+          />
+        </div>
+      )}
 
       <div className='max-h-60 overflow-y-auto p-2 space-y-1'>
         {titles.map((item, index) => (

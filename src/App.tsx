@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 
 import { MovieGallery } from '@/components/MovieGallery';
 import { MovieSearch } from '@/components/MovieSearch';
@@ -31,6 +31,8 @@ function App() {
   const [successTitles, setSuccessTitles] = useState<ExtractedTitle[]>([]);
   const [failedTitles, setFailedTitles] = useState<ExtractedTitle[]>([]);
   const [filesToProcess, setFilesToProcess] = useState<XFile[]>([]);
+  const [selectedCategoryIdsForProcessing, setSelectedCategoryIdsForProcessing] =
+    useState<number[]>([]);
 
   const [filterCriteria, setFilterCriteria] = useState<{
     query: string;
@@ -40,6 +42,7 @@ function App() {
     rated: string[];
     language: string[];
     country: string[];
+    category: string[];
     isFavorite: boolean;
     isWatched: boolean;
   }>({
@@ -50,9 +53,17 @@ function App() {
     rated: [],
     language: [],
     country: [],
+    category: [],
     isFavorite: false,
     isWatched: false,
   });
+
+  const [categories, setCategories] = useState<
+    import('@/models/MovieModel').Category[]
+  >([]);
+  const [movieCategoryMap, setMovieCategoryMap] = useState<
+    Record<string, number[]>
+  >({});
 
   // Extract available options from movies
   const availableGenres = Array.from(
@@ -91,7 +102,8 @@ function App() {
     new Set(movies.map((m) => m.imdbRating).filter(Boolean)),
   ).sort((a, b) => parseFloat(b) - parseFloat(a)); // Descending numerics
 
-  const filteredMovies = movies.filter((movie) => {
+  const filteredMovies = useMemo(() => {
+    return movies.filter((movie) => {
     const movieStatus = userStatuses[movie.imdbID];
 
     const matchesQuery = filterCriteria.query
@@ -152,6 +164,18 @@ function App() {
       ? movieStatus?.isWatched
       : true;
 
+    // Category: Match if movie has ANY of the selected categories
+    const movieCategoryIds = movieCategoryMap[movie.imdbID] || [];
+    const selectedCategoryIds = filterCriteria.category.map((c) =>
+      parseInt(c, 10),
+    );
+    const matchesCategory =
+      filterCriteria.category.length === 0
+        ? true
+        : selectedCategoryIds.some((catId) =>
+            movieCategoryIds.includes(catId),
+          );
+
     return (
       matchesQuery &&
       matchesGenre &&
@@ -160,25 +184,44 @@ function App() {
       matchesRating &&
       matchesLanguage &&
       matchesCountry &&
+      matchesCategory &&
       matchesFavorite &&
       matchesWatched
     );
-  });
+    });
+  }, [
+    movies,
+    userStatuses,
+    filterCriteria,
+    movieCategoryMap,
+  ]);
 
   const loadMovies = async () => {
     try {
       setLoading(true);
-      const [movieDetails, statuses] = await Promise.all([
+      const [movieDetails, statuses, allCategories] = await Promise.all([
         movieDbService.allMovies(),
         movieDbService.allUserStatuses(),
+        movieDbService.allCategories(),
       ]);
       setMovies(movieDetails);
+      setCategories(allCategories);
 
       const statusMap: Record<string, MovieUserStatus> = {};
       statuses.forEach((status) => {
         statusMap[status.imdbID] = status;
       });
       setUserStatuses(statusMap);
+
+      // Load category mappings for all movies
+      const categoryMap: Record<string, number[]> = {};
+      for (const movie of movieDetails) {
+        const movieCategories = await movieDbService.getMovieCategories(
+          movie.imdbID,
+        );
+        categoryMap[movie.imdbID] = movieCategories.map((c) => c.id!);
+      }
+      setMovieCategoryMap(categoryMap);
     } catch (err) {
       setError(err as Error);
     } finally {
@@ -271,6 +314,12 @@ function App() {
     }
   };
 
+  // Use ref to access latest extractedTitles in callback
+  const extractedTitlesRef = useRef<ExtractedTitle[]>([]);
+  useEffect(() => {
+    extractedTitlesRef.current = extractedTitles;
+  }, [extractedTitles]);
+
   const { loading: folderLoading, error: folderError } = useMovieFolderLoader(
     filesToProcess,
     (details, processedFiles) => {
@@ -285,29 +334,34 @@ function App() {
       // Actually, 'extractedTitles' is state, so we have it in closure (or ref).
       // But we are in a callback.
 
-      processedFiles.forEach((pf) => {
-        // Find original info.
-        // We can try to match by filename in 'extractedTitles'
-        // or reconstruct a partial ExtractedTitle if needed.
+      // Use the original extractedTitles from ref to preserve file information
+      const originalTitles = extractedTitlesRef.current;
 
-        const matchDetail = details.find(
-          (d) =>
-            d.Title.toLowerCase() === pf.title.toLowerCase() &&
-            d.Response === 'True',
+      // Match processed files with original extracted titles and API results
+      processedFiles.forEach((pf) => {
+        // Find the original ExtractedTitle by filename
+        const originalTitle = originalTitles.find(
+          (et: ExtractedTitle) => et.filename === pf.filename,
         );
 
-        // We need the original ExtractedTitle to keep consistent UI (e.g. filename display).
-        // Since onComplete is ref-ed, we might not have latest 'extractedTitles' in scope if not careful.
-        // Yet, typically, we just need 'filename' and 'title'.
-        // Let's assume we can reconstruct enough info or find it.
-        // If we can't find it in closure 'extractedTitles', we make a new object.
+        // Find matching movie detail from API
+        const matchDetail = details.find(
+          (d) =>
+            d.Response === 'True' &&
+            (d.Title.toLowerCase() === pf.title.toLowerCase() ||
+              (originalTitle &&
+                d.Title.toLowerCase() === originalTitle.title.toLowerCase())),
+        );
 
-        const statusItem: ExtractedTitle = {
-          title: pf.title,
-          filename: pf.filename,
-          originalFile: { name: pf.filename, path: '', size: 0 }, // info potentially lost if not in closure
-          inDb: !!matchDetail,
-        };
+        // Use original title if available, otherwise create from processed file
+        const statusItem: ExtractedTitle = originalTitle
+          ? { ...originalTitle, inDb: !!matchDetail }
+          : {
+              title: pf.title,
+              filename: pf.filename,
+              originalFile: { name: pf.filename, path: '', size: 0 },
+              inDb: !!matchDetail,
+            };
 
         if (matchDetail) {
           successes.push({ ...statusItem, inDb: true });
@@ -335,6 +389,7 @@ function App() {
         failures: failures.length,
       });
     },
+    selectedCategoryIdsForProcessing,
   );
 
   // Effect to extract titles when selectedFiles changes
@@ -383,8 +438,9 @@ function App() {
     extractTitles();
   }, [selectedFiles, movies]);
 
-  const handleProcessTitles = () => {
+  const handleProcessTitles = (categoryIds?: number[]) => {
     const files = extractedTitles.map((t) => t.originalFile);
+    setSelectedCategoryIdsForProcessing(categoryIds || []);
     setFilesToProcess(files);
   };
 
@@ -432,6 +488,10 @@ function App() {
           availableRatings={availableRatings}
           availableLanguages={availableLanguages}
           availableCountries={availableCountries}
+          availableCategories={categories.map((c) => ({
+            label: c.name,
+            value: c.id!.toString(),
+          }))}
         />
       </div>
       <MovieGallery

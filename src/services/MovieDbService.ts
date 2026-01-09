@@ -2,6 +2,8 @@ import {
   type MovieFile,
   type MovieDetail,
   type MoviePoster,
+  type Category,
+  type MovieCategory,
   movieFileSchema,
 } from '@/models/MovieModel';
 import logger from '@/core/logger';
@@ -66,10 +68,12 @@ class MovieDbService {
       db.movieDetailTable,
       db.moviePosterTable,
       db.movieUserStatusTable,
+      db.movieCategoryTable,
       () => {
         db.movieDetailTable.where('imdbID').equals(imdbID).delete();
         db.moviePosterTable.where('imdbID').equals(imdbID).delete();
         db.movieUserStatusTable.where('imdbID').equals(imdbID).delete();
+        db.movieCategoryTable.where('imdbID').equals(imdbID).delete();
       },
     );
   };
@@ -117,6 +121,83 @@ class MovieDbService {
     // Usually means content. But if I delete movies, status for them is orphan.
     // Let's clear everything for a true reset.
     await db.movieUserStatusTable.clear();
+    await db.movieCategoryTable.clear();
+    // Note: Categories are kept even when clearing movies
+  };
+
+  // Category methods
+  addCategory = async (name: string): Promise<number | undefined> => {
+    const existing = await db.categoryTable
+      .where('name')
+      .equalsIgnoreCase(name)
+      .first();
+    if (existing) {
+      return existing.id;
+    }
+    return await db.categoryTable.add({
+      name: name.trim(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+  };
+
+  allCategories = async (): Promise<Category[]> => {
+    return await db.categoryTable.toArray();
+  };
+
+  linkMovieToCategory = async (
+    imdbID: string,
+    categoryId: number,
+  ): Promise<void> => {
+    const existing = await db.movieCategoryTable
+      .where('[imdbID+categoryId]')
+      .equals([imdbID, categoryId])
+      .first();
+    if (!existing) {
+      await db.movieCategoryTable.add({ imdbID, categoryId });
+    }
+  };
+
+  linkMovieToCategories = async (
+    imdbID: string,
+    categoryIds: number[],
+  ): Promise<void> => {
+    await db.transaction('rw', db.movieCategoryTable, async () => {
+      // Remove existing links for this movie
+      await db.movieCategoryTable.where('imdbID').equals(imdbID).delete();
+      // Add new links
+      for (const categoryId of categoryIds) {
+        await db.movieCategoryTable.add({ imdbID, categoryId });
+      }
+    });
+  };
+
+  getMovieCategories = async (imdbID: string): Promise<Category[]> => {
+    const movieCategories = await db.movieCategoryTable
+      .where('imdbID')
+      .equals(imdbID)
+      .toArray();
+    const categoryIds = movieCategories.map((mc) => mc.categoryId);
+    if (categoryIds.length === 0) return [];
+    return await db.categoryTable
+      .where('id')
+      .anyOf(categoryIds)
+      .toArray();
+  };
+
+  getMoviesByCategory = async (categoryId: number): Promise<string[]> => {
+    const movieCategories = await db.movieCategoryTable
+      .where('categoryId')
+      .equals(categoryId)
+      .toArray();
+    return movieCategories.map((mc) => mc.imdbID);
+  };
+
+  deleteCategory = async (categoryId: number): Promise<void> => {
+    await db.transaction('rw', db.categoryTable, db.movieCategoryTable, () => {
+      db.categoryTable.where('id').equals(categoryId).delete();
+      db.movieCategoryTable.where('categoryId').equals(categoryId).delete();
+    });
   };
 }
 

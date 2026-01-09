@@ -5,6 +5,8 @@ import {
   type MovieDetail,
   type MoviePoster,
   type MovieUserStatus,
+  type Category,
+  type MovieCategory,
 } from '@/models/MovieModel';
 
 import logger from '@/core/logger';
@@ -66,6 +68,8 @@ export class LocalMovieAppDB extends Dexie {
   moviePosterTable!: EntityTable<MoviePosterWithId, 'id'>;
   movieDetailTable!: EntityTable<MovieDetailWithId, 'id'>;
   movieUserStatusTable!: EntityTable<MovieUserStatus, 'id'>;
+  categoryTable!: EntityTable<Category, 'id'>;
+  movieCategoryTable!: EntityTable<MovieCategory, 'id'>;
 
   constructor() {
     super('LocalMovieAppDB');
@@ -78,6 +82,11 @@ export class LocalMovieAppDB extends Dexie {
 
     this.version(0.2).stores({
       movieUserStatusTable: `++id, imdbID`,
+    });
+
+    this.version(0.3).stores({
+      categoryTable: `++id, name`,
+      movieCategoryTable: `++id, imdbID, categoryId`,
     });
     logger.success('LocalMovieAppDB created successfully');
   }
