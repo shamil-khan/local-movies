@@ -106,8 +106,8 @@ function App() {
       filterCriteria.genre.length === 0
         ? true
         : filterCriteria.genre.some((g) =>
-          movieGenres.includes(g.toLowerCase()),
-        );
+            movieGenres.includes(g.toLowerCase()),
+          );
 
     const matchesYear =
       filterCriteria.year.length === 0
@@ -131,8 +131,8 @@ function App() {
       filterCriteria.language.length === 0
         ? true
         : filterCriteria.language.some((l) =>
-          movieLanguages.includes(l.toLowerCase()),
-        );
+            movieLanguages.includes(l.toLowerCase()),
+          );
 
     const movieCountries = movie.Country.split(',').map((c) =>
       c.trim().toLowerCase(),
@@ -141,8 +141,8 @@ function App() {
       filterCriteria.country.length === 0
         ? true
         : filterCriteria.country.some((c) =>
-          movieCountries.includes(c.toLowerCase()),
-        );
+            movieCountries.includes(c.toLowerCase()),
+          );
 
     const matchesFavorite = filterCriteria.isFavorite
       ? movieStatus?.isFavorite
@@ -285,13 +285,15 @@ function App() {
       // Actually, 'extractedTitles' is state, so we have it in closure (or ref).
       // But we are in a callback.
 
-      processedFiles.forEach(pf => {
-        // Find original info. 
-        // We can try to match by filename in 'extractedTitles' 
+      processedFiles.forEach((pf) => {
+        // Find original info.
+        // We can try to match by filename in 'extractedTitles'
         // or reconstruct a partial ExtractedTitle if needed.
 
-        const matchDetail = details.find(d =>
-          d.Title.toLowerCase() === pf.title.toLowerCase() && d.Response === 'True'
+        const matchDetail = details.find(
+          (d) =>
+            d.Title.toLowerCase() === pf.title.toLowerCase() &&
+            d.Response === 'True',
         );
 
         // We need the original ExtractedTitle to keep consistent UI (e.g. filename display).
@@ -304,7 +306,7 @@ function App() {
           title: pf.title,
           filename: pf.filename,
           originalFile: { name: pf.filename, path: '', size: 0 }, // info potentially lost if not in closure
-          inDb: !!matchDetail
+          inDb: !!matchDetail,
         };
 
         if (matchDetail) {
@@ -314,8 +316,8 @@ function App() {
         }
       });
 
-      setSuccessTitles(prev => [...prev, ...successes]);
-      setFailedTitles(prev => [...prev, ...failures]);
+      setSuccessTitles((prev) => [...prev, ...successes]);
+      setFailedTitles((prev) => [...prev, ...failures]);
 
       // Reset upload and extracted panels
       setSelectedFiles([]);
@@ -330,9 +332,9 @@ function App() {
       console.log('Processed Robust:', {
         processedFilesLength: processedFiles.length,
         successes: successes.length,
-        failures: failures.length
+        failures: failures.length,
       });
-    }
+    },
   );
 
   // Effect to extract titles when selectedFiles changes
@@ -343,7 +345,7 @@ function App() {
         return;
       }
 
-      const movieFiles = toMovieFiles(selectedFiles.map(f => f.name));
+      const movieFiles = toMovieFiles(selectedFiles.map((f) => f.name));
       const newExtractedTitles: ExtractedTitle[] = [];
       const seenTitles = new Set<string>();
 
@@ -354,23 +356,25 @@ function App() {
         }
         seenTitles.add(mf.title.toLowerCase());
 
-        const originalFile = selectedFiles.find(f => f.name === mf.filename);
+        const originalFile = selectedFiles.find((f) => f.name === mf.filename);
         if (!originalFile) continue;
 
         // Check if exists in DB (simplified check, ideal would be batch check)
-        // We can use the existing movie list to check if title exists roughly, 
+        // We can use the existing movie list to check if title exists roughly,
         // but movieDbService.fileExists checks strictly by filename usually.
         // Let's check if we have a movie with this title in 'movies' state?
         // Or better, use movieDbService.findByTitle if we want to be accurate to DB.
         // However, 'movies' state has all movies loaded.
 
-        const existingMovie = movies.find(m => m.Title.toLowerCase() === mf.title.toLowerCase());
+        const existingMovie = movies.find(
+          (m) => m.Title.toLowerCase() === mf.title.toLowerCase(),
+        );
 
         newExtractedTitles.push({
           title: mf.title,
           filename: mf.filename,
           originalFile: originalFile,
-          inDb: !!existingMovie
+          inDb: !!existingMovie,
         });
       }
       setExtractedTitles(newExtractedTitles);
@@ -380,7 +384,7 @@ function App() {
   }, [selectedFiles, movies]);
 
   const handleProcessTitles = () => {
-    const files = extractedTitles.map(t => t.originalFile);
+    const files = extractedTitles.map((t) => t.originalFile);
     setFilesToProcess(files);
   };
 
@@ -401,8 +405,8 @@ function App() {
           selectedFiles={selectedFiles}
           extractedTitles={extractedTitles}
           onRemoveTitle={(titleItem) => {
-            setExtractedTitles(prev => prev.filter(t => t !== titleItem));
-            // Optionally remove from selectedFiles too? 
+            setExtractedTitles((prev) => prev.filter((t) => t !== titleItem));
+            // Optionally remove from selectedFiles too?
             // The user request says "user can remove title from the panel".
             // Removing title effectively ignores that file for processing.
             // We should probably keep selectedFiles in sync or just ignore it in process.
@@ -411,8 +415,12 @@ function App() {
           onProcessTitles={handleProcessTitles}
           successTitles={successTitles}
           failedTitles={failedTitles}
-          onRemoveSuccessTitle={(t) => setSuccessTitles(prev => prev.filter(x => x !== t))}
-          onRemoveFailedTitle={(t) => setFailedTitles(prev => prev.filter(x => x !== t))}
+          onRemoveSuccessTitle={(t) =>
+            setSuccessTitles((prev) => prev.filter((x) => x !== t))
+          }
+          onRemoveFailedTitle={(t) =>
+            setFailedTitles((prev) => prev.filter((x) => x !== t))
+          }
           folderLoading={folderLoading}
           folderError={folderError}
           onClearLibrary={handleClearLibrary}
