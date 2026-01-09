@@ -226,7 +226,9 @@ export const MovieSearch = ({
             variant='ghost'
             size='icon'
             className={filters.isFavorite ? 'bg-red-100 text-red-500' : ''}
-            onClick={() => handleFilterChange('isFavorite', !filters.isFavorite)}
+            onClick={() =>
+              handleFilterChange('isFavorite', !filters.isFavorite)
+            }
             title='Show Favorites Only'>
             <Heart
               className={`h-5 w-5 ${filters.isFavorite ? 'fill-current' : ''}`}
