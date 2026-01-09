@@ -95,8 +95,8 @@ function App() {
       filterCriteria.genre.length === 0
         ? true
         : filterCriteria.genre.some((g) =>
-            movieGenres.includes(g.toLowerCase()),
-          );
+          movieGenres.includes(g.toLowerCase()),
+        );
 
     const matchesYear =
       filterCriteria.year.length === 0
@@ -120,8 +120,8 @@ function App() {
       filterCriteria.language.length === 0
         ? true
         : filterCriteria.language.some((l) =>
-            movieLanguages.includes(l.toLowerCase()),
-          );
+          movieLanguages.includes(l.toLowerCase()),
+        );
 
     const movieCountries = movie.Country.split(',').map((c) =>
       c.trim().toLowerCase(),
@@ -130,8 +130,8 @@ function App() {
       filterCriteria.country.length === 0
         ? true
         : filterCriteria.country.some((c) =>
-            movieCountries.includes(c.toLowerCase()),
-          );
+          movieCountries.includes(c.toLowerCase()),
+        );
 
     const matchesFavorite = filterCriteria.isFavorite
       ? movieStatus?.isFavorite
@@ -259,6 +259,10 @@ function App() {
           onMovieAdded={loadMovies}
           onFolderUpload={setSelectedFiles}
           onLoad={() => setLoadedFiles(selectedFiles)}
+          onRemoveFile={(file) => {
+            const newFiles = selectedFiles.filter((f) => f !== file);
+            setSelectedFiles(newFiles);
+          }}
           selectedFiles={selectedFiles}
           folderLoading={folderLoading}
           folderError={folderError}

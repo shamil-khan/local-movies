@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { type XFile } from '@/components/mine/xfileinput';
 import { CompactFolderUpload } from '@/components/CompactFolderUpload';
 import { MultiSelect } from '@/components/ui/multi-select';
+import { UploadedFilesPanel } from '@/components/UploadedFilesPanel';
 
 interface FilterCriteria {
   query: string;
@@ -28,6 +29,7 @@ interface FilterCriteria {
 interface MovieSearchProps {
   onMovieAdded: () => void;
   onFolderUpload?: (files: XFile[]) => void;
+  onRemoveFile?: (file: XFile) => void;
   onLoad?: () => void;
   selectedFiles?: XFile[];
   folderLoading?: boolean;
@@ -45,6 +47,7 @@ interface MovieSearchProps {
 export const MovieSearch = ({
   onMovieAdded,
   onFolderUpload,
+  onRemoveFile,
   onLoad,
   selectedFiles = [],
   folderLoading = false,
@@ -66,6 +69,7 @@ export const MovieSearch = ({
   >([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [showFilesPanel, setShowFilesPanel] = useState(false);
 
   // Debounced search effect
   useEffect(() => {
@@ -164,13 +168,15 @@ export const MovieSearch = ({
     <div className='p-4 space-y-4'>
       <div className='flex w-full items-center justify-between gap-2 relative z-20'>
         {onFolderUpload && (
-          <CompactFolderUpload
-            onUpload={onFolderUpload}
-            onLoad={onLoad}
-            selectedFiles={selectedFiles}
-            loading={folderLoading}
-            error={folderError}
-          />
+          <div className='flex flex-col gap-2'>
+            <CompactFolderUpload
+              onUpload={onFolderUpload}
+              onLoad={onLoad}
+              selectedFiles={selectedFiles}
+              loading={folderLoading}
+              error={folderError}
+            />
+          </div>
         )}
 
         <div className='flex-1 relative'>
@@ -300,6 +306,27 @@ export const MovieSearch = ({
             className='text-red-500 hover:text-red-700 hover:bg-red-100 col-span-1 md:col-span-6 justify-self-end'>
             Browse All <X className='ml-2 h-4 w-4' />
           </Button>
+        </div>
+      )}
+
+      {/* Uploaded Files Message & Panel */}
+      {selectedFiles.length > 0 && (
+        <div className='flex flex-col items-start'>
+          <Button
+            variant="link"
+            className="p-0 h-auto text-sm text-muted-foreground hover:text-primary mb-2"
+            onClick={() => setShowFilesPanel(!showFilesPanel)}
+          >
+            {showFilesPanel ? 'Hide' : 'Show'} uploaded {selectedFiles.length} files
+          </Button>
+
+          {showFilesPanel && onRemoveFile && (
+            <UploadedFilesPanel
+              files={selectedFiles}
+              onRemove={onRemoveFile}
+              onClose={() => setShowFilesPanel(false)}
+            />
+          )}
         </div>
       )}
 
