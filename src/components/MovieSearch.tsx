@@ -13,6 +13,19 @@ import { type XFile } from '@/components/mine/xfileinput';
 import { CompactFolderUpload } from '@/components/CompactFolderUpload';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { UploadedFilesPanel } from '@/components/UploadedFilesPanel';
+import { ExtractedTitlesPanel } from '@/components/ExtractedTitlesPanel';
+import { type ExtractedTitle } from '@/App';
+import { Check, AlertCircle, Trash2, AlertOctagon } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose
+} from "@/components/ui/dialog"
 
 interface FilterCriteria {
   query: string;
@@ -32,8 +45,16 @@ interface MovieSearchProps {
   onRemoveFile?: (file: XFile) => void;
   onLoad?: () => void;
   selectedFiles?: XFile[];
+  extractedTitles?: ExtractedTitle[];
+  onRemoveTitle?: (title: ExtractedTitle) => void;
+  onProcessTitles?: () => void;
+  successTitles?: ExtractedTitle[];
+  failedTitles?: ExtractedTitle[];
+  onRemoveSuccessTitle?: (title: ExtractedTitle) => void;
+  onRemoveFailedTitle?: (title: ExtractedTitle) => void;
   folderLoading?: boolean;
   folderError?: string | null;
+  onClearLibrary?: () => void;
   onFilterChange: (filters: FilterCriteria) => void;
   filters: FilterCriteria;
   availableGenres: string[];
@@ -50,8 +71,16 @@ export const MovieSearch = ({
   onRemoveFile,
   onLoad,
   selectedFiles = [],
+  extractedTitles = [],
+  onRemoveTitle,
+  onProcessTitles,
+  successTitles = [],
+  failedTitles = [],
+  onRemoveSuccessTitle,
+  onRemoveFailedTitle,
   folderLoading = false,
   folderError,
+  onClearLibrary,
   onFilterChange,
   filters,
   availableGenres,
@@ -70,6 +99,18 @@ export const MovieSearch = ({
   const [showDropdown, setShowDropdown] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [showFilesPanel, setShowFilesPanel] = useState(false);
+  const [showTitlesPanel, setShowTitlesPanel] = useState(false);
+  const [showSuccessPanel, setShowSuccessPanel] = useState(false);
+  const [showFailedPanel, setShowFailedPanel] = useState(false);
+
+  // Auto-open panels when items arrive
+  useEffect(() => {
+    if (successTitles.length > 0) setShowSuccessPanel(true);
+  }, [successTitles.length]);
+
+  useEffect(() => {
+    if (failedTitles.length > 0) setShowFailedPanel(true);
+  }, [failedTitles.length]);
 
   // Debounced search effect
   useEffect(() => {
@@ -257,6 +298,39 @@ export const MovieSearch = ({
             onClick={() => setShowFilters(!showFilters)}>
             <ListFilter className='h-5 w-5' />
           </Button>
+
+          {onClearLibrary && (
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  variant='ghost'
+                  size='icon'
+                  className='text-destructive hover:text-destructive hover:bg-destructive/10'
+                  title='Delete Library'>
+                  <Trash2 className='h-5 w-5' />
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2 text-destructive">
+                    <AlertOctagon className="h-5 w-5" /> Delete Library?
+                  </DialogTitle>
+                  <DialogDescription>
+                    This will permanently delete ALL movies, files, and posters from your local database.
+                    This action cannot be undone.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter className="gap-2 sm:gap-0">
+                  <DialogClose asChild>
+                    <Button variant="ghost">Cancel</Button>
+                  </DialogClose>
+                  <DialogClose asChild>
+                    <Button variant="destructive" onClick={onClearLibrary}>Delete</Button>
+                  </DialogClose>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
       </div>
 
@@ -310,21 +384,87 @@ export const MovieSearch = ({
       )}
 
       {/* Uploaded Files Message & Panel */}
-      {selectedFiles.length > 0 && (
-        <div className='flex flex-col items-start'>
-          <Button
-            variant="link"
-            className="p-0 h-auto text-sm text-muted-foreground hover:text-primary mb-2"
-            onClick={() => setShowFilesPanel(!showFilesPanel)}
-          >
-            {showFilesPanel ? 'Hide' : 'Show'} uploaded {selectedFiles.length} files
-          </Button>
+      {/* Uploaded Files & Extracted Titles Section */}
+      {(selectedFiles.length > 0 || extractedTitles.length > 0) && (
+        <div className='flex flex-col items-start gap-2'>
+          <div className='flex items-center gap-4'>
+            {selectedFiles.length > 0 && (
+              <Button
+                variant='link'
+                className='p-0 h-auto text-sm text-muted-foreground hover:text-primary'
+                onClick={() => setShowFilesPanel(!showFilesPanel)}>
+                {showFilesPanel ? 'Hide' : 'Show'} uploaded {selectedFiles.length}{' '}
+                files
+              </Button>
+            )}
+            {extractedTitles.length > 0 && (
+              <Button
+                variant='link'
+                className='p-0 h-auto text-sm text-green-600 hover:text-green-700'
+                onClick={() => setShowTitlesPanel(!showTitlesPanel)}>
+                {showTitlesPanel ? 'Hide' : 'Show'} Found {extractedTitles.length}{' '}
+                Titles
+              </Button>
+            )}
+            {successTitles.length > 0 && (
+              <Button
+                variant='link'
+                className='p-0 h-auto text-sm text-green-700 hover:text-green-800'
+                onClick={() => setShowSuccessPanel(!showSuccessPanel)}>
+                {showSuccessPanel ? 'Hide' : 'Show'} Successfully downloaded {successTitles.length}{' '}
+                titles
+              </Button>
+            )}
+            {failedTitles.length > 0 && (
+              <Button
+                variant='link'
+                className='p-0 h-auto text-sm text-red-600 hover:text-red-700'
+                onClick={() => setShowFailedPanel(!showFailedPanel)}>
+                {showFailedPanel ? 'Hide' : 'Show'} Failed to download info for {failedTitles.length}{' '}
+                titles
+              </Button>
+            )}
+          </div>
 
           {showFilesPanel && onRemoveFile && (
             <UploadedFilesPanel
               files={selectedFiles}
               onRemove={onRemoveFile}
               onClose={() => setShowFilesPanel(false)}
+            />
+          )}
+
+          {showTitlesPanel && onRemoveTitle && onProcessTitles && (
+            <ExtractedTitlesPanel
+              titles={extractedTitles}
+              onRemove={onRemoveTitle}
+              onProcess={onProcessTitles}
+              onClose={() => setShowTitlesPanel(false)}
+              processing={folderLoading}
+            />
+          )}
+
+          {showSuccessPanel && onRemoveSuccessTitle && (
+            <ExtractedTitlesPanel
+              titles={successTitles}
+              onRemove={onRemoveSuccessTitle}
+              onClose={() => setShowSuccessPanel(false)}
+              panelTitle="Successfully Downloaded"
+              panelIcon={<Check className='w-4 h-4' />}
+              headerColor="text-green-700"
+              badgeColor="bg-green-100 text-green-700"
+            />
+          )}
+
+          {showFailedPanel && onRemoveFailedTitle && (
+            <ExtractedTitlesPanel
+              titles={failedTitles}
+              onRemove={onRemoveFailedTitle}
+              onClose={() => setShowFailedPanel(false)}
+              panelTitle="Failed Downloads"
+              panelIcon={<AlertCircle className='w-4 h-4' />}
+              headerColor="text-red-600"
+              badgeColor="bg-red-100 text-red-600"
             />
           )}
         </div>

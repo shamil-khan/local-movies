@@ -108,6 +108,16 @@ class MovieDbService {
   > => {
     return await db.movieUserStatusTable.toArray();
   };
+
+  clearDatabase = async () => {
+    await db.movieFileTable.clear();
+    await db.movieDetailTable.clear();
+    await db.moviePosterTable.clear();
+    // await db.movieUserStatusTable.clear(); // Keep user statuses? User said "delete local-movies library".
+    // Usually means content. But if I delete movies, status for them is orphan.
+    // Let's clear everything for a true reset.
+    await db.movieUserStatusTable.clear(); 
+  };
 }
 
 export const movieDbService = new MovieDbService();

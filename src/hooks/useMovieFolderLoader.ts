@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { type XFile } from '@/components/mine/xfileinput';
 import {
   type MovieFile,
@@ -12,11 +12,16 @@ import { movieDbService } from '@/services/MovieDbService';
 
 export const useMovieFolderLoader = (
   files: XFile[],
-  onComplete?: (details: MovieDetail[]) => void,
+  onComplete?: (details: MovieDetail[], files: MovieFile[]) => void,
 ) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [movieDetails, setMovieDetails] = useState<MovieDetail[]>([]);
+  
+  const onCompleteRef = useRef(onComplete);
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   useEffect(() => {
     logger.info(`Files state updated: ${files.length}`);
@@ -170,7 +175,9 @@ export const useMovieFolderLoader = (
       } finally {
         setMovieDetails(working.details);
         setLoading(false);
-        if (onComplete) onComplete(working.details);
+        setMovieDetails(working.details);
+        setLoading(false);
+        if (onCompleteRef.current) onCompleteRef.current(working.details, working.files);
         logger.success('The movie loading workflow completed');
       }
     };

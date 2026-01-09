@@ -6,9 +6,17 @@ import { movieDbService } from '@/services/MovieDbService';
 import { type MovieDetail, type MovieUserStatus } from '@/models/MovieModel';
 import { type XFile } from '@/components/mine/xfileinput';
 import { useMovieFolderLoader } from '@/hooks/useMovieFolderLoader';
+import { toMovieFiles } from '@/utils/MovieFileHelper';
 import { Toaster, toast } from 'sonner';
 
 import '@/App.css';
+
+export interface ExtractedTitle {
+  title: string;
+  filename: string;
+  originalFile: XFile;
+  inDb: boolean;
+}
 
 function App() {
   const [movies, setMovies] = useState<MovieDetail[]>([]);
@@ -19,7 +27,10 @@ function App() {
   const [error, setError] = useState<Error | null>(null);
 
   const [selectedFiles, setSelectedFiles] = useState<XFile[]>([]);
-  const [loadedFiles, setLoadedFiles] = useState<XFile[]>([]);
+  const [extractedTitles, setExtractedTitles] = useState<ExtractedTitle[]>([]);
+  const [successTitles, setSuccessTitles] = useState<ExtractedTitle[]>([]);
+  const [failedTitles, setFailedTitles] = useState<ExtractedTitle[]>([]);
+  const [filesToProcess, setFilesToProcess] = useState<XFile[]>([]);
 
   const [filterCriteria, setFilterCriteria] = useState<{
     query: string;
@@ -243,10 +254,135 @@ function App() {
     }
   };
 
+  const handleClearLibrary = async () => {
+    try {
+      await movieDbService.clearDatabase();
+      setMovies([]);
+      setUserStatuses({});
+      setSuccessTitles([]);
+      setFailedTitles([]);
+      setExtractedTitles([]);
+      setSelectedFiles([]);
+      setFilesToProcess([]);
+      toast.success('Library deleted successfully');
+    } catch (err) {
+      console.error('Failed to clear library:', err);
+      toast.error('Failed to clear library');
+    }
+  };
+
   const { loading: folderLoading, error: folderError } = useMovieFolderLoader(
-    loadedFiles,
-    loadMovies,
+    filesToProcess,
+    (details, processedFiles) => {
+      // Robust Logic: use processedFiles passed from the loader
+      const successes: ExtractedTitle[] = [];
+      const failures: ExtractedTitle[] = [];
+
+      // We need to map back to ExtractedTitle objects.
+      // We can use 'extractedTitles' state, but to be 100% safe against stale closures (though we use ref now),
+      // we can try to find the original file in 'selectedFiles'.
+      // However, 'selectedFiles' might also be stale if not careful?
+      // Actually, 'extractedTitles' is state, so we have it in closure (or ref).
+      // But we are in a callback.
+
+      processedFiles.forEach(pf => {
+        // Find original info. 
+        // We can try to match by filename in 'extractedTitles' 
+        // or reconstruct a partial ExtractedTitle if needed.
+
+        const matchDetail = details.find(d =>
+          d.Title.toLowerCase() === pf.title.toLowerCase() && d.Response === 'True'
+        );
+
+        // We need the original ExtractedTitle to keep consistent UI (e.g. filename display).
+        // Since onComplete is ref-ed, we might not have latest 'extractedTitles' in scope if not careful.
+        // Yet, typically, we just need 'filename' and 'title'.
+        // Let's assume we can reconstruct enough info or find it.
+        // If we can't find it in closure 'extractedTitles', we make a new object.
+
+        const statusItem: ExtractedTitle = {
+          title: pf.title,
+          filename: pf.filename,
+          originalFile: { name: pf.filename, path: '', size: 0 }, // info potentially lost if not in closure
+          inDb: !!matchDetail
+        };
+
+        if (matchDetail) {
+          successes.push({ ...statusItem, inDb: true });
+        } else {
+          failures.push(statusItem);
+        }
+      });
+
+      setSuccessTitles(prev => [...prev, ...successes]);
+      setFailedTitles(prev => [...prev, ...failures]);
+
+      // Reset upload and extracted panels
+      setSelectedFiles([]);
+      setExtractedTitles([]);
+
+      // Reset processing queue
+      setFilesToProcess([]);
+
+      // Refresh movies
+      loadMovies();
+
+      console.log('Processed Robust:', {
+        processedFilesLength: processedFiles.length,
+        successes: successes.length,
+        failures: failures.length
+      });
+    }
   );
+
+  // Effect to extract titles when selectedFiles changes
+  useEffect(() => {
+    const extractTitles = async () => {
+      if (selectedFiles.length === 0) {
+        setExtractedTitles([]);
+        return;
+      }
+
+      const movieFiles = toMovieFiles(selectedFiles.map(f => f.name));
+      const newExtractedTitles: ExtractedTitle[] = [];
+      const seenTitles = new Set<string>();
+
+      for (const mf of movieFiles) {
+        // Deduplication: Skip if title already seen in this batch
+        if (seenTitles.has(mf.title.toLowerCase())) {
+          continue;
+        }
+        seenTitles.add(mf.title.toLowerCase());
+
+        const originalFile = selectedFiles.find(f => f.name === mf.filename);
+        if (!originalFile) continue;
+
+        // Check if exists in DB (simplified check, ideal would be batch check)
+        // We can use the existing movie list to check if title exists roughly, 
+        // but movieDbService.fileExists checks strictly by filename usually.
+        // Let's check if we have a movie with this title in 'movies' state?
+        // Or better, use movieDbService.findByTitle if we want to be accurate to DB.
+        // However, 'movies' state has all movies loaded.
+
+        const existingMovie = movies.find(m => m.Title.toLowerCase() === mf.title.toLowerCase());
+
+        newExtractedTitles.push({
+          title: mf.title,
+          filename: mf.filename,
+          originalFile: originalFile,
+          inDb: !!existingMovie
+        });
+      }
+      setExtractedTitles(newExtractedTitles);
+    };
+
+    extractTitles();
+  }, [selectedFiles, movies]);
+
+  const handleProcessTitles = () => {
+    const files = extractedTitles.map(t => t.originalFile);
+    setFilesToProcess(files);
+  };
 
   useEffect(() => {
     loadMovies();
@@ -258,14 +394,28 @@ function App() {
         <MovieSearch
           onMovieAdded={loadMovies}
           onFolderUpload={setSelectedFiles}
-          onLoad={() => setLoadedFiles(selectedFiles)}
           onRemoveFile={(file) => {
             const newFiles = selectedFiles.filter((f) => f !== file);
             setSelectedFiles(newFiles);
           }}
           selectedFiles={selectedFiles}
+          extractedTitles={extractedTitles}
+          onRemoveTitle={(titleItem) => {
+            setExtractedTitles(prev => prev.filter(t => t !== titleItem));
+            // Optionally remove from selectedFiles too? 
+            // The user request says "user can remove title from the panel".
+            // Removing title effectively ignores that file for processing.
+            // We should probably keep selectedFiles in sync or just ignore it in process.
+            // Let's just remove from extractedTitles so it won't be processed.
+          }}
+          onProcessTitles={handleProcessTitles}
+          successTitles={successTitles}
+          failedTitles={failedTitles}
+          onRemoveSuccessTitle={(t) => setSuccessTitles(prev => prev.filter(x => x !== t))}
+          onRemoveFailedTitle={(t) => setFailedTitles(prev => prev.filter(x => x !== t))}
           folderLoading={folderLoading}
           folderError={folderError}
+          onClearLibrary={handleClearLibrary}
           onFilterChange={setFilterCriteria}
           filters={filterCriteria}
           availableGenres={availableGenres}
