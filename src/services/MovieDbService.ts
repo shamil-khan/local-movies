@@ -116,7 +116,7 @@ class MovieDbService {
     // await db.movieUserStatusTable.clear(); // Keep user statuses? User said "delete local-movies library".
     // Usually means content. But if I delete movies, status for them is orphan.
     // Let's clear everything for a true reset.
-    await db.movieUserStatusTable.clear(); 
+    await db.movieUserStatusTable.clear();
   };
 }
 

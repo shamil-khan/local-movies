@@ -17,7 +17,7 @@ export const useMovieFolderLoader = (
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [movieDetails, setMovieDetails] = useState<MovieDetail[]>([]);
-  
+
   const onCompleteRef = useRef(onComplete);
   useEffect(() => {
     onCompleteRef.current = onComplete;
@@ -177,14 +177,13 @@ export const useMovieFolderLoader = (
         setLoading(false);
         setMovieDetails(working.details);
         setLoading(false);
-        if (onCompleteRef.current) onCompleteRef.current(working.details, working.files);
+        if (onCompleteRef.current)
+          onCompleteRef.current(working.details, working.files);
         logger.success('The movie loading workflow completed');
       }
     };
 
     processWorkflow();
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [files]);
 
   return { loading, error, movieDetails };

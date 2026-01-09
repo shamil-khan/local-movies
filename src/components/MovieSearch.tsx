@@ -24,8 +24,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogClose
-} from "@/components/ui/dialog"
+  DialogClose,
+} from '@/components/ui/dialog';
 
 interface FilterCriteria {
   query: string;
@@ -312,20 +312,22 @@ export const MovieSearch = ({
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle className="flex items-center gap-2 text-destructive">
-                    <AlertOctagon className="h-5 w-5" /> Delete Library?
+                  <DialogTitle className='flex items-center gap-2 text-destructive'>
+                    <AlertOctagon className='h-5 w-5' /> Delete Library?
                   </DialogTitle>
                   <DialogDescription>
-                    This will permanently delete ALL movies, files, and posters from your local database.
-                    This action cannot be undone.
+                    This will permanently delete ALL movies, files, and posters
+                    from your local database. This action cannot be undone.
                   </DialogDescription>
                 </DialogHeader>
-                <DialogFooter className="gap-2 sm:gap-0">
+                <DialogFooter className='gap-2 sm:gap-0'>
                   <DialogClose asChild>
-                    <Button variant="ghost">Cancel</Button>
+                    <Button variant='ghost'>Cancel</Button>
                   </DialogClose>
                   <DialogClose asChild>
-                    <Button variant="destructive" onClick={onClearLibrary}>Delete</Button>
+                    <Button variant='destructive' onClick={onClearLibrary}>
+                      Delete
+                    </Button>
                   </DialogClose>
                 </DialogFooter>
               </DialogContent>
@@ -393,8 +395,8 @@ export const MovieSearch = ({
                 variant='link'
                 className='p-0 h-auto text-sm text-muted-foreground hover:text-primary'
                 onClick={() => setShowFilesPanel(!showFilesPanel)}>
-                {showFilesPanel ? 'Hide' : 'Show'} uploaded {selectedFiles.length}{' '}
-                files
+                {showFilesPanel ? 'Hide' : 'Show'} uploaded{' '}
+                {selectedFiles.length} files
               </Button>
             )}
             {extractedTitles.length > 0 && (
@@ -402,8 +404,8 @@ export const MovieSearch = ({
                 variant='link'
                 className='p-0 h-auto text-sm text-green-600 hover:text-green-700'
                 onClick={() => setShowTitlesPanel(!showTitlesPanel)}>
-                {showTitlesPanel ? 'Hide' : 'Show'} Found {extractedTitles.length}{' '}
-                Titles
+                {showTitlesPanel ? 'Hide' : 'Show'} Found{' '}
+                {extractedTitles.length} Titles
               </Button>
             )}
             {successTitles.length > 0 && (
@@ -411,8 +413,8 @@ export const MovieSearch = ({
                 variant='link'
                 className='p-0 h-auto text-sm text-green-700 hover:text-green-800'
                 onClick={() => setShowSuccessPanel(!showSuccessPanel)}>
-                {showSuccessPanel ? 'Hide' : 'Show'} Successfully downloaded {successTitles.length}{' '}
-                titles
+                {showSuccessPanel ? 'Hide' : 'Show'} Successfully downloaded{' '}
+                {successTitles.length} titles
               </Button>
             )}
             {failedTitles.length > 0 && (
@@ -420,8 +422,8 @@ export const MovieSearch = ({
                 variant='link'
                 className='p-0 h-auto text-sm text-red-600 hover:text-red-700'
                 onClick={() => setShowFailedPanel(!showFailedPanel)}>
-                {showFailedPanel ? 'Hide' : 'Show'} Failed to download info for {failedTitles.length}{' '}
-                titles
+                {showFailedPanel ? 'Hide' : 'Show'} Failed to download info for{' '}
+                {failedTitles.length} titles
               </Button>
             )}
           </div>
@@ -449,10 +451,10 @@ export const MovieSearch = ({
               titles={successTitles}
               onRemove={onRemoveSuccessTitle}
               onClose={() => setShowSuccessPanel(false)}
-              panelTitle="Successfully Downloaded"
+              panelTitle='Successfully Downloaded'
               panelIcon={<Check className='w-4 h-4' />}
-              headerColor="text-green-700"
-              badgeColor="bg-green-100 text-green-700"
+              headerColor='text-green-700'
+              badgeColor='bg-green-100 text-green-700'
             />
           )}
 
@@ -461,10 +463,10 @@ export const MovieSearch = ({
               titles={failedTitles}
               onRemove={onRemoveFailedTitle}
               onClose={() => setShowFailedPanel(false)}
-              panelTitle="Failed Downloads"
+              panelTitle='Failed Downloads'
               panelIcon={<AlertCircle className='w-4 h-4' />}
-              headerColor="text-red-600"
-              badgeColor="bg-red-100 text-red-600"
+              headerColor='text-red-600'
+              badgeColor='bg-red-100 text-red-600'
             />
           )}
         </div>
