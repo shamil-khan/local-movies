@@ -64,23 +64,25 @@ export function MultiSelect({
         <div className='flex flex-wrap gap-1'>
           {selected.length > 0 ? (
             selected.length > 2 ? (
-               <span className="text-foreground">{selected.length} selected</span>
+              <span className='text-foreground'>
+                {selected.length} selected
+              </span>
             ) : (
-                selected.map((value) => {
+              selected.map((value) => {
                 const option = options.find((o) => o.value === value);
                 return (
-                    <div
+                  <div
                     key={value}
                     className='flex items-center gap-1 rounded bg-secondary px-1.5 py-0.5 text-xs font-medium text-secondary-foreground'>
                     {option?.label || value}
                     <div
-                        className='cursor-pointer rounded-full p-0.5 hover:bg-secondary-foreground/20'
-                        onClick={(e) => handleRemove(value, e)}>
-                        <X className='h-3 w-3' />
+                      className='cursor-pointer rounded-full p-0.5 hover:bg-secondary-foreground/20'
+                      onClick={(e) => handleRemove(value, e)}>
+                      <X className='h-3 w-3' />
                     </div>
-                    </div>
+                  </div>
                 );
-                })
+              })
             )
           ) : (
             <span className='text-muted-foreground'>{placeholder}</span>
@@ -97,23 +99,23 @@ export function MultiSelect({
                 No options found.
               </div>
             ) : (
-                options.map((option) => {
-                    const isSelected = selected.includes(option.value);
-                    return (
-                        <div
-                        key={option.value}
-                        className={cn(
-                            'relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
-                            isSelected ? 'bg-accent text-accent-foreground' : ''
-                        )}
-                        onClick={() => handleSelect(option.value)}>
-                        <span className='absolute left-2 flex h-3.5 w-3.5 items-center justify-center'>
-                            {isSelected && <Check className='h-4 w-4' />}
-                        </span>
-                        <span>{option.label}</span>
-                        </div>
-                    );
-                })
+              options.map((option) => {
+                const isSelected = selected.includes(option.value);
+                return (
+                  <div
+                    key={option.value}
+                    className={cn(
+                      'relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+                      isSelected ? 'bg-accent text-accent-foreground' : '',
+                    )}
+                    onClick={() => handleSelect(option.value)}>
+                    <span className='absolute left-2 flex h-3.5 w-3.5 items-center justify-center'>
+                      {isSelected && <Check className='h-4 w-4' />}
+                    </span>
+                    <span>{option.label}</span>
+                  </div>
+                );
+              })
             )}
           </div>
         </div>
