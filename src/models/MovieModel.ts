@@ -60,6 +60,19 @@ export const MovieNotFound = {
   Error: 'Movie not found!',
 };
 
+export interface Category {
+  id?: number;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface MovieCategory {
+  id?: number;
+  imdbID: string;
+  categoryId: number;
+}
+
 export const movieFileSchema = {
   title: 'title',
   year: 'year',

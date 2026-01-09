@@ -35,6 +35,7 @@ interface FilterCriteria {
   rated: string[];
   language: string[];
   country: string[];
+  category: string[];
   isFavorite: boolean;
   isWatched: boolean;
 }
@@ -47,7 +48,7 @@ interface MovieSearchProps {
   selectedFiles?: XFile[];
   extractedTitles?: ExtractedTitle[];
   onRemoveTitle?: (title: ExtractedTitle) => void;
-  onProcessTitles?: () => void;
+  onProcessTitles?: (categoryIds?: number[]) => void;
   successTitles?: ExtractedTitle[];
   failedTitles?: ExtractedTitle[];
   onRemoveSuccessTitle?: (title: ExtractedTitle) => void;
@@ -63,6 +64,7 @@ interface MovieSearchProps {
   availableRatings: string[];
   availableLanguages: string[];
   availableCountries: string[];
+  availableCategories?: Array<{ label: string; value: string }>;
 }
 
 export const MovieSearch = ({
@@ -89,6 +91,7 @@ export const MovieSearch = ({
   availableRatings,
   availableLanguages,
   availableCountries,
+  availableCategories = [],
 }: MovieSearchProps) => {
   const [title, setTitle] = useState('');
   const [movie, setMovie] = useState<MovieDetail | null>(null);
@@ -102,6 +105,7 @@ export const MovieSearch = ({
   const [showTitlesPanel, setShowTitlesPanel] = useState(false);
   const [showSuccessPanel, setShowSuccessPanel] = useState(false);
   const [showFailedPanel, setShowFailedPanel] = useState(false);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
 
   // Auto-open panels when items arrive
   useEffect(() => {
@@ -200,6 +204,7 @@ export const MovieSearch = ({
       rated: [],
       language: [],
       country: [],
+      category: [],
       isFavorite: false,
       isWatched: false,
     });
@@ -375,6 +380,14 @@ export const MovieSearch = ({
             onChange={(val) => handleFilterChange('country', val)}
             placeholder='Country'
           />
+          {availableCategories.length > 0 && (
+            <MultiSelect
+              options={availableCategories}
+              selected={filters.category || []}
+              onChange={(val) => handleFilterChange('category', val)}
+              placeholder='Category'
+            />
+          )}
 
           <Button
             variant='ghost'
@@ -440,9 +453,12 @@ export const MovieSearch = ({
             <ExtractedTitlesPanel
               titles={extractedTitles}
               onRemove={onRemoveTitle}
-              onProcess={onProcessTitles}
+              onProcess={() => onProcessTitles(selectedCategoryIds)}
               onClose={() => setShowTitlesPanel(false)}
               processing={folderLoading}
+              showCategorySelector={true}
+              selectedCategoryIds={selectedCategoryIds}
+              onCategoryChange={setSelectedCategoryIds}
             />
           )}
 

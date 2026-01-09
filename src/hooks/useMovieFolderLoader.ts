@@ -13,6 +13,7 @@ import { movieDbService } from '@/services/MovieDbService';
 export const useMovieFolderLoader = (
   files: XFile[],
   onComplete?: (details: MovieDetail[], files: MovieFile[]) => void,
+  categoryIds?: number[],
 ) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -153,6 +154,36 @@ export const useMovieFolderLoader = (
       logger.info(`Saved all posters in DB`, working.posters);
     };
 
+    const linkCategories = async () => {
+      if (!categoryIds || categoryIds.length === 0) {
+        logger.info('No categories to link');
+        return;
+      }
+
+      if (working.details.length === 0) {
+        logger.warn('No movie details to link categories');
+        return;
+      }
+
+      logger.info(`Linking categories to movies`, {
+        categoryIds,
+        movieCount: working.details.length,
+      });
+
+      const truly = working.details.filter(
+        (detail) => detail.Response === 'True',
+      );
+
+      for (const detail of truly) {
+        await movieDbService.linkMovieToCategories(
+          detail.imdbID,
+          categoryIds,
+        );
+      }
+
+      logger.success(`Linked categories to all movies`);
+    };
+
     const workflow = [
       checkFiles,
       saveFiles,
@@ -160,6 +191,7 @@ export const useMovieFolderLoader = (
       saveDetails,
       loadPosters,
       savePosters,
+      linkCategories,
     ];
 
     const processWorkflow = async () => {
@@ -184,7 +216,7 @@ export const useMovieFolderLoader = (
     };
 
     processWorkflow();
-  }, [files]);
+  }, [files, categoryIds]);
 
   return { loading, error, movieDetails };
 };
