@@ -21,6 +21,139 @@ function App() {
   const [selectedFiles, setSelectedFiles] = useState<XFile[]>([]);
   const [loadedFiles, setLoadedFiles] = useState<XFile[]>([]);
 
+  const [filterCriteria, setFilterCriteria] = useState<{
+    query: string;
+    genre: string[];
+    year: string[];
+    rating: string[];
+    rated: string[];
+    language: string[];
+    country: string[];
+    isFavorite: boolean;
+    isWatched: boolean;
+  }>({
+    query: '',
+    genre: [],
+    year: [],
+    rating: [],
+    rated: [],
+    language: [],
+    country: [],
+    isFavorite: false,
+    isWatched: false,
+  });
+
+  // Extract available options from movies
+  const availableGenres = Array.from(
+    new Set(
+      movies
+        .flatMap((m) => m.Genre.split(',').map((g) => g.trim()))
+        .filter(Boolean),
+    ),
+  ).sort();
+
+  const availableYears = Array.from(
+    new Set(movies.map((m) => m.Year).filter(Boolean)),
+  ).sort((a, b) => b.localeCompare(a)); // Descending
+
+  const availableRated = Array.from(
+    new Set(movies.map((m) => m.Rated).filter(Boolean)),
+  ).sort();
+
+  const availableLanguages = Array.from(
+    new Set(
+      movies
+        .flatMap((m) => m.Language.split(',').map((l) => l.trim()))
+        .filter(Boolean),
+    ),
+  ).sort();
+
+  const availableCountries = Array.from(
+    new Set(
+      movies
+        .flatMap((m) => m.Country.split(',').map((c) => c.trim()))
+        .filter(Boolean),
+    ),
+  ).sort();
+
+  const availableRatings = Array.from(
+    new Set(movies.map((m) => m.imdbRating).filter(Boolean)),
+  ).sort((a, b) => parseFloat(b) - parseFloat(a)); // Descending numerics
+
+  const filteredMovies = movies.filter((movie) => {
+    const movieStatus = userStatuses[movie.imdbID];
+
+    const matchesQuery = filterCriteria.query
+      ? movie.Title.toLowerCase().includes(filterCriteria.query.toLowerCase())
+      : true;
+
+    // Genre: Match if movie has ANY of the selected genres
+    const movieGenres = movie.Genre.split(',').map((g) =>
+      g.trim().toLowerCase(),
+    );
+    const matchesGenre =
+      filterCriteria.genre.length === 0
+        ? true
+        : filterCriteria.genre.some((g) =>
+            movieGenres.includes(g.toLowerCase()),
+          );
+
+    const matchesYear =
+      filterCriteria.year.length === 0
+        ? true
+        : filterCriteria.year.includes(movie.Year);
+
+    const matchesRated =
+      filterCriteria.rated.length === 0
+        ? true
+        : filterCriteria.rated.includes(movie.Rated);
+
+    const matchesRating =
+      filterCriteria.rating.length === 0
+        ? true
+        : filterCriteria.rating.includes(movie.imdbRating);
+
+    const movieLanguages = movie.Language.split(',').map((l) =>
+      l.trim().toLowerCase(),
+    );
+    const matchesLanguage =
+      filterCriteria.language.length === 0
+        ? true
+        : filterCriteria.language.some((l) =>
+            movieLanguages.includes(l.toLowerCase()),
+          );
+
+    const movieCountries = movie.Country.split(',').map((c) =>
+      c.trim().toLowerCase(),
+    );
+    const matchesCountry =
+      filterCriteria.country.length === 0
+        ? true
+        : filterCriteria.country.some((c) =>
+            movieCountries.includes(c.toLowerCase()),
+          );
+
+    const matchesFavorite = filterCriteria.isFavorite
+      ? movieStatus?.isFavorite
+      : true;
+
+    const matchesWatched = filterCriteria.isWatched
+      ? movieStatus?.isWatched
+      : true;
+
+    return (
+      matchesQuery &&
+      matchesGenre &&
+      matchesYear &&
+      matchesRated &&
+      matchesRating &&
+      matchesLanguage &&
+      matchesCountry &&
+      matchesFavorite &&
+      matchesWatched
+    );
+  });
+
   const loadMovies = async () => {
     try {
       setLoading(true);
@@ -129,10 +262,18 @@ function App() {
           selectedFiles={selectedFiles}
           folderLoading={folderLoading}
           folderError={folderError}
+          onFilterChange={setFilterCriteria}
+          filters={filterCriteria}
+          availableGenres={availableGenres}
+          availableYears={availableYears}
+          availableRated={availableRated}
+          availableRatings={availableRatings}
+          availableLanguages={availableLanguages}
+          availableCountries={availableCountries}
         />
       </div>
       <MovieGallery
-        movies={movies}
+        movies={filteredMovies}
         userStatuses={userStatuses}
         loading={loading}
         error={error}

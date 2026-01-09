@@ -6,11 +6,24 @@ import { type MovieDetail } from '@/models/MovieModel';
 import { XMovieCard } from '@/components/XMovieCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ListFilter, X, Heart, Eye } from 'lucide-react';
 import { logger } from '@/core/logger';
 import { toast } from 'sonner';
 import { type XFile } from '@/components/mine/xfileinput';
 import { CompactFolderUpload } from '@/components/CompactFolderUpload';
+import { MultiSelect } from '@/components/ui/multi-select';
+
+interface FilterCriteria {
+  query: string;
+  genre: string[];
+  year: string[];
+  rating: string[];
+  rated: string[];
+  language: string[];
+  country: string[];
+  isFavorite: boolean;
+  isWatched: boolean;
+}
 
 interface MovieSearchProps {
   onMovieAdded: () => void;
@@ -19,6 +32,14 @@ interface MovieSearchProps {
   selectedFiles?: XFile[];
   folderLoading?: boolean;
   folderError?: string | null;
+  onFilterChange: (filters: FilterCriteria) => void;
+  filters: FilterCriteria;
+  availableGenres: string[];
+  availableYears: string[];
+  availableRated: string[];
+  availableRatings: string[];
+  availableLanguages: string[];
+  availableCountries: string[];
 }
 
 export const MovieSearch = ({
@@ -28,6 +49,14 @@ export const MovieSearch = ({
   selectedFiles = [],
   folderLoading = false,
   folderError,
+  onFilterChange,
+  filters,
+  availableGenres,
+  availableYears,
+  availableRated,
+  availableRatings,
+  availableLanguages,
+  availableCountries,
 }: MovieSearchProps) => {
   const [title, setTitle] = useState('');
   const [movie, setMovie] = useState<MovieDetail | null>(null);
@@ -36,10 +65,14 @@ export const MovieSearch = ({
     import('@/services/TmdbApiService').TmdbMovieResult[]
   >([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
   // Debounced search effect
   useEffect(() => {
     const searchTimer = setTimeout(async () => {
+      // Always update filter
+      onFilterChange({ ...filters, query: title });
+
       if (title.length >= 2) {
         try {
           const results = await tmdbApiService.search(title);
@@ -75,20 +108,13 @@ export const MovieSearch = ({
         logger.warn(
           'No IMDb ID found for this movie. Trying title fallback (risky but better than nothing).',
         );
-        // Fallback or error? Let's error for now to be safe, or try OMDb by title?
-        // Let's stick to the plan: if we can't get ID, we can't reliably get OMDb details.
         toast.error('Could not find detailed information for this movie.');
         return;
       }
 
       logger.info(`Found IMDb ID: ${imdbId}. Fetching details...`);
 
-      // 2. Check local DB first using IMDb ID (better than title)
-      // *Wait*, movieDbService.findByTitle is what we have.
-      // Ideally we should have findByImdbId. Let's assume title search for now or add ID search later.
-      // Actually, let's just fetch from API and overwrite/update to ensure we have the best data.
-
-      // 3. Fetch from OMDb
+      // 2. Fetch from OMDb
       const movieFromApi = await movieApiService.getMovieByImdbId(imdbId);
 
       if (movieFromApi.data && movieFromApi.data.Response === 'True') {
@@ -112,60 +138,31 @@ export const MovieSearch = ({
     }
   };
 
-  // Keep manual search for fallback or simple title entry
-  const handleManualSearch = async () => {
-    // Existing logic, maybe just for strictly manual entry?
-    // Reusing logic is hard without duplication, let's mostly rely on dropdown
-    // or implement the "exact match" fallback here if they click "Search" button directly.
-    if (!title) return;
-    handleSearchInternal(title);
+  const handleFilterChange = (
+    key: keyof FilterCriteria,
+    value: string | string[] | boolean,
+  ) => {
+    onFilterChange({ ...filters, [key]: value });
   };
 
-  const handleSearchInternal = async (searchTitle: string) => {
-    // Original logic logic for fallback...
-    logger.info(`Searching for movie manually: ${searchTitle}`);
-    try {
-      setLoading(true);
-      setMovie(null);
-      setShowDropdown(false);
-
-      logger.info('Checking local database...');
-      let movieDetail: MovieDetail | null =
-        (await movieDbService.findByTitle(searchTitle)) || null;
-
-      if (movieDetail) {
-        logger.success('Movie found in local database.');
-      } else {
-        logger.warn('Movie not found in local database. Fetching from API...');
-        const movieFromApi = await movieApiService.getMovieByTitle(searchTitle);
-
-        if (movieFromApi.data && movieFromApi.data.Response === 'True') {
-          logger.success('Movie found in API.');
-          const poster = await movieApiService.getPoster(movieFromApi.data);
-          logger.info('Downloading poster...');
-          await movieDbService.addMovie(movieFromApi.data, poster);
-          logger.success('Movie and poster added to local database.');
-          movieDetail = movieFromApi.data;
-          onMovieAdded();
-        } else {
-          logger.error('Movie not found in API.');
-          toast.info('No movie found.');
-          movieDetail = null;
-        }
-      }
-
-      setMovie(movieDetail);
-    } catch (err) {
-      logger.error('Error:', err);
-      toast.error('Error: ' + (err as Error).message);
-    } finally {
-      setLoading(false);
-    }
+  const clearFilters = () => {
+    setTitle('');
+    onFilterChange({
+      query: '',
+      genre: [],
+      year: [],
+      rating: [],
+      rated: [],
+      language: [],
+      country: [],
+      isFavorite: false,
+      isWatched: false,
+    });
   };
 
   return (
     <div className='p-4 space-y-4'>
-      <div className='flex w-full items-center relative z-20'>
+      <div className='flex w-full items-center justify-between gap-2 relative z-20'>
         {onFolderUpload && (
           <CompactFolderUpload
             onUpload={onFolderUpload}
@@ -175,6 +172,7 @@ export const MovieSearch = ({
             error={folderError}
           />
         )}
+
         <div className='flex-1 relative'>
           <Input
             type='text'
@@ -186,11 +184,11 @@ export const MovieSearch = ({
             }}
             onBlur={() => {
               setTimeout(() => setShowDropdown(false), 200);
-            }} // Delay to allow click
-            className='w-full rounded-none border-l-0 border-r-0'
+            }}
+            className='w-full'
           />
           {showDropdown && searchResults.length > 0 && (
-            <div className='absolute top-full left-0 right-0 bg-background border border-border shadow-lg rounded-b-md overflow-hidden max-h-96 overflow-y-auto'>
+            <div className='absolute top-full left-0 right-0 bg-background border border-border shadow-lg rounded-b-md overflow-hidden max-h-96 overflow-y-auto z-50'>
               {searchResults.map((result) => (
                 <div
                   key={result.id}
@@ -222,10 +220,87 @@ export const MovieSearch = ({
             </div>
           )}
         </div>
-        <Button onClick={handleManualSearch} className='rounded-l-none'>
-          Search
-        </Button>
+
+        <div className='flex items-center gap-2'>
+          <Button
+            variant='ghost'
+            size='icon'
+            className={filters.isFavorite ? 'bg-red-100 text-red-500' : ''}
+            onClick={() => handleFilterChange('isFavorite', !filters.isFavorite)}
+            title='Show Favorites Only'>
+            <Heart
+              className={`h-5 w-5 ${filters.isFavorite ? 'fill-current' : ''}`}
+            />
+          </Button>
+          <Button
+            variant='ghost'
+            size='icon'
+            className={filters.isWatched ? 'bg-blue-100 text-blue-500' : ''}
+            onClick={() => handleFilterChange('isWatched', !filters.isWatched)}
+            title='Show Watched Only'>
+            <Eye
+              className={`h-5 w-5 ${filters.isWatched ? 'fill-current' : ''}`}
+            />
+          </Button>
+          <Button
+            variant='ghost'
+            size='icon'
+            className={showFilters ? 'bg-accent' : ''}
+            onClick={() => setShowFilters(!showFilters)}>
+            <ListFilter className='h-5 w-5' />
+          </Button>
+        </div>
       </div>
+
+      {/* Filter Bar */}
+      {showFilters && (
+        <div className='grid grid-cols-1 md:grid-cols-6 gap-4 p-4 bg-accent/20 rounded-lg animate-in slide-in-from-top-2 fade-in duration-200'>
+          <MultiSelect
+            options={availableGenres.map((g) => ({ label: g, value: g }))}
+            selected={filters.genre}
+            onChange={(val) => handleFilterChange('genre', val)}
+            placeholder='Genre'
+          />
+          <MultiSelect
+            options={availableYears.map((y) => ({ label: y, value: y }))}
+            selected={filters.year}
+            onChange={(val) => handleFilterChange('year', val)}
+            placeholder='Year'
+          />
+          <MultiSelect
+            options={availableRatings.map((r) => ({ label: r, value: r }))}
+            selected={filters.rating}
+            onChange={(val) => handleFilterChange('rating', val)}
+            placeholder='Rating'
+          />
+          <MultiSelect
+            options={availableRated.map((r) => ({ label: r, value: r }))}
+            selected={filters.rated}
+            onChange={(val) => handleFilterChange('rated', val)}
+            placeholder='Rated'
+          />
+          <MultiSelect
+            options={availableLanguages.map((l) => ({ label: l, value: l }))}
+            selected={filters.language}
+            onChange={(val) => handleFilterChange('language', val)}
+            placeholder='Language'
+          />
+          <MultiSelect
+            options={availableCountries.map((c) => ({ label: c, value: c }))}
+            selected={filters.country}
+            onChange={(val) => handleFilterChange('country', val)}
+            placeholder='Country'
+          />
+
+          <Button
+            variant='ghost'
+            onClick={clearFilters}
+            className='text-red-500 hover:text-red-700 hover:bg-red-100 col-span-1 md:col-span-6 justify-self-end'>
+            Browse All <X className='ml-2 h-4 w-4' />
+          </Button>
+        </div>
+      )}
+
       <div>
         {loading && (
           <div className='flex items-center justify-center h-64'>
