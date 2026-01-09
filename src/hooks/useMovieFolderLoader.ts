@@ -175,10 +175,7 @@ export const useMovieFolderLoader = (
       );
 
       for (const detail of truly) {
-        await movieDbService.linkMovieToCategories(
-          detail.imdbID,
-          categoryIds,
-        );
+        await movieDbService.linkMovieToCategories(detail.imdbID, categoryIds);
       }
 
       logger.success(`Linked categories to all movies`);

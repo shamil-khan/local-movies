@@ -179,10 +179,7 @@ class MovieDbService {
       .toArray();
     const categoryIds = movieCategories.map((mc) => mc.categoryId);
     if (categoryIds.length === 0) return [];
-    return await db.categoryTable
-      .where('id')
-      .anyOf(categoryIds)
-      .toArray();
+    return await db.categoryTable.where('id').anyOf(categoryIds).toArray();
   };
 
   getMoviesByCategory = async (categoryId: number): Promise<string[]> => {

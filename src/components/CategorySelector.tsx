@@ -47,7 +47,9 @@ export const CategorySelector = ({
     }
 
     try {
-      const categoryId = await movieDbService.addCategory(newCategoryName.trim());
+      const categoryId = await movieDbService.addCategory(
+        newCategoryName.trim(),
+      );
       if (categoryId) {
         await loadCategories();
         // Auto-select the newly created category

@@ -31,8 +31,10 @@ function App() {
   const [successTitles, setSuccessTitles] = useState<ExtractedTitle[]>([]);
   const [failedTitles, setFailedTitles] = useState<ExtractedTitle[]>([]);
   const [filesToProcess, setFilesToProcess] = useState<XFile[]>([]);
-  const [selectedCategoryIdsForProcessing, setSelectedCategoryIdsForProcessing] =
-    useState<number[]>([]);
+  const [
+    selectedCategoryIdsForProcessing,
+    setSelectedCategoryIdsForProcessing,
+  ] = useState<number[]>([]);
 
   const [filterCriteria, setFilterCriteria] = useState<{
     query: string;
@@ -104,97 +106,92 @@ function App() {
 
   const filteredMovies = useMemo(() => {
     return movies.filter((movie) => {
-    const movieStatus = userStatuses[movie.imdbID];
+      const movieStatus = userStatuses[movie.imdbID];
 
-    const matchesQuery = filterCriteria.query
-      ? movie.Title.toLowerCase().includes(filterCriteria.query.toLowerCase())
-      : true;
+      const matchesQuery = filterCriteria.query
+        ? movie.Title.toLowerCase().includes(filterCriteria.query.toLowerCase())
+        : true;
 
-    // Genre: Match if movie has ANY of the selected genres
-    const movieGenres = movie.Genre.split(',').map((g) =>
-      g.trim().toLowerCase(),
-    );
-    const matchesGenre =
-      filterCriteria.genre.length === 0
-        ? true
-        : filterCriteria.genre.some((g) =>
-            movieGenres.includes(g.toLowerCase()),
-          );
+      // Genre: Match if movie has ANY of the selected genres
+      const movieGenres = movie.Genre.split(',').map((g) =>
+        g.trim().toLowerCase(),
+      );
+      const matchesGenre =
+        filterCriteria.genre.length === 0
+          ? true
+          : filterCriteria.genre.some((g) =>
+              movieGenres.includes(g.toLowerCase()),
+            );
 
-    const matchesYear =
-      filterCriteria.year.length === 0
-        ? true
-        : filterCriteria.year.includes(movie.Year);
+      const matchesYear =
+        filterCriteria.year.length === 0
+          ? true
+          : filterCriteria.year.includes(movie.Year);
 
-    const matchesRated =
-      filterCriteria.rated.length === 0
-        ? true
-        : filterCriteria.rated.includes(movie.Rated);
+      const matchesRated =
+        filterCriteria.rated.length === 0
+          ? true
+          : filterCriteria.rated.includes(movie.Rated);
 
-    const matchesRating =
-      filterCriteria.rating.length === 0
-        ? true
-        : filterCriteria.rating.includes(movie.imdbRating);
+      const matchesRating =
+        filterCriteria.rating.length === 0
+          ? true
+          : filterCriteria.rating.includes(movie.imdbRating);
 
-    const movieLanguages = movie.Language.split(',').map((l) =>
-      l.trim().toLowerCase(),
-    );
-    const matchesLanguage =
-      filterCriteria.language.length === 0
-        ? true
-        : filterCriteria.language.some((l) =>
-            movieLanguages.includes(l.toLowerCase()),
-          );
+      const movieLanguages = movie.Language.split(',').map((l) =>
+        l.trim().toLowerCase(),
+      );
+      const matchesLanguage =
+        filterCriteria.language.length === 0
+          ? true
+          : filterCriteria.language.some((l) =>
+              movieLanguages.includes(l.toLowerCase()),
+            );
 
-    const movieCountries = movie.Country.split(',').map((c) =>
-      c.trim().toLowerCase(),
-    );
-    const matchesCountry =
-      filterCriteria.country.length === 0
-        ? true
-        : filterCriteria.country.some((c) =>
-            movieCountries.includes(c.toLowerCase()),
-          );
+      const movieCountries = movie.Country.split(',').map((c) =>
+        c.trim().toLowerCase(),
+      );
+      const matchesCountry =
+        filterCriteria.country.length === 0
+          ? true
+          : filterCriteria.country.some((c) =>
+              movieCountries.includes(c.toLowerCase()),
+            );
 
-    const matchesFavorite = filterCriteria.isFavorite
-      ? movieStatus?.isFavorite
-      : true;
+      const matchesFavorite = filterCriteria.isFavorite
+        ? movieStatus?.isFavorite
+        : true;
 
-    const matchesWatched = filterCriteria.isWatched
-      ? movieStatus?.isWatched
-      : true;
+      const matchesWatched = filterCriteria.isWatched
+        ? movieStatus?.isWatched
+        : true;
 
-    // Category: Match if movie has ANY of the selected categories
-    const movieCategoryIds = movieCategoryMap[movie.imdbID] || [];
-    const selectedCategoryIds = filterCriteria.category.map((c) =>
-      parseInt(c, 10),
-    );
-    const matchesCategory =
-      filterCriteria.category.length === 0
-        ? true
-        : selectedCategoryIds.some((catId) =>
-            movieCategoryIds.includes(catId),
-          );
+      // Category: Match if movie has ANY of the selected categories
+      const movieCategoryIds = movieCategoryMap[movie.imdbID] || [];
+      const selectedCategoryIds = filterCriteria.category.map((c) =>
+        parseInt(c, 10),
+      );
+      const matchesCategory =
+        filterCriteria.category.length === 0
+          ? true
+          : selectedCategoryIds.some((catId) =>
+              movieCategoryIds.includes(catId),
+            );
 
-    return (
-      matchesQuery &&
-      matchesGenre &&
-      matchesYear &&
-      matchesRated &&
-      matchesRating &&
-      matchesLanguage &&
-      matchesCountry &&
-      matchesCategory &&
-      matchesFavorite &&
-      matchesWatched
-    );
+      return (
+        matchesQuery &&
+        matchesGenre &&
+        matchesYear &&
+        matchesRated &&
+        matchesRating &&
+        matchesLanguage &&
+        matchesCountry &&
+        matchesCategory &&
+        matchesFavorite &&
+        matchesWatched
+      );
     });
-  }, [
-    movies,
-    userStatuses,
-    filterCriteria,
-    movieCategoryMap,
-  ]);
+  }, [movies, userStatuses, filterCriteria, movieCategoryMap]);
 
   const loadMovies = async () => {
     try {
