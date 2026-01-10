@@ -84,6 +84,18 @@ export const LibraryFilterBar = ({
     }
   };
 
+  const hasActiveFilters =
+    (filters.genre && filters.genre.length > 0) ||
+    (filters.year && filters.year.length > 0) ||
+    (filters.rating && filters.rating.length > 0) ||
+    (filters.rated && filters.rated.length > 0) ||
+    (filters.language && filters.language.length > 0) ||
+    (filters.country && filters.country.length > 0) ||
+    (filters.category && filters.category.length > 0) ||
+    filters.isFavorite ||
+    filters.isWatched ||
+    (filters.query && filters.query.trim().length > 0);
+
   return (
     <div className='grid grid-cols-1 md:grid-cols-6 gap-4 p-4 bg-accent/20 rounded-lg animate-in slide-in-from-top-2 fade-in duration-200'>
       <MultiSelect
@@ -145,12 +157,14 @@ export const LibraryFilterBar = ({
         </div>
       )}
 
-      <Button
-        variant='ghost'
-        onClick={onClearFilters}
-        className='text-red-500 hover:text-red-700 hover:bg-red-100 col-span-1 md:col-span-6 justify-self-end'>
-        Browse All <X className='ml-2 h-4 w-4' />
-      </Button>
+      {hasActiveFilters && (
+        <Button
+          variant='ghost'
+          onClick={onClearFilters}
+          className='text-red-500 hover:text-red-700 hover:bg-red-100 col-span-1 md:col-span-6 justify-self-end'>
+          Clear All Filters <X className='ml-2 h-4 w-4' />
+        </Button>
+      )}
     </div>
   );
 };
