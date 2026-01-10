@@ -4,9 +4,11 @@ import { ApiService } from '@/services/ApiService';
 
 const baseURL = import.meta.env.VITE_MOVIE_API_URL;
 const apiKey = import.meta.env.VITE_MOVIE_API_KEY;
-logger.info(`MovieApiService: baseURL: ${baseURL}`);
-logger.info(`MovieApiService: apiKey: ${apiKey}`);
 
+logger.info(`MovieApiService: baseURL: ${baseURL}`);
+logger.info(
+  `MovieApiService: apiKey: ${apiKey ? '***configured***' : 'NOT SET'}`,
+);
 class MovieApiService {
   private apiService: ApiService;
 
