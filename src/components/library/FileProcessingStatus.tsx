@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Check,
@@ -52,6 +52,24 @@ export const FileProcessingStatus = ({
 
   const hasParsedTitles = extractedTitles.length > 0;
   const hasResults = successTitles.length > 0 || failedTitles.length > 0;
+
+  useEffect(() => {
+    const hasAnyItems =
+      selectedFiles.length > 0 ||
+      extractedTitles.length > 0 ||
+      successTitles.length > 0 ||
+      failedTitles.length > 0;
+
+    if (hasAnyItems && !showDetails) {
+      setShowDetails(true);
+    }
+  }, [
+    selectedFiles,
+    extractedTitles,
+    successTitles,
+    failedTitles,
+    showDetails,
+  ]);
 
   if (
     selectedFiles.length === 0 &&
@@ -241,7 +259,7 @@ export const FileProcessingStatus = ({
                           <Film className='w-3 h-3' />
                         )}
                       </div>
-                      <div className='flex flex-col overflow-hidden'>
+                      <div className='flex flex-col overflow-hidden items-start text-left'>
                         <span className={`truncate ${headingClass}`}>
                           {heading}
                         </span>
@@ -267,7 +285,18 @@ export const FileProcessingStatus = ({
                           </TooltipTrigger>
                           <TooltipContent>
                             <div className='max-w-xs'>
-                              {isSuccess && item.rawDetail ? (
+                              {item.rawDetail &&
+                              item.rawDetail.Response === 'True' &&
+                              item.rawDetail.Poster === 'N/A' ? (
+                                <>
+                                  <p className='text-xs font-semibold mb-1'>
+                                    Poster is not available
+                                  </p>
+                                  <pre className='whitespace-pre-wrap text-[10px]'>
+                                    {JSON.stringify(item.rawDetail, null, 2)}
+                                  </pre>
+                                </>
+                              ) : isSuccess && item.rawDetail ? (
                                 <pre className='whitespace-pre-wrap text-[10px]'>
                                   {JSON.stringify(item.rawDetail, null, 2)}
                                 </pre>

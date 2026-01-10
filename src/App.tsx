@@ -4,6 +4,7 @@ import '@/App.css';
 
 import { MovieGallery } from '@/components/MovieGallery';
 import { LibraryHeader } from '@/components/library/LibraryHeader';
+import { type XFile } from '@/components/mine/xfileinput';
 
 import { useMovieLibrary } from '@/hooks/library/useMovieLibrary';
 import { useMovieFilters } from '@/hooks/library/useMovieFilters';
@@ -53,6 +54,18 @@ function App() {
     resetState,
   } = useFileProcessor({ movies, onMoviesUpdated: loadMovies });
 
+  const handleFolderUpload = (files: XFile[]) => {
+    resetState();
+    if (files && files.length > 0) {
+      setSelectedFiles(files);
+    }
+  };
+
+  const handleClearLibraryWithReset = async () => {
+    resetState();
+    await handleClearLibrary();
+  };
+
   // Initial load
   useEffect(() => {
     loadMovies();
@@ -68,10 +81,10 @@ function App() {
       <div className='p-6 w-full'>
         <LibraryHeader
           onMovieAdded={loadMovies}
-          onFolderUpload={setSelectedFiles}
+          onFolderUpload={handleFolderUpload}
           folderLoading={folderLoading}
           folderError={folderError}
-          onClearLibrary={handleClearLibrary}
+          onClearLibrary={handleClearLibraryWithReset}
           filters={filterCriteria}
           onFilterChange={setFilterCriteria}
           clearFilters={clearFilters}
