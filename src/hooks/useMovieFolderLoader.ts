@@ -58,12 +58,6 @@ export const useMovieFolderLoader = (
     logger.info(`Files state updated: ${files.length}`);
 
     const parsedFiles = toMovieFiles(files.map((f) => f.name)) as MovieFile[];
-    if (parsedFiles.length === 0) {
-      setMovieDetails([]);
-      setLoading(false);
-      setError(null);
-      return;
-    }
 
     const ctx: LoaderWorkingSet = {
       newFiles: [...parsedFiles],
@@ -276,8 +270,9 @@ export const useMovieFolderLoader = (
         } else {
           setError(null);
         }
-        if (onCompleteRef.current)
+        if (onCompleteRef.current && processedFiles.length > 0) {
           onCompleteRef.current(allDetails, processedFiles, ctx.responseMeta);
+        }
         logger.success('The movie loading workflow completed');
       }
     };

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Check,
@@ -48,28 +48,15 @@ export const FileProcessingStatus = ({
   onClearAll,
 }: FileProcessingStatusProps) => {
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
-  const [showDetails, setShowDetails] = useState(false);
+  const [showDetails, setShowDetails] = useState(
+    selectedFiles.length > 0 ||
+      extractedTitles.length > 0 ||
+      successTitles.length > 0 ||
+      failedTitles.length > 0,
+  );
 
   const hasParsedTitles = extractedTitles.length > 0;
   const hasResults = successTitles.length > 0 || failedTitles.length > 0;
-
-  useEffect(() => {
-    const hasAnyItems =
-      selectedFiles.length > 0 ||
-      extractedTitles.length > 0 ||
-      successTitles.length > 0 ||
-      failedTitles.length > 0;
-
-    if (hasAnyItems && !showDetails) {
-      setShowDetails(true);
-    }
-  }, [
-    selectedFiles,
-    extractedTitles,
-    successTitles,
-    failedTitles,
-    showDetails,
-  ]);
 
   if (
     selectedFiles.length === 0 &&
@@ -206,7 +193,6 @@ export const FileProcessingStatus = ({
                 const item = entry.item;
                 const isSuccess = entry.type === 'success';
                 const isFailed = entry.type === 'failed';
-                const isProcessed = isSuccess || isFailed;
 
                 const heading = `${item.title}${
                   item.year ? ` (${item.year})` : ''

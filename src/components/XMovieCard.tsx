@@ -96,39 +96,41 @@ export const XMovieCard = ({
         URL.revokeObjectURL(objectUrl);
       }
     };
-  }, [movieDetail.imdbID, movieDetail.Poster]);
+  }, [movieDetail.imdbID, movieDetail.Poster, movieDetail.Title]);
 
   // Fetch trailer when dialog opens
   useEffect(() => {
-    if (open && !trailer && !loading) {
-      fetchTrailer();
+    if (!open || trailer || loading) {
+      return;
     }
-  }, [open]);
 
-  const fetchTrailer = async () => {
-    setLoading(true);
-    setError(null);
+    const loadTrailer = async () => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      logger.info(`Fetching trailer for IMDb ID: ${movieDetail.imdbID}`);
-      const trailerData = await tmdbApiService.getTrailerByImdbId(
-        movieDetail.imdbID,
-      );
+      try {
+        logger.info(`Fetching trailer for IMDb ID: ${movieDetail.imdbID}`);
+        const trailerData = await tmdbApiService.getTrailerByImdbId(
+          movieDetail.imdbID,
+        );
 
-      if (trailerData) {
-        setTrailer(trailerData);
-        logger.success(`Trailer found: ${trailerData.name}`);
-      } else {
-        setError('No trailer available for this movie');
-        logger.warn(`No trailer found for: ${movieDetail.Title}`);
+        if (trailerData) {
+          setTrailer(trailerData);
+          logger.success(`Trailer found: ${trailerData.name}`);
+        } else {
+          setError('No trailer available for this movie');
+          logger.warn(`No trailer found for: ${movieDetail.Title}`);
+        }
+      } catch (err) {
+        setError('Failed to load trailer');
+        logger.error('Error fetching trailer:', err);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      setError('Failed to load trailer');
-      logger.error('Error fetching trailer:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    void loadTrailer();
+  }, [open, trailer, loading, movieDetail.imdbID, movieDetail.Title]);
 
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);
