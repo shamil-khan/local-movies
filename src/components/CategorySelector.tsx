@@ -11,12 +11,14 @@ interface CategorySelectorProps {
   selectedCategoryIds: number[];
   onCategoryChange: (categoryIds: number[]) => void;
   className?: string;
+  onCategoriesDeleted?: () => void;
 }
 
 export const CategorySelector = ({
   selectedCategoryIds,
   onCategoryChange,
   className,
+  onCategoriesDeleted,
 }: CategorySelectorProps) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
@@ -36,6 +38,33 @@ export const CategorySelector = ({
     if (initialized) return;
     setInitialized(true);
     void loadCategories();
+  };
+
+  const handleDeleteSelectedCategories = async () => {
+    if (selectedCategoryIds.length === 0) {
+      toast.error('Select at least one category to delete');
+      return;
+    }
+
+    try {
+      const idsToDelete = [...selectedCategoryIds];
+      for (const id of idsToDelete) {
+        await movieDbService.deleteCategory(id);
+      }
+      await loadCategories();
+      onCategoryChange(
+        selectedCategoryIds.filter((id) => !idsToDelete.includes(id)),
+      );
+      if (onCategoriesDeleted) {
+        onCategoriesDeleted();
+      }
+      toast.success(
+        idsToDelete.length === 1 ? 'Category deleted' : 'Categories deleted',
+      );
+    } catch (error) {
+      console.error('Failed to delete categories:', error);
+      toast.error('Failed to delete categories');
+    }
   };
 
   const handleCreateCategory = async () => {
@@ -69,6 +98,26 @@ export const CategorySelector = ({
 
   const selectedValues = selectedCategoryIds.map((id) => id.toString());
 
+  const handleDeleteSingleCategory = async (value: string) => {
+    const id = parseInt(value, 10);
+    if (Number.isNaN(id)) return;
+
+    try {
+      await movieDbService.deleteCategory(id);
+      await loadCategories();
+      onCategoryChange(
+        selectedCategoryIds.filter((categoryId) => categoryId !== id),
+      );
+      if (onCategoriesDeleted) {
+        onCategoriesDeleted();
+      }
+      toast.success('Category deleted');
+    } catch (error) {
+      console.error('Failed to delete category:', error);
+      toast.error('Failed to delete category');
+    }
+  };
+
   return (
     <div className={className} onClick={ensureCategoriesLoaded}>
       <div className='flex items-center gap-2'>
@@ -80,8 +129,19 @@ export const CategorySelector = ({
               onCategoryChange(values.map((v) => parseInt(v, 10)));
             }}
             placeholder='Select categories'
+            onRemoveOption={handleDeleteSingleCategory}
           />
         </div>
+        <Button
+          type='button'
+          variant='ghost'
+          size='icon'
+          className='shrink-0 text-red-500 hover:text-red-700'
+          onClick={handleDeleteSelectedCategories}
+          disabled={selectedCategoryIds.length === 0}
+          title='Delete selected categories'>
+          <X className='h-4 w-4' />
+        </Button>
         {!showNewCategoryInput ? (
           <Button
             type='button'

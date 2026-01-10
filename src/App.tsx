@@ -84,6 +84,7 @@ function App() {
           onFolderUpload={handleFolderUpload}
           folderLoading={folderLoading}
           folderError={folderError}
+          onReloadCategories={loadMovies}
           onClearLibrary={handleClearLibraryWithReset}
           filters={filterCriteria}
           onFilterChange={setFilterCriteria}

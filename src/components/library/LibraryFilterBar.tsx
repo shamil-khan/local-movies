@@ -2,6 +2,8 @@ import { MultiSelect } from '@/components/ui/multi-select';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import { type FilterCriteria } from '@/models/AppModels';
+import { movieDbService } from '@/services/MovieDbService';
+import { toast } from 'sonner';
 
 interface LibraryFilterBarProps {
   filters: FilterCriteria;
@@ -14,6 +16,7 @@ interface LibraryFilterBarProps {
   availableCountries: string[];
   availableCategories: Array<{ label: string; value: string }>;
   onClearFilters: () => void;
+  onReloadCategories: () => void;
 }
 
 export const LibraryFilterBar = ({
@@ -27,6 +30,7 @@ export const LibraryFilterBar = ({
   availableCountries,
   availableCategories,
   onClearFilters,
+  onReloadCategories,
 }: LibraryFilterBarProps) => {
   type MultiFilterKey =
     | 'genre'
@@ -39,6 +43,45 @@ export const LibraryFilterBar = ({
 
   const handleChange = (key: MultiFilterKey, value: string[]) => {
     onFilterChange({ ...filters, [key]: value });
+  };
+
+  const handleDeleteSingleCategory = async (value: string) => {
+    const id = parseInt(value, 10);
+    if (Number.isNaN(id)) return;
+
+    try {
+      await movieDbService.deleteCategory(id);
+      onReloadCategories();
+      const remaining =
+        filters.category?.filter((v) => parseInt(v, 10) !== id) ?? [];
+      onFilterChange({ ...filters, category: remaining });
+      toast.success('Category deleted');
+    } catch (err) {
+      console.error('Failed to delete category:', err);
+      toast.error('Failed to delete category');
+    }
+  };
+
+  const handleDeleteSelectedCategories = async () => {
+    if (!filters.category || filters.category.length === 0) {
+      toast.error('Select at least one category to delete');
+      return;
+    }
+
+    try {
+      const idsToDelete = filters.category.map((v) => parseInt(v, 10));
+      for (const id of idsToDelete) {
+        await movieDbService.deleteCategory(id);
+      }
+      onReloadCategories();
+      onFilterChange({ ...filters, category: [] });
+      toast.success(
+        idsToDelete.length === 1 ? 'Category deleted' : 'Categories deleted',
+      );
+    } catch (err) {
+      console.error('Failed to delete categories:', err);
+      toast.error('Failed to delete categories');
+    }
   };
 
   return (
@@ -80,12 +123,26 @@ export const LibraryFilterBar = ({
         placeholder='Country'
       />
       {availableCategories.length > 0 && (
-        <MultiSelect
-          options={availableCategories}
-          selected={filters.category || []}
-          onChange={(val) => handleChange('category', val)}
-          placeholder='Category'
-        />
+        <div className='flex items-center gap-2'>
+          <div className='flex-1'>
+            <MultiSelect
+              options={availableCategories}
+              selected={filters.category || []}
+              onChange={(val) => handleChange('category', val)}
+              placeholder='Category'
+              onRemoveOption={handleDeleteSingleCategory}
+            />
+          </div>
+          <Button
+            variant='ghost'
+            size='icon'
+            className='shrink-0 text-red-500 hover:text-red-700'
+            onClick={handleDeleteSelectedCategories}
+            disabled={!filters.category || filters.category.length === 0}
+            title='Delete selected categories'>
+            <X className='h-4 w-4' />
+          </Button>
+        </div>
       )}
 
       <Button

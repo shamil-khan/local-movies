@@ -13,6 +13,7 @@ interface MultiSelectProps {
   onChange: (selected: string[]) => void;
   placeholder?: string;
   className?: string;
+  onRemoveOption?: (value: string) => void;
 }
 
 export function MultiSelect({
@@ -21,6 +22,7 @@ export function MultiSelect({
   onChange,
   placeholder = 'Select options',
   className,
+  onRemoveOption,
 }: MultiSelectProps) {
   const [open, setOpen] = React.useState(false);
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -49,7 +51,11 @@ export function MultiSelect({
 
   const handleRemove = (value: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    onChange(selected.filter((item) => item !== value));
+    if (onRemoveOption) {
+      onRemoveOption(value);
+    } else {
+      onChange(selected.filter((item) => item !== value));
+    }
   };
 
   return (
@@ -104,14 +110,26 @@ export function MultiSelect({
                   <div
                     key={option.value}
                     className={cn(
-                      'relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+                      'group relative flex w-full cursor-default select-none items-center justify-start rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none text-left hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
                       isSelected ? 'bg-accent text-accent-foreground' : '',
                     )}
                     onClick={() => handleSelect(option.value)}>
                     <span className='absolute left-2 flex h-3.5 w-3.5 items-center justify-center'>
                       {isSelected && <Check className='h-4 w-4' />}
                     </span>
-                    <span>{option.label}</span>
+                    <span className='flex-1 text-left'>{option.label}</span>
+                    {onRemoveOption && (
+                      <button
+                        type='button'
+                        className='ml-2 rounded-full p-0.5 text-red-500 hover:bg-red-100 hover:text-red-700 opacity-0 group-hover:opacity-100'
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRemoveOption(option.value);
+                        }}
+                        title='Delete category'>
+                        <X className='h-3 w-3' />
+                      </button>
+                    )}
                   </div>
                 );
               })
