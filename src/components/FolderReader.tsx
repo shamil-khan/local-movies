@@ -15,7 +15,7 @@ import {
   type MoviePoster,
 } from '@/models/MovieModel';
 import { toMovieFiles } from '@/utils/MovieFileHelper';
-import { movieApiService } from '@/services/MovieApiService';
+import { omdbApiService } from '@/services/OmdbApiService';
 import { logger } from '@/core/logger';
 import { XMovieCard } from '@/components/XMovieCard';
 import { movieDbService } from '@/services/MovieDbService';
@@ -79,7 +79,7 @@ export const FolderReader = () => {
 
       logger.info(`Loading details from API`, working.files);
       const promises = working.files.map((file) =>
-        movieApiService.getMovieByTitle(file.title),
+        omdbApiService.getMovieByTitle(file.title),
       );
 
       const results = await Promise.all(promises);
@@ -136,7 +136,7 @@ export const FolderReader = () => {
         return;
       }
 
-      const promises = truly.map((detail) => movieApiService.getPoster(detail));
+      const promises = truly.map((detail) => omdbApiService.getPoster(detail));
 
       const results = await Promise.all(promises);
       working.posters = results;

@@ -1,7 +1,7 @@
 import logger from '@/core/logger';
 import { ApiService } from '@/services/ApiService';
 
-const baseURL = 'https://api.themoviedb.org/3';
+const baseURL = import.meta.env.VITE_TMDB_API_URL;
 const apiKey = import.meta.env.VITE_TMDB_API_KEY;
 
 logger.info(`TmdbApiService: baseURL: ${baseURL}`);
