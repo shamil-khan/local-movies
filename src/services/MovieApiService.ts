@@ -21,7 +21,7 @@ class MovieApiService {
   }
 
   getMovieByTitle = async (title: string) =>
-    await this.apiService.get<MovieDetail>(`?t=${title}&apikey=${apiKey}`);
+    await this.apiService.get<MovieDetail>(`?t='${title}'&apikey=${apiKey}`);
 
   getMovieByTitleAndYear = async (title: string, year: number) =>
     await this.apiService.get<MovieDetail>(

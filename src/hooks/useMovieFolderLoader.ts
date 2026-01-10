@@ -30,9 +30,12 @@ export const useMovieFolderLoader = (
 
     const working = {
       files: toMovieFiles(files.map((f) => f.name)) as MovieFile[],
+      allFiles: [] as MovieFile[],
       posters: [] as MoviePoster[],
       details: [] as MovieDetail[],
+      existingDetails: [] as MovieDetail[],
     };
+    working.allFiles = [...working.files];
 
     const checkFiles = async () => {
       if (working.files.length === 0) {
@@ -47,6 +50,20 @@ export const useMovieFolderLoader = (
 
       const result = await Promise.all(promises);
       const notFound = result.filter((r) => !r[1]).map((r) => r[0]);
+      const found = result.filter((r) => r[1]).map((r) => r[0]);
+
+      // Handle existing files to link categories
+      const existingFiles = working.files.filter((f) =>
+        found.includes(f.filename),
+      );
+
+      for (const file of existingFiles) {
+        const detail = await movieDbService.findByTitle(file.title);
+        if (detail) {
+          working.existingDetails.push(detail);
+        }
+      }
+
       const workable = working.files.filter((f) =>
         notFound.find((ff) => ff === f.filename),
       );
@@ -160,19 +177,19 @@ export const useMovieFolderLoader = (
         return;
       }
 
-      if (working.details.length === 0) {
+      const allDetails = [...working.details, ...working.existingDetails];
+
+      if (allDetails.length === 0) {
         logger.warn('No movie details to link categories');
         return;
       }
 
       logger.info(`Linking categories to movies`, {
         categoryIds,
-        movieCount: working.details.length,
+        movieCount: allDetails.length,
       });
 
-      const truly = working.details.filter(
-        (detail) => detail.Response === 'True',
-      );
+      const truly = allDetails.filter((detail) => detail.Response === 'True');
 
       for (const detail of truly) {
         await movieDbService.linkMovieToCategories(detail.imdbID, categoryIds);
@@ -202,12 +219,11 @@ export const useMovieFolderLoader = (
         setError('Error appear in processing of loading files');
         logger.error('Loader workflow', err);
       } finally {
-        setMovieDetails(working.details);
-        setLoading(false);
-        setMovieDetails(working.details);
+        const allDetails = [...working.details, ...working.existingDetails];
+        setMovieDetails(allDetails);
         setLoading(false);
         if (onCompleteRef.current)
-          onCompleteRef.current(working.details, working.files);
+          onCompleteRef.current(allDetails, working.allFiles);
         logger.success('The movie loading workflow completed');
       }
     };

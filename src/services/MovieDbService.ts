@@ -37,6 +37,10 @@ class MovieDbService {
     return await db.moviePosterTable.add(moviePoster);
   };
 
+  getPoster = async (imdbID: string): Promise<MoviePoster | undefined> => {
+    return await db.moviePosterTable.where('imdbID').equals(imdbID).first();
+  };
+
   addDetail = async (movieDetail: MovieDetail): Promise<number | undefined> => {
     return await db.movieDetailTable.add(movieDetail);
   };
