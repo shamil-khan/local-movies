@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Check, AlertCircle } from 'lucide-react';
 import { UploadedFilesPanel } from '@/components/UploadedFilesPanel';
@@ -33,18 +33,11 @@ export const FileProcessingStatus = ({
 }: FileProcessingStatusProps) => {
   const [showFilesPanel, setShowFilesPanel] = useState(false);
   const [showTitlesPanel, setShowTitlesPanel] = useState(false);
-  const [showSuccessPanel, setShowSuccessPanel] = useState(false);
-  const [showFailedPanel, setShowFailedPanel] = useState(false);
+  const [successCollapsed, setSuccessCollapsed] = useState(false);
+  const [failedCollapsed, setFailedCollapsed] = useState(false);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
-
-  // Auto-open panels when items arrive
-  useEffect(() => {
-    if (successTitles.length > 0) setShowSuccessPanel(true);
-  }, [successTitles.length]);
-
-  useEffect(() => {
-    if (failedTitles.length > 0) setShowFailedPanel(true);
-  }, [failedTitles.length]);
+  const showSuccessPanel = successTitles.length > 0 && !successCollapsed;
+  const showFailedPanel = failedTitles.length > 0 && !failedCollapsed;
 
   if (
     selectedFiles.length === 0 &&
@@ -80,7 +73,7 @@ export const FileProcessingStatus = ({
           <Button
             variant='link'
             className='p-0 h-auto text-sm text-green-700 hover:text-green-800'
-            onClick={() => setShowSuccessPanel(!showSuccessPanel)}>
+            onClick={() => setSuccessCollapsed((prev) => !prev)}>
             {showSuccessPanel ? 'Hide' : 'Show'} Successfully downloaded{' '}
             {successTitles.length} titles
           </Button>
@@ -89,7 +82,7 @@ export const FileProcessingStatus = ({
           <Button
             variant='link'
             className='p-0 h-auto text-sm text-red-600 hover:text-red-700'
-            onClick={() => setShowFailedPanel(!showFailedPanel)}>
+            onClick={() => setFailedCollapsed((prev) => !prev)}>
             {showFailedPanel ? 'Hide' : 'Show'} Failed to download info for{' '}
             {failedTitles.length} titles
           </Button>
@@ -120,8 +113,11 @@ export const FileProcessingStatus = ({
       {showSuccessPanel && (
         <ExtractedTitlesPanel
           titles={successTitles}
-          onRemove={onRemoveSuccessTitle}
-          onClose={() => setShowSuccessPanel(false)}
+          onRemove={(title) => {
+            if (successTitles.length === 1) setSuccessCollapsed(false);
+            onRemoveSuccessTitle(title);
+          }}
+          onClose={() => setSuccessCollapsed(true)}
           panelTitle='Successfully Downloaded'
           panelIcon={<Check className='w-4 h-4' />}
           headerColor='text-green-700'
@@ -132,8 +128,11 @@ export const FileProcessingStatus = ({
       {showFailedPanel && (
         <ExtractedTitlesPanel
           titles={failedTitles}
-          onRemove={onRemoveFailedTitle}
-          onClose={() => setShowFailedPanel(false)}
+          onRemove={(title) => {
+            if (failedTitles.length === 1) setFailedCollapsed(false);
+            onRemoveFailedTitle(title);
+          }}
+          onClose={() => setFailedCollapsed(true)}
           panelTitle='Failed Downloads'
           panelIcon={<AlertCircle className='w-4 h-4' />}
           headerColor='text-red-600'
