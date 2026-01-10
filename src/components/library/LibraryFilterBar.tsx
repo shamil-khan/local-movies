@@ -62,28 +62,6 @@ export const LibraryFilterBar = ({
     }
   };
 
-  const handleDeleteSelectedCategories = async () => {
-    if (!filters.category || filters.category.length === 0) {
-      toast.error('Select at least one category to delete');
-      return;
-    }
-
-    try {
-      const idsToDelete = filters.category.map((v) => parseInt(v, 10));
-      for (const id of idsToDelete) {
-        await movieDbService.deleteCategory(id);
-      }
-      onReloadCategories();
-      onFilterChange({ ...filters, category: [] });
-      toast.success(
-        idsToDelete.length === 1 ? 'Category deleted' : 'Categories deleted',
-      );
-    } catch (err) {
-      console.error('Failed to delete categories:', err);
-      toast.error('Failed to delete categories');
-    }
-  };
-
   const hasActiveFilters =
     (filters.genre && filters.genre.length > 0) ||
     (filters.year && filters.year.length > 0) ||
@@ -97,63 +75,64 @@ export const LibraryFilterBar = ({
     (filters.query && filters.query.trim().length > 0);
 
   return (
-    <div className='grid grid-cols-1 md:grid-cols-6 gap-4 p-4 bg-accent/20 rounded-lg animate-in slide-in-from-top-2 fade-in duration-200'>
-      <MultiSelect
-        options={availableGenres.map((g) => ({ label: g, value: g }))}
-        selected={filters.genre}
-        onChange={(val) => handleChange('genre', val)}
-        placeholder='Genre'
-      />
-      <MultiSelect
-        options={availableYears.map((y) => ({ label: y, value: y }))}
-        selected={filters.year}
-        onChange={(val) => handleChange('year', val)}
-        placeholder='Year'
-      />
-      <MultiSelect
-        options={availableRatings.map((r) => ({ label: r, value: r }))}
-        selected={filters.rating}
-        onChange={(val) => handleChange('rating', val)}
-        placeholder='Rating'
-      />
-      <MultiSelect
-        options={availableRated.map((r) => ({ label: r, value: r }))}
-        selected={filters.rated}
-        onChange={(val) => handleChange('rated', val)}
-        placeholder='Rated'
-      />
-      <MultiSelect
-        options={availableLanguages.map((l) => ({ label: l, value: l }))}
-        selected={filters.language}
-        onChange={(val) => handleChange('language', val)}
-        placeholder='Language'
-      />
-      <MultiSelect
-        options={availableCountries.map((c) => ({ label: c, value: c }))}
-        selected={filters.country}
-        onChange={(val) => handleChange('country', val)}
-        placeholder='Country'
-      />
+    <div className='flex w-full flex-wrap items-center gap-2 p-4 bg-accent/20 rounded-lg animate-in slide-in-from-top-2 fade-in duration-200'>
+      <div className='min-w-[120px]'>
+        <MultiSelect
+          options={availableGenres.map((g) => ({ label: g, value: g }))}
+          selected={filters.genre}
+          onChange={(val) => handleChange('genre', val)}
+          placeholder='Genre'
+        />
+      </div>
+      <div className='min-w-[120px]'>
+        <MultiSelect
+          options={availableYears.map((y) => ({ label: y, value: y }))}
+          selected={filters.year}
+          onChange={(val) => handleChange('year', val)}
+          placeholder='Year'
+        />
+      </div>
+      <div className='min-w-[120px]'>
+        <MultiSelect
+          options={availableRatings.map((r) => ({ label: r, value: r }))}
+          selected={filters.rating}
+          onChange={(val) => handleChange('rating', val)}
+          placeholder='Rating'
+        />
+      </div>
+      <div className='min-w-[120px]'>
+        <MultiSelect
+          options={availableRated.map((r) => ({ label: r, value: r }))}
+          selected={filters.rated}
+          onChange={(val) => handleChange('rated', val)}
+          placeholder='Rated'
+        />
+      </div>
+      <div className='min-w-[120px]'>
+        <MultiSelect
+          options={availableLanguages.map((l) => ({ label: l, value: l }))}
+          selected={filters.language}
+          onChange={(val) => handleChange('language', val)}
+          placeholder='Language'
+        />
+      </div>
+      <div className='min-w-[120px]'>
+        <MultiSelect
+          options={availableCountries.map((c) => ({ label: c, value: c }))}
+          selected={filters.country}
+          onChange={(val) => handleChange('country', val)}
+          placeholder='Country'
+        />
+      </div>
       {availableCategories.length > 0 && (
-        <div className='flex items-center gap-2'>
-          <div className='flex-1'>
-            <MultiSelect
-              options={availableCategories}
-              selected={filters.category || []}
-              onChange={(val) => handleChange('category', val)}
-              placeholder='Category'
-              onRemoveOption={handleDeleteSingleCategory}
-            />
-          </div>
-          <Button
-            variant='ghost'
-            size='icon'
-            className='shrink-0 text-red-500 hover:text-red-700'
-            onClick={handleDeleteSelectedCategories}
-            disabled={!filters.category || filters.category.length === 0}
-            title='Delete selected categories'>
-            <X className='h-4 w-4' />
-          </Button>
+        <div className='min-w-[140px]'>
+          <MultiSelect
+            options={availableCategories}
+            selected={filters.category || []}
+            onChange={(val) => handleChange('category', val)}
+            placeholder='Category'
+            onRemoveOption={handleDeleteSingleCategory}
+          />
         </div>
       )}
 
@@ -161,7 +140,7 @@ export const LibraryFilterBar = ({
         <Button
           variant='ghost'
           onClick={onClearFilters}
-          className='text-red-500 hover:text-red-700 hover:bg-red-100 col-span-1 md:col-span-6 justify-self-end'>
+          className='ml-auto text-red-500 hover:text-red-700 hover:bg-red-100 whitespace-nowrap'>
           Clear All Filters <X className='ml-2 h-4 w-4' />
         </Button>
       )}

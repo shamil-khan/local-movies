@@ -83,54 +83,66 @@ export const LibraryHeader = ({
 
   return (
     <div className='p-4 space-y-4'>
-      <div className='flex w-full items-center justify-between gap-2 relative z-20'>
-        <div className='flex flex-col gap-2'>
+      <div className='flex w-full items-center relative z-20'>
+        <div className='flex items-center flex-1'>
           <CompactFolderUpload
             onUpload={onFolderUpload}
             loading={folderLoading}
             error={folderError}
             selectedFiles={selectedFiles}
           />
+
+          <div className='flex-1'>
+            <LibrarySearchBar
+              onMovieAdded={onMovieAdded}
+              onQueryChange={(query) => onFilterChange({ ...filters, query })}
+              query={filters.query}
+            />
+          </div>
         </div>
 
-        <LibrarySearchBar
-          onMovieAdded={onMovieAdded}
-          onQueryChange={(query) => onFilterChange({ ...filters, query })}
-          query={filters.query}
-        />
-
         <div className='flex items-center gap-2'>
-          <Button
-            variant='ghost'
-            size='icon'
-            className={filters.isFavorite ? 'bg-red-100 text-red-500' : ''}
-            onClick={() =>
-              onFilterChange({ ...filters, isFavorite: !filters.isFavorite })
-            }
-            title='Show Favorites Only'>
-            <Heart
-              className={`h-5 w-5 ${filters.isFavorite ? 'fill-current' : ''}`}
-            />
-          </Button>
-          <Button
-            variant='ghost'
-            size='icon'
-            className={filters.isWatched ? 'bg-blue-100 text-blue-500' : ''}
-            onClick={() =>
-              onFilterChange({ ...filters, isWatched: !filters.isWatched })
-            }
-            title='Show Watched Only'>
-            <Eye
-              className={`h-5 w-5 ${filters.isWatched ? 'fill-current' : ''}`}
-            />
-          </Button>
-          <Button
-            variant='ghost'
-            size='icon'
-            className={showFilters ? 'bg-accent' : ''}
-            onClick={() => setShowFilters(!showFilters)}>
-            <ListFilter className='h-5 w-5' />
-          </Button>
+          <div className='inline-flex rounded-md border border-input overflow-hidden'>
+            <Button
+              variant='ghost'
+              size='icon'
+              className={`rounded-none border-0 ${
+                filters.isFavorite ? 'bg-red-100 text-red-500' : ''
+              }`}
+              onClick={() =>
+                onFilterChange({ ...filters, isFavorite: !filters.isFavorite })
+              }
+              title='Show Favorites Only'>
+              <Heart
+                className={`h-5 w-5 ${
+                  filters.isFavorite ? 'fill-current' : ''
+                }`}
+              />
+            </Button>
+            <Button
+              variant='ghost'
+              size='icon'
+              className={`rounded-none border-0 ${
+                filters.isWatched ? 'bg-blue-100 text-blue-500' : ''
+              }`}
+              onClick={() =>
+                onFilterChange({ ...filters, isWatched: !filters.isWatched })
+              }
+              title='Show Watched Only'>
+              <Eye
+                className={`h-5 w-5 ${filters.isWatched ? 'fill-current' : ''}`}
+              />
+            </Button>
+            <Button
+              variant='ghost'
+              size='icon'
+              className={`rounded-none border-0 ${
+                showFilters ? 'bg-accent' : ''
+              }`}
+              onClick={() => setShowFilters(!showFilters)}>
+              <ListFilter className='h-5 w-5' />
+            </Button>
+          </div>
 
           <Dialog>
             <DialogTrigger asChild>
