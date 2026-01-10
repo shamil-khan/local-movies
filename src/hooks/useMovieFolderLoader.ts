@@ -16,20 +16,38 @@ type LoaderWorkingSet = {
   posters: MoviePoster[];
   details: MovieDetail[];
   existingDetails: MovieDetail[];
+  responseMeta: Record<
+    string,
+    {
+      detail?: MovieDetail;
+      error?: string;
+    }
+  >;
 };
 
 type WorkflowStep = (ctx: LoaderWorkingSet) => Promise<void>;
 
 export const useMovieFolderLoader = (
   files: XFile[],
-  onComplete?: (details: MovieDetail[], files: MovieFile[]) => void,
+  onComplete?: (
+    details: MovieDetail[],
+    files: MovieFile[],
+    meta: Record<string, { detail?: MovieDetail; error?: string }>,
+  ) => void,
   categoryIds?: number[],
 ) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [movieDetails, setMovieDetails] = useState<MovieDetail[]>([]);
 
-  const onCompleteRef = useRef(onComplete);
+  const onCompleteRef = useRef<
+    | ((
+        details: MovieDetail[],
+        files: MovieFile[],
+        meta: Record<string, { detail?: MovieDetail; error?: string }>,
+      ) => void)
+    | undefined
+  >(onComplete);
   useEffect(() => {
     onCompleteRef.current = onComplete;
   }, [onComplete]);
@@ -53,6 +71,7 @@ export const useMovieFolderLoader = (
       posters: [],
       details: [],
       existingDetails: [],
+      responseMeta: {},
     };
 
     const stepFindNewFiles: WorkflowStep = async (working) => {
@@ -78,6 +97,13 @@ export const useMovieFolderLoader = (
         (d): d is MovieDetail => !!d,
       );
 
+      existingFiles.forEach((file, index) => {
+        const detail = existingDetails[index];
+        if (detail) {
+          working.responseMeta[file.filename] = { detail };
+        }
+      });
+
       working.newFiles = working.newFiles.filter((f) =>
         newFilenames.includes(f.filename),
       );
@@ -102,6 +128,27 @@ export const useMovieFolderLoader = (
           omdbApiService.getMovieByTitle(file.title),
         ),
       );
+      responses.forEach((r, index) => {
+        const file = working.newFiles[index];
+        if (!file) return;
+
+        if (r.status === 'fulfilled') {
+          const detail = r.value.data;
+          working.responseMeta[file.filename] = {
+            detail,
+            error:
+              detail.Response === 'True'
+                ? undefined
+                : detail.Error || 'Movie not found',
+          };
+        } else {
+          const reason = r.reason as Error | unknown as Error;
+          working.responseMeta[file.filename] = {
+            error: reason?.message ?? 'Failed to load details',
+          };
+        }
+      });
+
       const fulfilled = responses.filter(
         (
           r,
@@ -230,7 +277,7 @@ export const useMovieFolderLoader = (
           setError(null);
         }
         if (onCompleteRef.current)
-          onCompleteRef.current(allDetails, processedFiles);
+          onCompleteRef.current(allDetails, processedFiles, ctx.responseMeta);
         logger.success('The movie loading workflow completed');
       }
     };

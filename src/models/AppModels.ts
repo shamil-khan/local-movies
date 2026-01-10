@@ -11,6 +11,8 @@ export interface FilterCriteria {
   isWatched: boolean;
 }
 
+import type { MovieDetail } from '@/models/MovieModel';
+
 export interface ExtractedTitle {
   title: string;
   filename: string;
@@ -21,4 +23,6 @@ export interface ExtractedTitle {
   };
   inDb: boolean;
   year?: number;
+  rawDetail?: MovieDetail;
+  error?: string;
 }

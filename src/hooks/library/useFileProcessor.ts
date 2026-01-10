@@ -32,7 +32,7 @@ export const useFileProcessor = ({
 
   const { loading: folderLoading, error: folderError } = useMovieFolderLoader(
     filesToProcess,
-    (details, processedFiles) => {
+    (details, processedFiles, metaByFilename) => {
       const successes: ExtractedTitle[] = [];
       const failures: ExtractedTitle[] = [];
       const originalTitles = extractedTitlesRef.current;
@@ -50,14 +50,23 @@ export const useFileProcessor = ({
                 d.Title.toLowerCase() === originalTitle.title.toLowerCase())),
         );
 
+        const meta = metaByFilename[pf.filename];
+
         const statusItem: ExtractedTitle = originalTitle
-          ? { ...originalTitle, inDb: !!matchDetail }
+          ? {
+              ...originalTitle,
+              inDb: !!matchDetail,
+              rawDetail: meta?.detail ?? originalTitle.rawDetail,
+              error: meta?.error ?? originalTitle.error,
+            }
           : {
               title: pf.title,
               filename: pf.filename,
               originalFile: { name: pf.filename, path: '', size: 0 },
               inDb: !!matchDetail,
               year: Number.isNaN(pf.year) ? undefined : pf.year,
+              rawDetail: meta?.detail,
+              error: meta?.error,
             };
 
         if (matchDetail) {
