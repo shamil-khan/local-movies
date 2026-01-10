@@ -65,3 +65,55 @@ export const toMovieFiles = (filenames: string[]): MovieFile[] => {
   logger.info(`Parsed ${movieFiles.length} movie files from provided files.`);
   return movieFiles;
 };
+
+export async function compressImageBuffer(
+  data: ArrayBuffer,
+  headerType: string | undefined,
+  quality: number = 0.3,
+): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const blob = new Blob([data], { type: headerType });
+    const imageUrl = URL.createObjectURL(blob);
+
+    const img = new Image();
+    img.src = imageUrl;
+
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      if (!ctx) throw new Error('Could not get canvas context');
+
+      let { width, height } = img;
+
+      canvas.width = width;
+      canvas.height = height;
+      ctx.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob(
+        (compressedBlob) => {
+          // Revoke the object URL to free up memory
+          URL.revokeObjectURL(imageUrl);
+
+          if (compressedBlob) {
+            console.log(`Original image size: ${blob.size} bytes`);
+            console.log(`Compressed image size: ${compressedBlob.size} bytes`);
+            console.log(
+              `Size reduction: ${(((blob.size - compressedBlob.size) / blob.size) * 100).toFixed(2)}%`,
+            );
+            resolve(compressedBlob);
+          } else {
+            reject(new Error('Image compression failed'));
+          }
+        },
+        'image/jpeg',
+        quality,
+      );
+    };
+
+    img.onerror = (err) => {
+      URL.revokeObjectURL(imageUrl);
+      reject(err);
+    };
+  });
+}
