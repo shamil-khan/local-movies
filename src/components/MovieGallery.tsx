@@ -1,4 +1,8 @@
-import { type MovieDetail, type MovieUserStatus } from '@/models/MovieModel';
+import {
+  type MovieDetail,
+  type MovieUserStatus,
+  type Category,
+} from '@/models/MovieModel';
 import { XMovieCard } from '@/components/XMovieCard';
 import { Loader2 } from 'lucide-react';
 
@@ -10,6 +14,9 @@ interface MovieGalleryProps {
   onDelete?: (imdbID: string) => void;
   onToggleFavorite?: (imdbID: string) => void;
   onToggleWatched?: (imdbID: string) => void;
+  categories?: Category[];
+  movieCategoryMap?: Record<string, number[]>;
+  onUpdateCategories?: (imdbID: string, categoryIds: number[]) => void;
 }
 
 export const MovieGallery = ({
@@ -20,6 +27,9 @@ export const MovieGallery = ({
   onDelete,
   onToggleFavorite,
   onToggleWatched,
+  categories,
+  movieCategoryMap,
+  onUpdateCategories,
 }: MovieGalleryProps) => {
   if (error) {
     return (
@@ -47,6 +57,9 @@ export const MovieGallery = ({
               onDelete={onDelete}
               onToggleFavorite={onToggleFavorite}
               onToggleWatched={onToggleWatched}
+              categories={categories}
+              movieCategoryIds={movieCategoryMap?.[movie.imdbID] ?? []}
+              onUpdateCategories={onUpdateCategories}
             />
           ))}
         </div>

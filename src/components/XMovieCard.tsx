@@ -1,4 +1,8 @@
-import { type MovieDetail, type MovieUserStatus } from '@/models/MovieModel';
+import {
+  type MovieDetail,
+  type MovieUserStatus,
+  type Category,
+} from '@/models/MovieModel';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Dialog,
@@ -18,6 +22,7 @@ import {
   Trash2,
   Heart,
   Eye,
+  Tags,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { movieDbService } from '@/services/MovieDbService';
@@ -30,6 +35,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { CategorySelector } from '@/components/CategorySelector';
 
 const toCompact = (value: string) =>
   format(parse(value), '0.00 a', { locale: en }).replace(/\.00$/, '');
@@ -51,6 +57,9 @@ interface XMovieCardProps {
   onDelete?: (imdbID: string) => void;
   onToggleFavorite?: (imdbID: string) => void;
   onToggleWatched?: (imdbID: string) => void;
+  categories?: Category[];
+  movieCategoryIds?: number[];
+  onUpdateCategories?: (imdbID: string, categoryIds: number[]) => void;
 }
 
 export const XMovieCard = ({
@@ -59,6 +68,9 @@ export const XMovieCard = ({
   onDelete,
   onToggleFavorite,
   onToggleWatched,
+  categories,
+  movieCategoryIds,
+  onUpdateCategories,
 }: XMovieCardProps) => {
   const [open, setOpen] = useState(false);
   const [trailer, setTrailer] = useState<MovieTrailer | null>(null);
@@ -69,6 +81,15 @@ export const XMovieCard = ({
       ? movieDetail.Poster
       : '/generic-movie-poster.svg',
   );
+
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>(
+    movieCategoryIds ?? [],
+  );
+
+  useEffect(() => {
+    setSelectedCategoryIds(movieCategoryIds ?? []);
+  }, [movieCategoryIds]);
 
   // Load poster from DB
   useEffect(() => {
@@ -143,6 +164,13 @@ export const XMovieCard = ({
       setTrailer(null);
       setError(null);
     }
+  };
+
+  const handleSaveCategories = () => {
+    if (onUpdateCategories) {
+      onUpdateCategories(movieDetail.imdbID, selectedCategoryIds);
+    }
+    setCategoryDialogOpen(false);
   };
 
   return (
@@ -261,6 +289,37 @@ export const XMovieCard = ({
             </DialogContent>
           </Dialog>
 
+          <Dialog
+            open={categoryDialogOpen}
+            onOpenChange={setCategoryDialogOpen}>
+            <DialogContent className='sm:max-w-[500px]'>
+              <DialogHeader>
+                <DialogTitle>Categories</DialogTitle>
+                <DialogDescription>
+                  Manage categories for {movieDetail.Title}
+                </DialogDescription>
+              </DialogHeader>
+              <div className='mt-2'>
+                <CategorySelector
+                  selectedCategoryIds={selectedCategoryIds}
+                  onCategoryChange={setSelectedCategoryIds}
+                  allowCategoryDeletion={false}
+                />
+              </div>
+              <div className='mt-4 flex justify-end gap-2'>
+                <Button
+                  variant='outline'
+                  size='sm'
+                  onClick={() => setCategoryDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button size='sm' onClick={handleSaveCategories}>
+                  Save
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
           <p className='text-xs font-normal'>{movieDetail.Plot}</p>
 
           {/* Bottom Action Bar - Overlay */}
@@ -307,6 +366,24 @@ export const XMovieCard = ({
                 </TooltipTrigger>
                 <TooltipContent className='text-xs font-medium'>
                   <p>{userStatus?.isWatched ? 'Watched' : 'Mark as Watched'}</p>
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip delayDuration={300}>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant='ghost'
+                    size='icon'
+                    className='h-8 w-8 rounded-full bg-white/15 hover:bg-white/30 text-white'
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCategoryDialogOpen(true);
+                    }}>
+                    <Tags className='w-4 h-4' />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className='text-xs font-medium'>
+                  <p>Manage Categories</p>
                 </TooltipContent>
               </Tooltip>
 
