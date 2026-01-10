@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,7 @@ interface CategorySelectorProps {
   onCategoryChange: (categoryIds: number[]) => void;
   className?: string;
   onCategoriesDeleted?: () => void;
+  allowCategoryDeletion?: boolean;
 }
 
 export const CategorySelector = ({
@@ -19,6 +20,7 @@ export const CategorySelector = ({
   onCategoryChange,
   className,
   onCategoriesDeleted,
+  allowCategoryDeletion = true,
 }: CategorySelectorProps) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
@@ -39,6 +41,10 @@ export const CategorySelector = ({
     setInitialized(true);
     void loadCategories();
   };
+
+  useEffect(() => {
+    ensureCategoriesLoaded();
+  }, []);
 
   const handleDeleteSelectedCategories = async () => {
     if (selectedCategoryIds.length === 0) {
@@ -99,6 +105,9 @@ export const CategorySelector = ({
   const selectedValues = selectedCategoryIds.map((id) => id.toString());
 
   const handleDeleteSingleCategory = async (value: string) => {
+    if (!allowCategoryDeletion) {
+      return;
+    }
     const id = parseInt(value, 10);
     if (Number.isNaN(id)) return;
 
@@ -129,19 +138,23 @@ export const CategorySelector = ({
               onCategoryChange(values.map((v) => parseInt(v, 10)));
             }}
             placeholder='Select categories'
-            onRemoveOption={handleDeleteSingleCategory}
+            onRemoveOption={
+              allowCategoryDeletion ? handleDeleteSingleCategory : undefined
+            }
           />
         </div>
-        <Button
-          type='button'
-          variant='ghost'
-          size='icon'
-          className='shrink-0 text-red-500 hover:text-red-700'
-          onClick={handleDeleteSelectedCategories}
-          disabled={selectedCategoryIds.length === 0}
-          title='Delete selected categories'>
-          <X className='h-4 w-4' />
-        </Button>
+        {allowCategoryDeletion && (
+          <Button
+            type='button'
+            variant='ghost'
+            size='icon'
+            className='shrink-0 text-red-500 hover:text-red-700'
+            onClick={handleDeleteSelectedCategories}
+            disabled={selectedCategoryIds.length === 0}
+            title='Delete selected categories'>
+            <X className='h-4 w-4' />
+          </Button>
+        )}
         {!showNewCategoryInput ? (
           <Button
             type='button'

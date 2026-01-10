@@ -148,6 +148,25 @@ export const useMovieLibrary = () => {
     }
   }, []);
 
+  const handleUpdateMovieCategories = useCallback(
+    async (imdbID: string, categoryIds: number[]) => {
+      try {
+        await movieDbService.linkMovieToCategories(imdbID, categoryIds);
+        const allCategories = await movieDbService.allCategories();
+        setCategories(allCategories);
+        setMovieCategoryMap((prev) => ({
+          ...prev,
+          [imdbID]: categoryIds,
+        }));
+        toast.success('Categories updated');
+      } catch (err) {
+        console.error('Failed to update movie categories:', err);
+        toast.error('Failed to update categories');
+      }
+    },
+    [],
+  );
+
   return {
     movies,
     userStatuses,
@@ -160,5 +179,6 @@ export const useMovieLibrary = () => {
     handleToggleFavorite,
     handleToggleWatched,
     handleClearLibrary,
+    handleUpdateMovieCategories,
   };
 };
