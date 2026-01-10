@@ -64,7 +64,11 @@ export const XMovieCard = ({
   const [trailer, setTrailer] = useState<MovieTrailer | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [posterSrc, setPosterSrc] = useState<string>(movieDetail.Poster);
+  const [posterSrc, setPosterSrc] = useState<string>(
+    movieDetail.Poster && movieDetail.Poster !== 'N/A'
+      ? movieDetail.Poster
+      : '/generic-movie-poster.svg',
+  );
 
   // Load poster from DB
   useEffect(() => {
@@ -79,13 +83,13 @@ export const XMovieCard = ({
           setPosterSrc(objectUrl);
           logger.success(`Loaded poster for ${movieDetail.Title} from DB`);
         } else {
-          // If not in DB, fallback to the URL in details (which might be external)
+          // If not in DB, use a generic movie poster image
           logger.warn(`Failed to load poster for ${movieDetail.Title} from DB`);
-          setPosterSrc(movieDetail.Poster);
+          setPosterSrc('/generic-movie-poster.svg');
         }
       } catch (e) {
         logger.error(`Failed to load poster for ${movieDetail.Title}`, e);
-        setPosterSrc(movieDetail.Poster);
+        setPosterSrc('/generic-movie-poster.svg');
       }
     };
 
