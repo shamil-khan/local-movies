@@ -3,23 +3,12 @@ import {
   type MovieDetail,
   type MoviePoster,
   type Category,
-  type MovieCategory,
   movieFileSchema,
 } from '@/models/MovieModel';
 import logger from '@/core/logger';
 import { db } from '@/lib/db';
 
 class MovieDbService {
-  test = async () => {
-    const m1 = {
-      title: 'Downton Abbey The Grand Finale',
-      year: 2025,
-      ext: 'mkv',
-      filename: 'Downton Abbey The Grand Finale 2025.BRRip.Dual.mkv',
-    };
-    await db.movieFileTable.add(m1);
-  };
-
   fileExists = async (filename: string): Promise<[string, boolean]> => {
     const result = await db.movieFileTable
       .where(movieFileSchema.filename)

@@ -20,6 +20,7 @@ import {
   Eye,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { movieDbService } from '@/services/MovieDbService';
 import { tmdbApiService, type MovieTrailer } from '@/services/TmdbApiService';
 import logger from '@/core/logger';
 import { Button } from '@/components/ui/button';
@@ -70,13 +71,16 @@ export const XMovieCard = ({
     let objectUrl: string | null = null;
 
     const loadPoster = async () => {
+      logger.info(`Loading poster for ${movieDetail.Title} from DB`);
       try {
         const poster = await movieDbService.getPoster(movieDetail.imdbID);
         if (poster && poster.blob) {
           objectUrl = URL.createObjectURL(poster.blob);
           setPosterSrc(objectUrl);
+          logger.success(`Loaded poster for ${movieDetail.Title} from DB`);
         } else {
           // If not in DB, fallback to the URL in details (which might be external)
+          logger.warn(`Failed to load poster for ${movieDetail.Title} from DB`);
           setPosterSrc(movieDetail.Poster);
         }
       } catch (e) {
