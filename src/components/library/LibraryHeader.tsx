@@ -36,6 +36,7 @@ interface LibraryHeaderProps {
   availableLanguages: string[];
   availableCountries: string[];
   availableCategories: Array<{ label: string; value: string }>;
+  onReloadCategories: () => void;
 
   // File Processing
   selectedFiles: XFile[];
@@ -76,6 +77,7 @@ export const LibraryHeader = ({
   onRemoveFailedTitle,
   onProcessTitles,
   onClearProcessing,
+  onReloadCategories,
 }: LibraryHeaderProps) => {
   const [showFilters, setShowFilters] = useState(false);
 
@@ -177,6 +179,7 @@ export const LibraryHeader = ({
           availableCountries={availableCountries}
           availableCategories={availableCategories}
           onClearFilters={clearFilters}
+          onReloadCategories={onReloadCategories}
         />
       )}
 
