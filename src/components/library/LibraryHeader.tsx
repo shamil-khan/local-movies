@@ -1,22 +1,12 @@
 import { useState } from 'react';
 import { CompactFolderUpload } from '@/components/CompactFolderUpload';
-import { Button } from '@/components/ui/button';
-import { ListFilter, Trash2, Heart, Eye, AlertOctagon } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogClose,
-} from '@/components/ui/dialog';
 import { type XFile } from '@/components/mine/xfileinput';
 import { type FilterCriteria, type ExtractedTitle } from '@/models/AppModels';
 import { LibrarySearchBar } from './LibrarySearchBar';
 import { LibraryFilterBar } from './LibraryFilterBar';
 import { FileProcessingStatus } from './FileProcessingStatus';
+import { LibraryFilterToggleGroup } from './LibraryFilterToggleGroup';
+import { LibraryDeleteDialog } from './LibraryDeleteDialog';
 
 interface LibraryHeaderProps {
   onMovieAdded: () => void;
@@ -102,80 +92,13 @@ export const LibraryHeader = ({
         </div>
 
         <div className='flex items-center gap-2'>
-          <div className='inline-flex rounded-md border border-input overflow-hidden'>
-            <Button
-              variant='ghost'
-              size='icon'
-              className={`rounded-none border-0 ${
-                filters.isFavorite ? 'bg-red-100 text-red-500' : ''
-              }`}
-              onClick={() =>
-                onFilterChange({ ...filters, isFavorite: !filters.isFavorite })
-              }
-              title='Show Favorites Only'>
-              <Heart
-                className={`h-5 w-5 ${
-                  filters.isFavorite ? 'fill-current' : ''
-                }`}
-              />
-            </Button>
-            <Button
-              variant='ghost'
-              size='icon'
-              className={`rounded-none border-0 ${
-                filters.isWatched ? 'bg-blue-100 text-blue-500' : ''
-              }`}
-              onClick={() =>
-                onFilterChange({ ...filters, isWatched: !filters.isWatched })
-              }
-              title='Show Watched Only'>
-              <Eye
-                className={`h-5 w-5 ${filters.isWatched ? 'fill-current' : ''}`}
-              />
-            </Button>
-            <Button
-              variant='ghost'
-              size='icon'
-              className={`rounded-none border-0 ${
-                showFilters ? 'bg-accent' : ''
-              }`}
-              onClick={() => setShowFilters(!showFilters)}>
-              <ListFilter className='h-5 w-5' />
-            </Button>
-          </div>
-
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button
-                variant='ghost'
-                size='icon'
-                className='text-destructive hover:text-destructive hover:bg-destructive/10'
-                title='Delete Library'>
-                <Trash2 className='h-5 w-5' />
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle className='flex items-center gap-2 text-destructive'>
-                  <AlertOctagon className='h-5 w-5' /> Delete Library?
-                </DialogTitle>
-                <DialogDescription>
-                  This will permanently delete ALL movies, files, and posters
-                  from your local database. This action cannot be undone.
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter className='gap-2 sm:gap-0'>
-                <DialogClose asChild>
-                  <Button variant='ghost'>Cancel</Button>
-                </DialogClose>
-                <DialogClose asChild>
-                  <Button variant='destructive' onClick={onClearLibrary}>
-                    Delete
-                  </Button>
-                </DialogClose>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <LibraryFilterToggleGroup
+            filters={filters}
+            onFilterChange={onFilterChange}
+            showFilters={showFilters}
+            onToggleFilters={() => setShowFilters(!showFilters)}
+          />
+          <LibraryDeleteDialog onClearLibrary={onClearLibrary} />
         </div>
       </div>
 
