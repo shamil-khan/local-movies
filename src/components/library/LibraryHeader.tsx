@@ -83,7 +83,6 @@ export const LibraryHeader = ({
         <div className='flex flex-col gap-2'>
           <CompactFolderUpload
             onUpload={onFolderUpload}
-            onLoad={onMovieAdded}
             loading={folderLoading}
             error={folderError}
             selectedFiles={selectedFiles}

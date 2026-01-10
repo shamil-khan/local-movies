@@ -10,6 +10,16 @@ import { movieApiService } from '@/services/MovieApiService';
 import { logger } from '@/core/logger';
 import { movieDbService } from '@/services/MovieDbService';
 
+type LoaderWorkingSet = {
+  newFiles: MovieFile[];
+  allFiles: MovieFile[];
+  posters: MoviePoster[];
+  details: MovieDetail[];
+  existingDetails: MovieDetail[];
+};
+
+type WorkflowStep = (ctx: LoaderWorkingSet) => Promise<void>;
+
 export const useMovieFolderLoader = (
   files: XFile[],
   onComplete?: (details: MovieDetail[], files: MovieFile[]) => void,
@@ -25,210 +35,211 @@ export const useMovieFolderLoader = (
   }, [onComplete]);
 
   useEffect(() => {
+    let cancelled = false;
+
     logger.info(`Files state updated: ${files.length}`);
-    if (files.length === 0) return;
 
-    const working = {
-      files: toMovieFiles(files.map((f) => f.name)) as MovieFile[],
-      allFiles: [] as MovieFile[],
-      posters: [] as MoviePoster[],
-      details: [] as MovieDetail[],
-      existingDetails: [] as MovieDetail[],
-    };
-    working.allFiles = [...working.files];
+    const parsedFiles = toMovieFiles(files.map((f) => f.name)) as MovieFile[];
+    if (parsedFiles.length === 0) {
+      setMovieDetails([]);
+      setLoading(false);
+      setError(null);
+      return;
+    }
 
-    const checkFiles = async () => {
-      if (working.files.length === 0) {
-        logger.warn('There is no file to be exists in DB');
-        return;
-      }
-
-      logger.info(`Searching for files in DB`, working.files);
-      const promises = working.files.map((file) =>
-        movieDbService.fileExists(file.filename),
-      );
-
-      const result = await Promise.all(promises);
-      const notFound = result.filter((r) => !r[1]).map((r) => r[0]);
-      const found = result.filter((r) => r[1]).map((r) => r[0]);
-
-      // Handle existing files to link categories
-      const existingFiles = working.files.filter((f) =>
-        found.includes(f.filename),
-      );
-
-      for (const file of existingFiles) {
-        const detail = await movieDbService.findByTitle(file.title);
-        if (detail) {
-          working.existingDetails.push(detail);
-        }
-      }
-
-      const workable = working.files.filter((f) =>
-        notFound.find((ff) => ff === f.filename),
-      );
-      working.files = workable;
-      logger.success(`Found all unsaved files in DB`, working.files);
+    const ctx: LoaderWorkingSet = {
+      newFiles: [...parsedFiles],
+      allFiles: [...parsedFiles],
+      posters: [],
+      details: [],
+      existingDetails: [],
     };
 
-    const saveFiles = async () => {
-      if (working.files.length === 0) {
-        logger.warn('There is no file to be save in DB');
-        return;
-      }
-
-      logger.info(`Saving files in DB`, working.files);
-      const promises = working.files.map((file) =>
-        movieDbService.addFile(file),
+    const stepFindNewFiles: WorkflowStep = async (working) => {
+      logger.info(`Searching for files in DB`, working.newFiles);
+      const results = await Promise.all(
+        working.newFiles.map((file) =>
+          movieDbService.fileExists(file.filename),
+        ),
       );
-      await Promise.all(promises);
-      logger.success(`Saved all files in DB`, working.files);
+
+      const foundFilenames = results.filter((r) => r[1]).map((r) => r[0]);
+      const newFilenames = results.filter((r) => !r[1]).map((r) => r[0]);
+
+      const existingFiles = working.newFiles.filter((f) =>
+        foundFilenames.includes(f.filename),
+      );
+
+      const existingDetails = await Promise.all(
+        existingFiles.map((file) => movieDbService.findByTitle(file.title)),
+      );
+
+      working.existingDetails = existingDetails.filter(
+        (d): d is MovieDetail => !!d,
+      );
+
+      working.newFiles = working.newFiles.filter((f) =>
+        newFilenames.includes(f.filename),
+      );
+
+      logger.success(`Found all unsaved files in DB`, working.newFiles);
     };
 
-    const loadDetails = async () => {
-      if (working.files.length === 0) {
-        logger.warn('There is no file to load from API');
-        return;
-      }
-
-      logger.info(`Loading details from API`, working.files);
-      const promises = working.files.map((file) =>
-        movieApiService.getMovieByTitle(file.title),
+    const stepSaveNewFiles: WorkflowStep = async (working) => {
+      if (working.newFiles.length === 0) return;
+      logger.info(`Saving files in DB`, working.newFiles);
+      await Promise.all(
+        working.newFiles.map((file) => movieDbService.addFile(file)),
       );
+      logger.success(`Saved all files in DB`, working.newFiles);
+    };
 
-      const results = await Promise.all(promises);
-      working.details = results.map((response) => response.data);
+    const stepLoadDetails: WorkflowStep = async (working) => {
+      if (working.newFiles.length === 0) return;
+      logger.info(`Loading details from API`, working.newFiles);
+      const responses = await Promise.allSettled(
+        working.newFiles.map((file) =>
+          movieApiService.getMovieByTitle(file.title),
+        ),
+      );
+      const fulfilled = responses.filter(
+        (
+          r,
+        ): r is PromiseFulfilledResult<
+          Awaited<ReturnType<typeof movieApiService.getMovieByTitle>>
+        > => r.status === 'fulfilled',
+      );
+      working.details = fulfilled.map((r) => r.value.data);
+      if (responses.some((r) => r.status === 'rejected')) {
+        logger.warn('Some movie details failed to load');
+      }
       logger.success(`Loaded all details from API`, working.details);
     };
 
-    const saveDetails = async () => {
-      if (working.details.length === 0) {
-        logger.warn('There is no detail to save in DB');
-        return;
-      }
+    const stepSaveDetails: WorkflowStep = async (working) => {
+      if (working.details.length === 0) return;
 
-      logger.info(`Saving details in DB`, working.details);
-      const truly = working.details.filter(
-        (detail) => detail.Response === 'True',
-      );
-
-      if (truly.length === 0) {
-        logger.warn(
-          'There is no detail to save in DB because all details response are false',
-          working.details,
-        );
+      const ok = working.details.filter((detail) => detail.Response === 'True');
+      if (ok.length === 0) {
         working.details = [];
         return;
       }
 
-      working.details = truly;
-      const promises = working.details.map((detail) =>
-        movieDbService.addDetail(detail),
+      working.details = ok;
+      logger.info(`Saving details in DB`, working.details);
+      await Promise.all(
+        working.details.map((detail) => movieDbService.addDetail(detail)),
       );
-
-      await Promise.all(promises);
       logger.success(`Saved all details in DB`, working.details);
     };
 
-    const loadPosters = async () => {
-      if (working.details.length === 0) {
-        logger.warn('There is no detail for which poster to be load from API');
-        return;
-      }
-
-      logger.info(`Loading posters from API`, working.details);
-      const truly = working.details.filter(
+    const stepLoadPosters: WorkflowStep = async (working) => {
+      if (working.details.length === 0) return;
+      const withPoster = working.details.filter(
         (detail) => detail.Response === 'True' && detail.Poster !== 'N/A',
       );
-
-      if (truly.length === 0) {
-        logger.warn(
-          'There is no success detail for which poster be loaded',
-          working.details,
-        );
+      if (withPoster.length === 0) {
         working.posters = [];
         return;
       }
-
-      const promises = truly.map((detail) => movieApiService.getPoster(detail));
-
-      const results = await Promise.all(promises);
-      working.posters = results;
+      logger.info(`Loading posters from API`, withPoster);
+      const responses = await Promise.allSettled(
+        withPoster.map((d) => movieApiService.getPoster(d)),
+      );
+      const fulfilled = responses.filter(
+        (
+          r,
+        ): r is PromiseFulfilledResult<
+          Awaited<ReturnType<typeof movieApiService.getPoster>>
+        > => r.status === 'fulfilled',
+      );
+      working.posters = fulfilled.map((r) => r.value);
+      if (responses.some((r) => r.status === 'rejected')) {
+        logger.warn('Some posters failed to load');
+      }
       logger.success(`Loaded all posters from API`, working.posters);
     };
 
-    const savePosters = async () => {
-      if (working.posters.length === 0) {
-        logger.info('There is no poster to be save in DB.');
-        return;
-      }
-
+    const stepSavePosters: WorkflowStep = async (working) => {
+      if (working.posters.length === 0) return;
       logger.info(`Saving posters in DB`, working.posters);
-      const promises = working.posters.map((poster) =>
-        movieDbService.addPoster(poster),
+      await Promise.all(
+        working.posters.map((poster) => movieDbService.addPoster(poster)),
       );
-      await Promise.all(promises);
       logger.info(`Saved all posters in DB`, working.posters);
     };
 
-    const linkCategories = async () => {
-      if (!categoryIds || categoryIds.length === 0) {
-        logger.info('No categories to link');
-        return;
-      }
+    const stepLinkCategories: WorkflowStep = async (working) => {
+      if (!categoryIds || categoryIds.length === 0) return;
 
-      const allDetails = [...working.details, ...working.existingDetails];
+      const allDetails = [
+        ...working.details,
+        ...working.existingDetails,
+      ].filter((d) => d.Response === 'True');
 
-      if (allDetails.length === 0) {
-        logger.warn('No movie details to link categories');
-        return;
-      }
+      if (allDetails.length === 0) return;
 
       logger.info(`Linking categories to movies`, {
         categoryIds,
         movieCount: allDetails.length,
       });
 
-      const truly = allDetails.filter((detail) => detail.Response === 'True');
-
-      for (const detail of truly) {
+      for (const detail of allDetails) {
+        if (cancelled) return;
         await movieDbService.linkMovieToCategories(detail.imdbID, categoryIds);
       }
 
       logger.success(`Linked categories to all movies`);
     };
 
-    const workflow = [
-      checkFiles,
-      saveFiles,
-      loadDetails,
-      saveDetails,
-      loadPosters,
-      savePosters,
-      linkCategories,
+    const steps: WorkflowStep[] = [
+      stepFindNewFiles,
+      stepSaveNewFiles,
+      stepLoadDetails,
+      stepSaveDetails,
+      stepLoadPosters,
+      stepSavePosters,
+      stepLinkCategories,
     ];
 
-    const processWorkflow = async () => {
+    const run = async () => {
       setLoading(true);
       setError(null);
-      try {
-        for (const task of workflow) {
-          await task();
+      let hadError = false;
+
+      for (const step of steps) {
+        if (cancelled) break;
+        try {
+          await step(ctx);
+        } catch (err) {
+          if (!cancelled) {
+            hadError = true;
+            logger.error('Loader workflow step failed', err);
+          }
         }
-      } catch (err) {
-        setError('Error appear in processing of loading files');
-        logger.error('Loader workflow', err);
-      } finally {
-        const allDetails = [...working.details, ...working.existingDetails];
+      }
+
+      if (!cancelled) {
+        const allDetails = [...ctx.details, ...ctx.existingDetails];
+        const processedFiles = [...ctx.newFiles];
         setMovieDetails(allDetails);
         setLoading(false);
+        if (hadError) {
+          setError('Some files could not be processed');
+        } else {
+          setError(null);
+        }
         if (onCompleteRef.current)
-          onCompleteRef.current(allDetails, working.allFiles);
+          onCompleteRef.current(allDetails, processedFiles);
         logger.success('The movie loading workflow completed');
       }
     };
 
-    processWorkflow();
+    run();
+
+    return () => {
+      cancelled = true;
+    };
   }, [files, categoryIds]);
 
   return { loading, error, movieDetails };
