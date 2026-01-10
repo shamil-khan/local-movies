@@ -28,7 +28,16 @@ export const LibraryFilterBar = ({
   availableCategories,
   onClearFilters,
 }: LibraryFilterBarProps) => {
-  const handleChange = (key: keyof FilterCriteria, value: any) => {
+  type MultiFilterKey =
+    | 'genre'
+    | 'year'
+    | 'rating'
+    | 'rated'
+    | 'language'
+    | 'country'
+    | 'category';
+
+  const handleChange = (key: MultiFilterKey, value: string[]) => {
     onFilterChange({ ...filters, [key]: value });
   };
 

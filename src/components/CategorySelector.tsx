@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,25 +19,23 @@ export const CategorySelector = ({
   className,
 }: CategorySelectorProps) => {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(false);
   const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
-
-  useEffect(() => {
-    loadCategories();
-  }, []);
+  const [initialized, setInitialized] = useState(false);
 
   const loadCategories = async () => {
     try {
-      setLoading(true);
       const allCategories = await movieDbService.allCategories();
       setCategories(allCategories);
     } catch (error) {
       console.error('Failed to load categories:', error);
       toast.error('Failed to load categories');
-    } finally {
-      setLoading(false);
     }
+  };
+  const ensureCategoriesLoaded = () => {
+    if (initialized) return;
+    setInitialized(true);
+    void loadCategories();
   };
 
   const handleCreateCategory = async () => {
@@ -72,7 +70,7 @@ export const CategorySelector = ({
   const selectedValues = selectedCategoryIds.map((id) => id.toString());
 
   return (
-    <div className={className}>
+    <div className={className} onClick={ensureCategoriesLoaded}>
       <div className='flex items-center gap-2'>
         <div className='flex-1'>
           <MultiSelect

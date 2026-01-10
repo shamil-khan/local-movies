@@ -84,7 +84,7 @@ export async function compressImageBuffer(
 
       if (!ctx) throw new Error('Could not get canvas context');
 
-      let { width, height } = img;
+      const { width, height } = img;
 
       canvas.width = width;
       canvas.height = height;
