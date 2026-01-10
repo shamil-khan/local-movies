@@ -8,6 +8,7 @@ import {
   X,
   Download,
   Tag,
+  Info,
 } from 'lucide-react';
 import { CategorySelector } from '@/components/CategorySelector';
 import {
@@ -187,32 +188,31 @@ export const FileProcessingStatus = ({
                 const item = entry.item;
                 const isSuccess = entry.type === 'success';
                 const isFailed = entry.type === 'failed';
+                const isProcessed = isSuccess || isFailed;
 
-                const heading =
-                  entry.type === 'failed'
-                    ? item.filename
-                    : `${item.title}${item.year ? ` (${item.year})` : ''}`;
+                const heading = `${item.title}${
+                  item.year ? ` (${item.year})` : ''
+                }`;
 
-                const detail =
-                  entry.type === 'failed' ? item.title || '' : item.filename;
+                const detail = item.filename;
 
-                const headingClass = isSuccess
-                  ? 'text-sm font-semibold text-green-900'
-                  : isFailed
-                    ? 'text-sm font-semibold text-red-700'
-                    : 'text-sm font-semibold text-foreground';
+                const headingClass = 'text-sm font-semibold text-foreground';
 
-                const detailClass = isSuccess
-                  ? 'text-xs text-green-700/80 truncate'
-                  : isFailed
-                    ? 'text-xs text-red-500/90 truncate'
-                    : 'text-xs text-muted-foreground truncate';
+                const detailClass = 'text-xs text-muted-foreground truncate';
 
                 const iconWrapperClass = isSuccess
-                  ? 'flex-shrink-0 w-7 h-7 rounded bg-green-100 flex items-center justify-center text-green-700'
+                  ? 'flex-shrink-0 w-7 h-7 rounded bg-green-100 flex items-center justify-center text-green-700 overflow-hidden'
                   : isFailed
-                    ? 'flex-shrink-0 w-7 h-7 rounded bg-red-100 flex items-center justify-center text-red-700'
-                    : 'flex-shrink-0 w-7 h-7 rounded bg-muted flex items-center justify-center text-muted-foreground';
+                    ? 'flex-shrink-0 w-7 h-7 rounded bg-red-100 flex items-center justify-center text-red-700 overflow-hidden'
+                    : 'flex-shrink-0 w-7 h-7 rounded bg-muted flex items-center justify-center text-muted-foreground overflow-hidden';
+
+                const posterSrc =
+                  item.rawDetail &&
+                  item.rawDetail.Response === 'True' &&
+                  item.rawDetail.Poster &&
+                  item.rawDetail.Poster !== 'N/A'
+                    ? item.rawDetail.Poster
+                    : undefined;
 
                 const removeHandler =
                   entry.type === 'success'
@@ -227,7 +227,13 @@ export const FileProcessingStatus = ({
                     className='group flex items-center justify-between py-1.5'>
                     <div className='flex items-center gap-3 overflow-hidden'>
                       <div className={iconWrapperClass}>
-                        {isSuccess ? (
+                        {posterSrc ? (
+                          <img
+                            src={posterSrc}
+                            alt={item.title}
+                            className='w-full h-full object-cover rounded'
+                          />
+                        ) : isSuccess ? (
                           <Check className='w-3 h-3' />
                         ) : isFailed ? (
                           <AlertCircle className='w-3 h-3' />
@@ -244,20 +250,49 @@ export const FileProcessingStatus = ({
                         )}
                       </div>
                     </div>
-                    <Button
-                      variant='ghost'
-                      size='icon'
-                      className={`h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity ${
-                        isSuccess
-                          ? 'text-green-700 hover:text-destructive'
-                          : isFailed
-                            ? 'text-red-600 hover:text-destructive'
-                            : 'text-muted-foreground hover:text-destructive'
-                      }`}
-                      onClick={removeHandler}
-                      title='Remove from list'>
-                      <X className='w-4 h-4' />
-                    </Button>
+                    <div className='flex items-center gap-2'>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div
+                              className={`w-4 h-4 rounded-full flex items-center justify-center ${
+                                isSuccess
+                                  ? 'bg-green-600 text-white'
+                                  : isFailed
+                                    ? 'bg-red-600 text-white'
+                                    : 'bg-muted text-muted-foreground'
+                              }`}>
+                              <Info className='w-2.5 h-2.5' />
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <div className='max-w-xs'>
+                              {isSuccess && item.rawDetail ? (
+                                <pre className='whitespace-pre-wrap text-[10px]'>
+                                  {JSON.stringify(item.rawDetail, null, 2)}
+                                </pre>
+                              ) : isFailed ? (
+                                <span className='text-xs'>
+                                  {item.error || 'Failed to load movie details'}
+                                </span>
+                              ) : (
+                                <span className='text-xs'>
+                                  Not processed yet
+                                </span>
+                              )}
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <Button
+                        variant='ghost'
+                        size='icon'
+                        className='h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive'
+                        onClick={removeHandler}
+                        title='Remove from list'>
+                        <X className='w-4 h-4' />
+                      </Button>
+                    </div>
                   </div>
                 );
               })}
