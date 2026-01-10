@@ -1,6 +1,7 @@
 import logger from '@/core/logger';
 import { type MovieDetail, type MoviePoster } from '@/models/MovieModel';
 import { ApiService } from '@/services/ApiService';
+import { compressImageBuffer } from '@/utils/MovieFileHelper';
 
 const baseURL = import.meta.env.VITE_OMDB_API_URL;
 const apiKey = import.meta.env.VITE_OMDB_API_KEY;
@@ -34,6 +35,31 @@ class OmdbApiService {
     await this.apiService.get<MovieDetail>(`?i=${imdbId}&apikey=${apiKey}`);
 
   getPoster = async (movie: {
+    imdbID: string;
+    Title: string;
+    Poster: string;
+  }): Promise<MoviePoster> => {
+    const response = await this.apiService.get(movie.Poster, {
+      responseType: 'arraybuffer',
+    });
+
+    const blob = await compressImageBuffer(
+      response.data as ArrayBuffer,
+      response.headers['content-type'],
+    );
+
+    const poster = {
+      imdbID: movie.imdbID,
+      title: movie.Title,
+      url: movie.Poster,
+      mime: 'image/jpeg',
+      blob: blob,
+    };
+
+    return poster;
+  };
+
+  getPosterOriginal = async (movie: {
     imdbID: string;
     Title: string;
     Poster: string;
