@@ -63,6 +63,36 @@ export const XMovieCard = ({
   const [trailer, setTrailer] = useState<MovieTrailer | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [posterSrc, setPosterSrc] = useState<string>(movieDetail.Poster);
+
+  // Load poster from DB
+  useEffect(() => {
+    let objectUrl: string | null = null;
+
+    const loadPoster = async () => {
+      try {
+        const poster = await movieDbService.getPoster(movieDetail.imdbID);
+        if (poster && poster.blob) {
+          objectUrl = URL.createObjectURL(poster.blob);
+          setPosterSrc(objectUrl);
+        } else {
+          // If not in DB, fallback to the URL in details (which might be external)
+          setPosterSrc(movieDetail.Poster);
+        }
+      } catch (e) {
+        logger.error(`Failed to load poster for ${movieDetail.Title}`, e);
+        setPosterSrc(movieDetail.Poster);
+      }
+    };
+
+    loadPoster();
+
+    return () => {
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [movieDetail.imdbID, movieDetail.Poster]);
 
   // Fetch trailer when dialog opens
   useEffect(() => {
@@ -149,7 +179,7 @@ export const XMovieCard = ({
             className='relative mx-auto w-32 h-48 mb-1 cursor-pointer group/image'
             onClick={() => setOpen(true)}>
             <img
-              src={movieDetail.Poster}
+              src={posterSrc}
               alt={movieDetail.Title}
               className='w-full h-full object-cover rounded-md transition-opacity group-hover/image:opacity-75'
             />
