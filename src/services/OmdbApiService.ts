@@ -2,14 +2,14 @@ import logger from '@/core/logger';
 import { type MovieDetail, type MoviePoster } from '@/models/MovieModel';
 import { ApiService } from '@/services/ApiService';
 
-const baseURL = import.meta.env.VITE_MOVIE_API_URL;
-const apiKey = import.meta.env.VITE_MOVIE_API_KEY;
+const baseURL = import.meta.env.VITE_OMDB_API_URL;
+const apiKey = import.meta.env.VITE_OMDB_API_KEY;
 
 logger.info(`MovieApiService: baseURL: ${baseURL}`);
 logger.info(
   `MovieApiService: apiKey: ${apiKey ? '***configured***' : 'NOT SET'}`,
 );
-class MovieApiService {
+class OmdbApiService {
   private apiService: ApiService;
 
   constructor() {
@@ -59,4 +59,4 @@ class MovieApiService {
   };
 }
 
-export const movieApiService = new MovieApiService();
+export const omdbApiService = new OmdbApiService();

@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { tmdbApiService } from '@/services/TmdbApiService';
 import { logger } from '@/core/logger';
 import { toast } from 'sonner';
-import { movieApiService } from '@/services/MovieApiService';
+import { omdbApiService } from '@/services/OmdbApiService';
 import { movieDbService } from '@/services/MovieDbService';
 
 interface LibrarySearchBarProps {
@@ -56,10 +56,10 @@ export const LibrarySearchBar = ({
         return;
       }
 
-      const movieFromApi = await movieApiService.getMovieByImdbId(imdbId);
+      const movieFromApi = await omdbApiService.getMovieByImdbId(imdbId);
 
       if (movieFromApi.data && movieFromApi.data.Response === 'True') {
-        const poster = await movieApiService.getPoster(movieFromApi.data);
+        const poster = await omdbApiService.getPoster(movieFromApi.data);
         await movieDbService.addMovie(movieFromApi.data, poster);
         toast.success('Movie added to library');
         onMovieAdded();

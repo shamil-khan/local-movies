@@ -6,7 +6,7 @@ import {
   type MoviePoster,
 } from '@/models/MovieModel';
 import { toMovieFiles } from '@/utils/MovieFileHelper';
-import { movieApiService } from '@/services/MovieApiService';
+import { omdbApiService } from '@/services/OmdbApiService';
 import { logger } from '@/core/logger';
 import { movieDbService } from '@/services/MovieDbService';
 
@@ -99,14 +99,14 @@ export const useMovieFolderLoader = (
       logger.info(`Loading details from API`, working.newFiles);
       const responses = await Promise.allSettled(
         working.newFiles.map((file) =>
-          movieApiService.getMovieByTitle(file.title),
+          omdbApiService.getMovieByTitle(file.title),
         ),
       );
       const fulfilled = responses.filter(
         (
           r,
         ): r is PromiseFulfilledResult<
-          Awaited<ReturnType<typeof movieApiService.getMovieByTitle>>
+          Awaited<ReturnType<typeof omdbApiService.getMovieByTitle>>
         > => r.status === 'fulfilled',
       );
       working.details = fulfilled.map((r) => r.value.data);
@@ -144,13 +144,13 @@ export const useMovieFolderLoader = (
       }
       logger.info(`Loading posters from API`, withPoster);
       const responses = await Promise.allSettled(
-        withPoster.map((d) => movieApiService.getPoster(d)),
+        withPoster.map((d) => omdbApiService.getPoster(d)),
       );
       const fulfilled = responses.filter(
         (
           r,
         ): r is PromiseFulfilledResult<
-          Awaited<ReturnType<typeof movieApiService.getPoster>>
+          Awaited<ReturnType<typeof omdbApiService.getPoster>>
         > => r.status === 'fulfilled',
       );
       working.posters = fulfilled.map((r) => r.value);
