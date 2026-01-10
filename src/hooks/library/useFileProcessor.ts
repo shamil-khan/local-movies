@@ -57,6 +57,7 @@ export const useFileProcessor = ({
               filename: pf.filename,
               originalFile: { name: pf.filename, path: '', size: 0 },
               inDb: !!matchDetail,
+              year: Number.isNaN(pf.year) ? undefined : pf.year,
             };
 
         if (matchDetail) {
@@ -110,6 +111,7 @@ export const useFileProcessor = ({
           filename: mf.filename,
           originalFile: originalFile,
           inDb: !!existingMovie,
+          year: Number.isNaN(mf.year) ? undefined : mf.year,
         });
       }
       setExtractedTitles(newExtractedTitles);

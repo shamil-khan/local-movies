@@ -47,6 +47,7 @@ interface LibraryHeaderProps {
   onRemoveSuccessTitle: (title: ExtractedTitle) => void;
   onRemoveFailedTitle: (title: ExtractedTitle) => void;
   onProcessTitles: (categoryIds?: number[]) => void;
+  onClearProcessing: () => void;
 }
 
 export const LibraryHeader = ({
@@ -74,6 +75,7 @@ export const LibraryHeader = ({
   onRemoveSuccessTitle,
   onRemoveFailedTitle,
   onProcessTitles,
+  onClearProcessing,
 }: LibraryHeaderProps) => {
   const [showFilters, setShowFilters] = useState(false);
 
@@ -189,6 +191,7 @@ export const LibraryHeader = ({
         onRemoveSuccessTitle={onRemoveSuccessTitle}
         onRemoveFailedTitle={onRemoveFailedTitle}
         onProcessTitles={onProcessTitles}
+        onClearAll={onClearProcessing}
       />
     </div>
   );

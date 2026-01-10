@@ -50,6 +50,7 @@ function App() {
     handleRemoveTitle,
     handleRemoveSuccessTitle,
     handleRemoveFailedTitle,
+    resetState,
   } = useFileProcessor({ movies, onMoviesUpdated: loadMovies });
 
   // Initial load
@@ -90,6 +91,7 @@ function App() {
           onRemoveSuccessTitle={handleRemoveSuccessTitle}
           onRemoveFailedTitle={handleRemoveFailedTitle}
           onProcessTitles={handleProcessTitles}
+          onClearProcessing={resetState}
         />
       </div>
 

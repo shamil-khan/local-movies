@@ -20,4 +20,5 @@ export interface ExtractedTitle {
     size: number;
   };
   inDb: boolean;
+  year?: number;
 }
