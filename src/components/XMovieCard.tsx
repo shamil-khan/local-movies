@@ -259,7 +259,7 @@ export const XMovieCard = ({
 
           {/* Bottom Action Bar - Overlay */}
           <div
-            className='absolute bottom-0 left-0 right-0 flex justify-center gap-2 py-2 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-t from-background via-background/95 to-transparent'
+            className='absolute bottom-0 left-0 right-0 flex justify-center gap-2 py-2 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-t from-blue-900/80 via-blue-900/60 to-transparent'
             onClick={(e) => e.stopPropagation()}>
             <TooltipProvider>
               <Tooltip delayDuration={300}>
@@ -267,21 +267,19 @@ export const XMovieCard = ({
                   <Button
                     variant='ghost'
                     size='icon'
-                    className='h-8 w-8 hover:bg-muted rounded-full'
+                    className='h-8 w-8 rounded-full bg-white/15 hover:bg-white/30 text-white'
                     onClick={(e) => {
                       e.stopPropagation();
                       onToggleFavorite?.(movieDetail.imdbID);
                     }}>
                     <Heart
-                      className={`w-4 h-4 ${userStatus?.isFavorite ? 'fill-red-500 text-red-500' : 'text-muted-foreground'}`}
+                      className={`w-4 h-4 ${userStatus?.isFavorite ? 'fill-red-500 text-red-500' : 'text-white'}`}
                     />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>
+                <TooltipContent className='text-xs font-medium'>
                   <p>
-                    {userStatus?.isFavorite
-                      ? 'Remove from Favorites'
-                      : 'Add to Favorites'}
+                    {userStatus?.isFavorite ? 'Favorited' : 'Add to Favorites'}
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -291,22 +289,18 @@ export const XMovieCard = ({
                   <Button
                     variant='ghost'
                     size='icon'
-                    className='h-8 w-8 hover:bg-muted rounded-full'
+                    className='h-8 w-8 rounded-full bg-white/15 hover:bg-white/30 text-white'
                     onClick={(e) => {
                       e.stopPropagation();
                       onToggleWatched?.(movieDetail.imdbID);
                     }}>
                     <Eye
-                      className={`w-4 h-4 ${userStatus?.isWatched ? 'fill-blue-500 text-blue-500' : 'text-muted-foreground'}`}
+                      className={`w-4 h-4 ${userStatus?.isWatched ? 'fill-blue-400 text-blue-400' : 'text-white'}`}
                     />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>
-                  <p>
-                    {userStatus?.isWatched
-                      ? 'Mark as Unwatched'
-                      : 'Mark as Watched'}
-                  </p>
+                <TooltipContent className='text-xs font-medium'>
+                  <p>{userStatus?.isWatched ? 'Watched' : 'Mark as Watched'}</p>
                 </TooltipContent>
               </Tooltip>
 
@@ -315,7 +309,7 @@ export const XMovieCard = ({
                   <Button
                     variant='ghost'
                     size='icon'
-                    className='h-8 w-8 hover:bg-destructive hover:text-white text-muted-foreground rounded-full'
+                    className='h-8 w-8 rounded-full bg-red-500/80 hover:bg-red-500 text-white'
                     onClick={(e) => {
                       e.stopPropagation();
                       if (
@@ -329,8 +323,8 @@ export const XMovieCard = ({
                     <Trash2 className='w-4 h-4' />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>
-                  <p>Delete Movie</p>
+                <TooltipContent className='text-xs font-medium'>
+                  <p>Delete from Library</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>

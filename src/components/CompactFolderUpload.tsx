@@ -3,6 +3,7 @@ import { Upload, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { clogger } from '@/core/ChalkLogger';
 import { type XFile } from '@/components/mine/xfileinput';
+import logger from '@/core/logger';
 
 interface CompactFolderUploadProps {
   onUpload: (files: XFile[]) => void;
@@ -43,6 +44,8 @@ export const CompactFolderUpload = ({
         size: file.size,
       });
     }
+
+    logger.info(`Uploaded ${fileList.length} files `, fileList);
 
     onUpload(files);
   };
