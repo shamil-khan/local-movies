@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "chrome", // "pwa-chrome", // Use "chrome" or "msedge" depending on your browser
+      "request": "launch",
+      "name": "Launch Chrome against localhost",
+      "url": "http://localhost:6601", // Match your Vite port
+      "webRoot": "${workspaceFolder}/src", // Adjust to where your source code is
+      "sourceMaps": true
+    }
+  ]
+}

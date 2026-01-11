@@ -1,0 +1,14 @@
+{
+  "editor.formatOnSave": true, // Optional: Enables general formatting on save
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit" // Tells VS Code to fix all auto-fixable ESLint issues on save
+  },
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact",
+    "vue" // Add other frameworks/languages used in Vite if needed
+  ],
+  "eslint.workingDirectories": [{ "mode": "auto" }] // Helps ESLint find the correct config in monorepos or complex setups
+}
