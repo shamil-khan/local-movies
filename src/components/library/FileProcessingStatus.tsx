@@ -57,21 +57,25 @@ export const FileProcessingStatus = ({
   }
 
   const entries: FileProcessingEntry[] = hasParsedTitles
-    ? extractedTitles.map((item) => ({ type: 'parsed', item }))
+    ? extractedTitles.map((item) => ({ type: 'parsed' as const, item }))
     : hasResults
       ? [
           ...successTitles.map((item) => ({
-            type: 'success',
+            type: 'success' as const,
             item,
           })),
           ...failedTitles.map((item) => ({
-            type: 'failed',
+            type: 'failed' as const,
             item,
           })),
         ]
-      : selectedFiles.map((file) => ({ type: 'uploaded', file }));
+      : selectedFiles.map((file) => ({ type: 'uploaded' as const, file }));
 
   const totalItems = entries.length;
+
+  const handleProcessClick = () => {
+    onProcessTitles(selectedCategoryIds);
+  };
 
   return (
     <div className='flex flex-col items-start gap-2 w-full'>
@@ -79,7 +83,7 @@ export const FileProcessingStatus = ({
         variant='link'
         className='p-0 h-auto text-sm text-muted-foreground hover:text-primary'
         onClick={() => setShowDetails((prev) => !prev)}>
-        {showDetails ? 'Hide' : 'Show'} file/movie details ({totalItems})
+        {showDetails ? 'Cover Details' : 'Uncover Details'} ({totalItems})
       </Button>
 
       {showDetails && (
@@ -88,6 +92,8 @@ export const FileProcessingStatus = ({
             totalItems={totalItems}
             onClearAll={onClearAll}
             onClose={() => setShowDetails(false)}
+            onProcessTitles={handleProcessClick}
+            processDisabled={loading || extractedTitles.length === 0}
           />
 
           <div className='max-h-80 overflow-y-auto'>
@@ -95,8 +101,6 @@ export const FileProcessingStatus = ({
               <FileProcessingCategoryBar
                 selectedCategoryIds={selectedCategoryIds}
                 onSelectedCategoryIdsChange={setSelectedCategoryIds}
-                onProcessTitles={onProcessTitles}
-                disabled={loading || extractedTitles.length === 0}
               />
             )}
 
