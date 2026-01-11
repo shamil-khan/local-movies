@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,15 +36,12 @@ export const CategorySelector = ({
       toast.error('Failed to load categories');
     }
   };
+
   const ensureCategoriesLoaded = () => {
     if (initialized) return;
     setInitialized(true);
     void loadCategories();
   };
-
-  useEffect(() => {
-    ensureCategoriesLoaded();
-  }, []);
 
   const handleDeleteSelectedCategories = async () => {
     if (selectedCategoryIds.length === 0) {
