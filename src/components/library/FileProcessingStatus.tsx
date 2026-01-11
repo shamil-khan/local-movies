@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { type XFile } from '@/components/mine/xfileinput';
 import { type ExtractedTitle } from '@/models/AppModels';
 import { FileProcessingHeader } from '@/components/library/FileProcessingHeader';
 import { FileProcessingCategoryBar } from '@/components/library/FileProcessingCategoryBar';
+import { useFileProcessingStore } from '@/store/useFileProcessingStore';
 import {
   FileProcessingEntriesList,
   type FileProcessingEntry,
@@ -36,13 +37,44 @@ export const FileProcessingStatus = ({
   onProcessTitles,
   onClearAll,
 }: FileProcessingStatusProps) => {
-  const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
-  const [showDetails, setShowDetails] = useState(
-    selectedFiles.length > 0 ||
-      extractedTitles.length > 0 ||
-      successTitles.length > 0 ||
-      failedTitles.length > 0,
+  const selectedCategoryIds = useFileProcessingStore(
+    (s) => s.selectedCategoryIds,
   );
+  const setSelectedCategoryIds = useFileProcessingStore(
+    (s) => s.setSelectedCategoryIds,
+  );
+  const showDetails = useFileProcessingStore((s) => s.showDetails);
+  const setShowDetails = useFileProcessingStore((s) => s.setShowDetails);
+  const toggleShowDetails = useFileProcessingStore((s) => s.toggleShowDetails);
+
+  const prevTotalRef = useRef(0);
+
+  useEffect(() => {
+    const totalCount =
+      selectedFiles.length +
+      extractedTitles.length +
+      successTitles.length +
+      failedTitles.length;
+
+    // Auto-open when items appear (0 -> n), but don't override a user's manual close.
+    if (prevTotalRef.current === 0 && totalCount > 0 && !showDetails) {
+      setShowDetails(true);
+    }
+
+    // Auto-close when all items are gone.
+    if (totalCount === 0 && showDetails) {
+      setShowDetails(false);
+    }
+
+    prevTotalRef.current = totalCount;
+  }, [
+    selectedFiles.length,
+    extractedTitles.length,
+    successTitles.length,
+    failedTitles.length,
+    showDetails,
+    setShowDetails,
+  ]);
 
   const hasParsedTitles = extractedTitles.length > 0;
   const hasResults = successTitles.length > 0 || failedTitles.length > 0;
@@ -82,7 +114,7 @@ export const FileProcessingStatus = ({
       <Button
         variant='link'
         className='p-0 h-auto text-sm text-muted-foreground hover:text-primary'
-        onClick={() => setShowDetails((prev) => !prev)}>
+        onClick={() => toggleShowDetails()}>
         {showDetails ? 'Cover Details' : 'Uncover Details'} ({totalItems})
       </Button>
 

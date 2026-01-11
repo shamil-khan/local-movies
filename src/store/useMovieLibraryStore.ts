@@ -6,7 +6,7 @@ import {
 } from '@/models/MovieModel';
 import { movieDbService } from '@/services/MovieDbService';
 import { toast } from 'sonner';
-
+import logger from '@/core/logger';
 interface MovieLibraryState {
   movies: MovieDetail[];
   userStatuses: Record<string, MovieUserStatus>;
@@ -77,8 +77,7 @@ export const useMovieLibraryStore = create<MovieLibraryState>((set, get) => ({
       toast.success('Movie deleted successfully');
     } catch (err) {
       toast.error('Failed to delete movie');
-      // eslint-disable-next-line no-console
-      console.error('Failed to delete movie:', err);
+      logger.error('Failed to delete movie:', err);
     }
   },
 
@@ -108,8 +107,7 @@ export const useMovieLibraryStore = create<MovieLibraryState>((set, get) => ({
         newFavoriteStatus ? 'Added to favorites' : 'Removed from favorites',
       );
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to toggle favorite:', err);
+      logger.error('Failed to toggle favorite:', err);
       toast.error('Failed to update favorite status');
     }
   },
@@ -140,8 +138,7 @@ export const useMovieLibraryStore = create<MovieLibraryState>((set, get) => ({
         newWatchedStatus ? 'Marked as watched' : 'Marked as unwatched',
       );
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to toggle watched status:', err);
+      logger.error('Failed to toggle watched status:', err);
       toast.error('Failed to update watched status');
     }
   },
@@ -159,8 +156,7 @@ export const useMovieLibraryStore = create<MovieLibraryState>((set, get) => ({
       toast.success('Library deleted successfully');
       return true;
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to clear library:', err);
+      logger.error('Failed to clear library:', err);
       toast.error('Failed to clear library');
       return false;
     }
@@ -179,8 +175,7 @@ export const useMovieLibraryStore = create<MovieLibraryState>((set, get) => ({
       }));
       toast.success('Categories updated');
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to update movie categories:', err);
+      logger.error('Failed to update movie categories:', err);
       toast.error('Failed to update categories');
     }
   },
