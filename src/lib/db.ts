@@ -31,28 +31,13 @@ const movieDetailKeys = [
   'Title',
   'Year',
   'Rated',
-  'Released',
   'Runtime',
   'Genre',
-  'Director',
-  'Writer',
-  'Actors',
-  'Plot',
   'Language',
   'Country',
-  'Awards',
-  'Poster',
-  'Ratings',
   'Metascore',
   'imdbRating',
-  'imdbVotes',
-  'Type',
-  'DVD',
-  'BoxOffice',
-  'Production',
-  'Website',
   'Response',
-  'Error',
 ];
 
 const movieFileSchema = movieFileKeys.join(', ');
@@ -78,16 +63,11 @@ export class LocalMovieAppDB extends Dexie {
       movieFileTable: `++id, ${movieFileSchema}`,
       moviePosterTable: `++id, ${moviePosterSchema}`,
       movieDetailTable: `++id, ${movieDetailSchema}`,
-    });
-
-    this.version(0.2).stores({
       movieUserStatusTable: `++id, imdbID`,
-    });
-
-    this.version(0.3).stores({
       categoryTable: `++id, name`,
       movieCategoryTable: `++id, imdbID, categoryId`,
     });
+
     logger.success('LocalMovieAppDB created successfully');
   }
 }
