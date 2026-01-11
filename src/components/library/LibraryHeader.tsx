@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { CompactFolderUpload } from '@/components/CompactFolderUpload';
 import { type XFile } from '@/components/mine/xfileinput';
 import { type FilterCriteria, type ExtractedTitle } from '@/models/AppModels';
-import { LibrarySearchBar } from './LibrarySearchBar';
-import { LibraryFilterBar } from './LibraryFilterBar';
-import { FileProcessingStatus } from './FileProcessingStatus';
-import { LibraryFilterToggleGroup } from './LibraryFilterToggleGroup';
-import { LibraryDeleteDialog } from './LibraryDeleteDialog';
+import { LibrarySearchBar } from '@/components/library/LibrarySearchBar';
+import { LibraryFilterBar } from '@/components/library/LibraryFilterBar';
+import { FileProcessingStatus } from '@/components/library/FileProcessingStatus';
+import { LibraryFilterToggleGroup } from '@/components/library/LibraryFilterToggleGroup';
+import { LibraryDeleteDialog } from '@/components/library/LibraryDeleteDialog';
 
 interface LibraryHeaderProps {
   onMovieAdded: () => void;
