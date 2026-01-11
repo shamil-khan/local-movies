@@ -1,6 +1,6 @@
 import { X, Film, CheckCircle, Download, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { type ExtractedTitle } from '@/App';
+import { type ExtractedTitle } from '@/models/AppModels';
 import {
   Tooltip,
   TooltipContent,

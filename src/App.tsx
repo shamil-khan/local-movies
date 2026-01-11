@@ -118,7 +118,6 @@ function App() {
         onDelete={handleDeleteMovie}
         onToggleFavorite={handleToggleFavorite}
         onToggleWatched={handleToggleWatched}
-        categories={categories}
         movieCategoryMap={movieCategoryMap}
         onUpdateCategories={handleUpdateMovieCategories}
       />
