@@ -40,7 +40,8 @@ export const FileProcessingHeader = ({
           size='icon'
           className='h-7 w-7'
           onClick={onClearAll}
-          disabled={totalItems === 0}>
+          disabled={totalItems === 0}
+          title='Remove all titles'>
           <Trash2 className='w-4 h-4' />
         </Button>
         <Button
