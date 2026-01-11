@@ -41,9 +41,7 @@ export const LibraryFilterToggleGroup = ({
           onFilterChange({ ...filters, isWatched: !filters.isWatched })
         }
         title='Show Watched Only'>
-        <Eye
-          className={`h-5 w-5 ${filters.isWatched ? 'fill-current' : ''}`}
-        />
+        <Eye className={`h-5 w-5 ${filters.isWatched ? 'fill-current' : ''}`} />
       </Button>
       <Button
         variant='ghost'
@@ -56,4 +54,3 @@ export const LibraryFilterToggleGroup = ({
     </div>
   );
 };
-
