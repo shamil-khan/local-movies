@@ -90,7 +90,8 @@ class ApiService {
   // Add other methods (put, delete, etc.) as needed
 }
 
-const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:6601/api';
+const baseURL = import.meta.env.VITE_API_URL;
+logger.info(`App hosted at ${baseURL}`);
 
 const apiService = new ApiService({
   baseURL: baseURL,
