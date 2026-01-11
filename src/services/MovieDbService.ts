@@ -137,6 +137,27 @@ class MovieDbService {
     });
   };
 
+  updateCategory = async (
+    categoryId: number,
+    name: string,
+  ): Promise<boolean> => {
+    try {
+      const existing = await db.categoryTable
+        .where('id')
+        .equals(categoryId)
+        .first();
+      if (!existing) return false;
+      await db.categoryTable.update(categoryId, {
+        name: name.trim(),
+        updatedAt: new Date(),
+      });
+      return true;
+    } catch (err) {
+      logger.error('Failed to update category:', err);
+      return false;
+    }
+  };
+
   allCategories = async (): Promise<Category[]> => {
     return await db.categoryTable.toArray();
   };

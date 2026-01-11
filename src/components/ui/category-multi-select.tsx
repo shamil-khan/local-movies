@@ -1,28 +1,27 @@
 import * as React from 'react';
 import { Check, ChevronDown, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import type { Option } from './multi-select';
 
-export interface Option {
-  label: string;
-  value: string;
-}
-
-interface MultiSelectProps {
+interface CategoryMultiSelectProps {
   options: Option[];
   selected: string[];
   onChange: (selected: string[]) => void;
+  onRemoveOption?: (value: string) => Promise<void> | void;
   placeholder?: string;
   className?: string;
 }
 
-export function MultiSelect({
+export function CategoryMultiSelect({
   options,
   selected,
   onChange,
+  onRemoveOption,
   placeholder = 'Select options',
   className,
-}: MultiSelectProps) {
+}: CategoryMultiSelectProps) {
   const [open, setOpen] = React.useState(false);
+  const [removing, setRemoving] = React.useState<string | null>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -41,15 +40,32 @@ export function MultiSelect({
 
   const handleSelect = (value: string) => {
     if (selected.includes(value)) {
-      onChange(selected.filter((item) => item !== value));
+      handleRemoveWithCallback(value);
     } else {
       onChange([...selected, value]);
     }
   };
 
+  const handleRemoveWithCallback = async (value: string) => {
+    if (!onRemoveOption) {
+      onChange(selected.filter((item) => item !== value));
+      return;
+    }
+
+    setRemoving(value);
+    try {
+      await onRemoveOption(value);
+      onChange(selected.filter((item) => item !== value));
+    } catch (err) {
+      console.error('Error removing option:', err);
+    } finally {
+      setRemoving(null);
+    }
+  };
+
   const handleRemove = (value: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    onChange(selected.filter((item) => item !== value));
+    handleRemoveWithCallback(value);
   };
 
   return (
@@ -72,7 +88,10 @@ export function MultiSelect({
                 return (
                   <div
                     key={value}
-                    className='flex items-center gap-1 rounded bg-secondary px-1.5 py-0.5 text-xs font-medium text-secondary-foreground'>
+                    className={cn(
+                      'flex items-center gap-1 rounded bg-secondary px-1.5 py-0.5 text-xs font-medium text-secondary-foreground',
+                      removing === value ? 'opacity-50' : '',
+                    )}>
                     {option?.label || value}
                     <div
                       className='cursor-pointer rounded-full p-0.5 hover:bg-secondary-foreground/20'

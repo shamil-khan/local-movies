@@ -1,4 +1,5 @@
 import { MultiSelect } from '@/components/ui/multi-select';
+import { CategoryMultiSelect } from '@/components/ui/category-multi-select';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import { type FilterCriteria } from '@/models/AppModels';
@@ -126,12 +127,12 @@ export const LibraryFilterBar = ({
       </div>
       {availableCategories.length > 0 && (
         <div className='min-w-[140px]'>
-          <MultiSelect
+          <CategoryMultiSelect
             options={availableCategories}
             selected={filters.category || []}
             onChange={(val) => handleChange('category', val)}
-            placeholder='Category'
             onRemoveOption={handleDeleteSingleCategory}
+            placeholder='Category'
           />
         </div>
       )}
