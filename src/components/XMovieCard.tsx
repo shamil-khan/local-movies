@@ -1,8 +1,4 @@
-import {
-  type MovieDetail,
-  type MovieUserStatus,
-  type Category,
-} from '@/models/MovieModel';
+import { type MovieDetail, type MovieUserStatus } from '@/models/MovieModel';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Dialog,
@@ -57,7 +53,6 @@ interface XMovieCardProps {
   onDelete?: (imdbID: string) => void;
   onToggleFavorite?: (imdbID: string) => void;
   onToggleWatched?: (imdbID: string) => void;
-  categories?: Category[];
   movieCategoryIds?: number[];
   onUpdateCategories?: (imdbID: string, categoryIds: number[]) => void;
 }
@@ -68,7 +63,6 @@ export const XMovieCard = ({
   onDelete,
   onToggleFavorite,
   onToggleWatched,
-  categories,
   movieCategoryIds,
   onUpdateCategories,
 }: XMovieCardProps) => {
