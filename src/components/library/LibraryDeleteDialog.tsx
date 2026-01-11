@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Trash2, AlertOctagon } from 'lucide-react';
 import {
@@ -10,14 +11,27 @@ import {
   DialogTrigger,
   DialogClose,
 } from '@/components/ui/dialog';
+import { movieDbService } from '@/services/MovieDbService';
+import { type Category } from '@/models/MovieModel';
 
 interface LibraryDeleteDialogProps {
-  onClearLibrary: () => void;
+  onClearLibrary: (deleteCategories: boolean) => void | Promise<void>;
 }
 
 export const LibraryDeleteDialog = ({
   onClearLibrary,
 }: LibraryDeleteDialogProps) => {
+  const [deleteCategories, setDeleteCategories] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      const allCategories = await movieDbService.allCategories();
+      setCategories(allCategories);
+    };
+    void loadCategories();
+  }, []);
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -39,12 +53,48 @@ export const LibraryDeleteDialog = ({
             your local database. This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
+        {categories.length > 0 && (
+          <div className='mt-4 rounded-md border border-destructive/30 bg-destructive/5 p-3 max-h-40 overflow-y-auto'>
+            <p className='mb-2 text-xs font-medium text-destructive'>
+              Categories in your library
+            </p>
+            <ul className='space-y-1 text-xs'>
+              {categories.map((category) => (
+                <li
+                  key={category.id}
+                  className='flex items-center justify-between'>
+                  <span>{category.name}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        <div className='mt-4 flex items-center justify-between rounded-md border p-3'>
+          <div className='space-y-1'>
+            <p className='text-sm font-medium'>Also delete categories</p>
+            <p className='text-xs text-muted-foreground'>
+              If enabled, all categories will be removed. Otherwise categories
+              are kept.
+            </p>
+          </div>
+          <Button
+            type='button'
+            variant={deleteCategories ? 'destructive' : 'outline'}
+            size='sm'
+            onClick={() => setDeleteCategories((prev) => !prev)}>
+            {deleteCategories ? 'Will delete' : 'Keep categories'}
+          </Button>
+        </div>
         <DialogFooter className='gap-2 sm:gap-0'>
           <DialogClose asChild>
             <Button variant='ghost'>Cancel</Button>
           </DialogClose>
           <DialogClose asChild>
-            <Button variant='destructive' onClick={onClearLibrary}>
+            <Button
+              variant='destructive'
+              onClick={() => {
+                void onClearLibrary(deleteCategories);
+              }}>
               Delete
             </Button>
           </DialogClose>

@@ -133,12 +133,14 @@ export const useMovieLibrary = () => {
     });
   }, []);
 
-  const handleClearLibrary = useCallback(async () => {
+  const handleClearLibrary = useCallback(async (deleteCategories: boolean) => {
     try {
-      await movieDbService.clearDatabase();
+      await movieDbService.clearDatabase(deleteCategories);
       setMovies([]);
       setUserStatuses({});
       setMovieCategoryMap({});
+      const allCategories = await movieDbService.allCategories();
+      setCategories(allCategories);
       toast.success('Library deleted successfully');
       return true;
     } catch (err) {

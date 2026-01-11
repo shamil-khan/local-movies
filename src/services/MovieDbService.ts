@@ -106,7 +106,7 @@ class MovieDbService {
     return await db.movieUserStatusTable.toArray();
   };
 
-  clearDatabase = async () => {
+  clearDatabase = async (deleteCategories = false) => {
     await db.movieFileTable.clear();
     await db.movieDetailTable.clear();
     await db.moviePosterTable.clear();
@@ -115,6 +115,9 @@ class MovieDbService {
     // Let's clear everything for a true reset.
     await db.movieUserStatusTable.clear();
     await db.movieCategoryTable.clear();
+    if (deleteCategories) {
+      await db.categoryTable.clear();
+    }
     // Note: Categories are kept even when clearing movies
   };
 

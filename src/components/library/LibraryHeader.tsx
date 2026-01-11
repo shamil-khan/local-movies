@@ -13,7 +13,7 @@ interface LibraryHeaderProps {
   onFolderUpload: (files: XFile[]) => void;
   folderLoading: boolean;
   folderError: string | null;
-  onClearLibrary: () => void;
+  onClearLibrary: (deleteCategories: boolean) => void | Promise<void>;
 
   // Filters
   filters: FilterCriteria;

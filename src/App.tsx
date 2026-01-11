@@ -62,9 +62,9 @@ function App() {
     }
   };
 
-  const handleClearLibraryWithReset = async () => {
+  const handleClearLibraryWithReset = async (deleteCategories: boolean) => {
     resetState();
-    await handleClearLibrary();
+    await handleClearLibrary(deleteCategories);
   };
 
   // Initial load
