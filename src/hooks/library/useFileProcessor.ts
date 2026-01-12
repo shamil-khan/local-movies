@@ -42,13 +42,7 @@ export const useFileProcessor = ({
           (et) => et.filename === pf.filename,
         );
 
-        const matchDetail = details.find(
-          (d) =>
-            d.Response === 'True' &&
-            (d.Title.toLowerCase() === pf.title.toLowerCase() ||
-              (originalTitle &&
-                d.Title.toLowerCase() === originalTitle.title.toLowerCase())),
-        );
+        const matchDetail = details.find((d) => d.Response === 'True');
 
         const meta = metaByFilename[pf.filename];
 

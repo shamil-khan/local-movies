@@ -79,7 +79,7 @@ function App() {
 
   return (
     <>
-      <div className='p-6 w-full'>
+      <div className='p-1 w-full'>
         <LibraryHeader
           onMovieAdded={loadMovies}
           onFolderUpload={handleFolderUpload}
