@@ -1,10 +1,10 @@
 import { Button } from '@/components/ui/button';
 import { Heart, Eye, ListFilter } from 'lucide-react';
-import { type FilterCriteria } from '@/models/AppModels';
+import { type MovieFilterCriteria } from '@/models/MovieModel';
 
 interface LibraryFilterToggleGroupProps {
-  filters: FilterCriteria;
-  onFilterChange: (filters: FilterCriteria) => void;
+  filters: MovieFilterCriteria;
+  onFilterChange: (filters: MovieFilterCriteria) => void;
   showFilters: boolean;
   onToggleFilters: () => void;
 }

@@ -2,13 +2,13 @@ import { MultiSelect } from '@/components/ui/multi-select';
 import { CategoryMultiSelect } from '@/components/ui/category-multi-select';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
-import { type FilterCriteria } from '@/models/AppModels';
+import { type MovieFilterCriteria } from '@/models/MovieModel';
 import { movieDbService } from '@/services/MovieDbService';
 import { toast } from 'sonner';
 
 interface LibraryFilterBarProps {
-  filters: FilterCriteria;
-  onFilterChange: (filters: FilterCriteria) => void;
+  filters: MovieFilterCriteria;
+  onFilterChange: (filters: MovieFilterCriteria) => void;
   availableGenres: string[];
   availableYears: string[];
   availableRated: string[];

@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { type MovieDetail, type MovieUserStatus } from '@/models/MovieModel';
-import { type FilterCriteria } from '@/models/AppModels';
+import { type MovieFilterCriteria } from '@/models/MovieModel';
 
 interface UseMovieFiltersProps {
   movies: MovieDetail[];
@@ -13,7 +13,7 @@ export const useMovieFilters = ({
   userStatuses,
   movieCategoryMap,
 }: UseMovieFiltersProps) => {
-  const [filterCriteria, setFilterCriteria] = useState<FilterCriteria>({
+  const [filterCriteria, setFilterCriteria] = useState<MovieFilterCriteria>({
     query: '',
     genre: [],
     year: [],

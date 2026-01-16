@@ -71,8 +71,8 @@ export const XMovieCard = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [posterSrc, setPosterSrc] = useState<string>(
-    movieDetail.Poster && movieDetail.Poster !== 'N/A'
-      ? movieDetail.Poster
+    movieDetail.poster && movieDetail.poster !== 'N/A'
+      ? movieDetail.poster
       : '/generic-movie-poster.svg',
   );
 
@@ -90,20 +90,20 @@ export const XMovieCard = ({
     let objectUrl: string | null = null;
 
     const loadPoster = async () => {
-      logger.info(`Loading poster for ${movieDetail.Title} from DB`);
+      logger.info(`Loading poster for ${movieDetail.title} from DB`);
       try {
         const poster = await movieDbService.getPoster(movieDetail.imdbID);
         if (poster && poster.blob) {
           objectUrl = URL.createObjectURL(poster.blob);
           setPosterSrc(objectUrl);
-          logger.success(`Loaded poster for ${movieDetail.Title} from DB`);
+          logger.success(`Loaded poster for ${movieDetail.title} from DB`);
         } else {
           // If not in DB, use a generic movie poster image
-          logger.warn(`Failed to load poster for ${movieDetail.Title} from DB`);
+          logger.warn(`Failed to load poster for ${movieDetail.title} from DB`);
           setPosterSrc('/generic-movie-poster.svg');
         }
       } catch (e) {
-        logger.error(`Failed to load poster for ${movieDetail.Title}`, e);
+        logger.error(`Failed to load poster for ${movieDetail.title}`, e);
         setPosterSrc('/generic-movie-poster.svg');
       }
     };
@@ -115,7 +115,7 @@ export const XMovieCard = ({
         URL.revokeObjectURL(objectUrl);
       }
     };
-  }, [movieDetail.imdbID, movieDetail.Poster, movieDetail.Title]);
+  }, [movieDetail.imdbID, movieDetail.poster, movieDetail.title]);
 
   // Fetch trailer when dialog opens
   useEffect(() => {
@@ -138,7 +138,7 @@ export const XMovieCard = ({
           logger.success(`Trailer found: ${trailerData.name}`);
         } else {
           setError('No trailer available for this movie');
-          logger.warn(`No trailer found for: ${movieDetail.Title}`);
+          logger.warn(`No trailer found for: ${movieDetail.title}`);
         }
       } catch (err) {
         setError('Failed to load trailer');
@@ -149,7 +149,7 @@ export const XMovieCard = ({
     };
 
     void loadTrailer();
-  }, [open, trailer, loading, movieDetail.imdbID, movieDetail.Title]);
+  }, [open, trailer, loading, movieDetail.imdbID, movieDetail.title]);
 
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);
@@ -171,12 +171,12 @@ export const XMovieCard = ({
     <Card className='w-full overflow-visible group'>
       <CardContent className='py-0 px-2 h-full'>
         <div className='text-center relative h-full flex flex-col'>
-          <h3 className='text-sm font-bold mb-1'>{movieDetail.Title}</h3>
-          <p className='text-xs font-semibold mb-1'>{movieDetail.Year}</p>
+          <h3 className='text-sm font-bold mb-1'>{movieDetail.title}</h3>
+          <p className='text-xs font-semibold mb-1'>{movieDetail.year}</p>
           <div className='text-center mb-1'>
             <div className='flex items-center justify-center mb-1'>
               <span className='text-xs font-bold italic'>
-                {movieDetail.Rated}
+                {movieDetail.rated}
               </span>
               <div className='flex items-center justify-center space-x-2 ml-4'>
                 <span className='flex items-center'>
@@ -188,7 +188,7 @@ export const XMovieCard = ({
                 <span className='flex items-center'>
                   <Award className='w-3 h-3' />
                   <span className='text-xs font-semibold ml-0'>
-                    {movieDetail.Metascore}
+                    {movieDetail.metascore}
                   </span>
                 </span>
               </div>
@@ -197,22 +197,22 @@ export const XMovieCard = ({
               {toCompact(movieDetail.imdbVotes)}
             </p>
           </div>
-          <p className='text-xs font-medium mb-1'>{movieDetail.Genre}</p>
+          <p className='text-xs font-medium mb-1'>{movieDetail.genre}</p>
           <p className='text-xs font-normal mb-1'>
-            {movieDetail.Language}{' '}
+            {movieDetail.language}{' '}
             <span className='font-bold ml-1'>
-              {formatRuntime(movieDetail.Runtime)}
+              {formatRuntime(movieDetail.runtime)}
             </span>
           </p>
-          <p className='text-xs font-light mb-1'>{movieDetail.Country}</p>
-          <p className='text-xs font-bold mb-1'>{movieDetail.Awards}</p>
+          <p className='text-xs font-light mb-1'>{movieDetail.country}</p>
+          <p className='text-xs font-bold mb-1'>{movieDetail.awards}</p>
 
           <div
             className='relative mx-auto w-32 h-48 mb-1 cursor-pointer group/image'
             onClick={() => setOpen(true)}>
             <img
               src={posterSrc}
-              alt={movieDetail.Title}
+              alt={movieDetail.title}
               className='w-full h-full object-cover rounded-md transition-opacity group-hover/image:opacity-75'
             />
             <div className='absolute inset-0 flex items-center justify-center opacity-0 group-hover/image:opacity-100 transition-opacity'>
@@ -227,7 +227,7 @@ export const XMovieCard = ({
             <DialogContent className='sm:max-w-[700px]'>
               <DialogHeader>
                 <DialogTitle>
-                  {movieDetail.Title} ({movieDetail.Year})
+                  {movieDetail.title} ({movieDetail.year})
                 </DialogTitle>
                 <DialogDescription>
                   {trailer
@@ -290,7 +290,7 @@ export const XMovieCard = ({
               <DialogHeader>
                 <DialogTitle>Categories</DialogTitle>
                 <DialogDescription>
-                  Manage categories for {movieDetail.Title}
+                  Manage categories for {movieDetail.title}
                 </DialogDescription>
               </DialogHeader>
               <div className='mt-2'>
@@ -314,7 +314,7 @@ export const XMovieCard = ({
             </DialogContent>
           </Dialog>
 
-          <p className='text-xs font-normal'>{movieDetail.Plot}</p>
+          <p className='text-xs font-normal'>{movieDetail.plot}</p>
 
           {/* Bottom Action Bar - Overlay */}
           <div
@@ -391,7 +391,7 @@ export const XMovieCard = ({
                       e.stopPropagation();
                       if (
                         confirm(
-                          `Are you sure you want to delete "${movieDetail.Title}"?`,
+                          `Are you sure you want to delete "${movieDetail.title}"?`,
                         )
                       ) {
                         onDelete?.(movieDetail.imdbID);

@@ -2,18 +2,18 @@ import { Button } from '@/components/ui/button';
 import { Download, Film, Trash2, X } from 'lucide-react';
 
 interface FileProcessingHeaderProps {
-  totalItems: number;
+  moviesCount: number;
   onClearAll: () => void;
   onClose: () => void;
-  onProcessTitles: () => void;
+  onProcessMovies: () => void;
   processDisabled: boolean;
 }
 
 export const FileProcessingHeader = ({
-  totalItems,
+  moviesCount,
   onClearAll,
   onClose,
-  onProcessTitles,
+  onProcessMovies,
   processDisabled,
 }: FileProcessingHeaderProps) => {
   return (
@@ -22,7 +22,7 @@ export const FileProcessingHeader = ({
         <Film className='w-4 h-4 text-primary' />
         <span>File &amp; Movie Details</span>
         <span className='bg-primary/10 text-primary px-1.5 py-0.5 rounded text-xs'>
-          {totalItems}
+          {moviesCount}
         </span>
       </div>
       <div className='flex items-center gap-2'>
@@ -30,9 +30,9 @@ export const FileProcessingHeader = ({
           variant='ghost'
           size='icon'
           className='h-7 w-7'
-          onClick={onProcessTitles}
+          onClick={onProcessMovies}
           disabled={processDisabled}
-          title='Download movie info with poster'>
+          title='Download movies details with their poster'>
           <Download className='w-4 h-4' />
         </Button>
         <Button
@@ -40,7 +40,7 @@ export const FileProcessingHeader = ({
           size='icon'
           className='h-7 w-7'
           onClick={onClearAll}
-          disabled={totalItems === 0}
+          disabled={moviesCount === 0}
           title='Remove all titles'>
           <Trash2 className='w-4 h-4' />
         </Button>

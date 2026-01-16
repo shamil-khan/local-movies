@@ -2,31 +2,28 @@ import { useRef, useState, type ChangeEvent } from 'react';
 import { Upload, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { clogger } from '@/core/ChalkLogger';
-import { type XFile } from '@/components/mine/xfileinput';
 import logger from '@/core/logger';
 
 interface CompactFolderUploadProps {
-  onUpload: (files: XFile[]) => void;
-  selectedFiles?: XFile[];
-  loading?: boolean;
-  error?: string | null;
+  onUploaded: (files: string[]) => void;
+  uploadedFileNames?: string[];
 }
 
 export const CompactFolderUpload = ({
-  onUpload,
-  loading = false,
-  error = null,
+  onUploaded,
 }: CompactFolderUploadProps) => {
   const folderInputRef = useRef<HTMLInputElement>(null);
   const filesInputRef = useRef<HTMLInputElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleUploadFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setLoading(true);
     const fileList = event.target.files;
 
     if (!fileList || fileList.length === 0) {
       clogger.info(`No file(s) selected`, 'CompactFolderUpload');
-      onUpload([]);
+      onUploaded([]);
       return;
     }
 
@@ -34,20 +31,17 @@ export const CompactFolderUpload = ({
       `Selected ${fileList?.length ?? 0} file(s)`,
       'CompactFolderUpload',
     );
-    const files: XFile[] = [];
+    const fileNames: string[] = [];
 
     for (let i = 0; i < fileList.length; i++) {
       const file = fileList[i];
-      files.push({
-        name: file.name,
-        path: file.webkitRelativePath,
-        size: file.size,
-      });
+      fileNames.push(file.name);
     }
 
-    logger.info(`Uploaded ${fileList.length} files `, fileList);
+    logger.info(`Uploaded ${fileNames.length} files `, fileNames);
 
-    onUpload(files);
+    setLoading(false);
+    onUploaded(fileNames);
   };
 
   return (
@@ -105,8 +99,6 @@ export const CompactFolderUpload = ({
           </div>
         )}
       </div>
-      {loading && <span className='text-sm'>Loading...</span>}
-      {error && <span className='text-sm text-red-500'>Error</span>}
     </div>
   );
 };

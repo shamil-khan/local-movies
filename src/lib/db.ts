@@ -7,6 +7,12 @@ import {
   type MovieUserStatus,
   type Category,
   type MovieCategory,
+  movieFileSchema,
+  movieDetailSchema,
+  moviePosterSchema,
+  movieUserStatusSchema,
+  categorySchema,
+  movieCategorySchema,
 } from '@/models/MovieModel';
 
 import logger from '@/core/logger';
@@ -15,57 +21,61 @@ interface MovieFileWithId extends MovieFile {
   id?: number;
 }
 
-interface MoviePosterWithId extends MoviePoster {
-  id?: number;
-}
-
 interface MovieDetailWithId extends MovieDetail {
   id?: number;
 }
 
-// todo: Find a way to generate it automatically like reflection in C#
-const movieFileKeys = ['imdbID', 'title', 'year', 'filename'];
-const moviePosterKeys = ['imdbID', 'title', 'url'];
-const movieDetailKeys = [
-  'imdbID',
-  'Title',
-  'Year',
-  'Rated',
-  'Runtime',
-  'Genre',
-  'Language',
-  'Country',
-  'Metascore',
-  'imdbRating',
-  'Response',
-];
+interface MoviePosterWithId extends MoviePoster {
+  id?: number;
+}
 
-const movieFileSchema = movieFileKeys.join(', ');
-const moviePosterSchema = moviePosterKeys.join(', ');
-const movieDetailSchema = movieDetailKeys.join(', ');
+interface MovieUserStatusWithId extends MovieUserStatus {
+  id?: number;
+}
 
-logger.info(`MovieFile Schema: ${movieFileSchema}`);
-logger.info(`MoviePoster Schema: ${moviePosterSchema}`);
-logger.info(`MovieDetail Schema: ${movieDetailSchema}`);
+interface CategoryWithId extends Category {
+  id?: number;
+}
+
+interface MovieCategoryWithId extends MovieCategory {
+  id?: number;
+}
+
+// Automated schema generation using imported schemas
+const movieFileSchemaStr = Object.values(movieFileSchema).join(', ');
+const moviePosterSchemaStr = Object.values(moviePosterSchema).join(', ');
+const movieDetailSchemaStr = Object.values(movieDetailSchema).join(', ');
+const movieUserStatusSchemaStr = Object.values(movieUserStatusSchema).join(
+  ', ',
+);
+const categorySchemaStr = Object.values(categorySchema).join(', ');
+const movieCategorySchemaStr = Object.values(movieCategorySchema).join(', ');
+
+logger.info(`MovieFile Schema: ${movieFileSchemaStr}`);
+logger.info(`MoviePoster Schema: ${moviePosterSchemaStr}`);
+logger.info(`MovieDetail Schema: ${movieDetailSchemaStr}`);
+logger.info(`MovieUserStatus Schema: ${movieUserStatusSchemaStr}`);
+logger.info(`Category Schema: ${categorySchemaStr}`);
+logger.info(`MovieCategory Schema: ${movieCategorySchemaStr}`);
 
 export class LocalMovieAppDB extends Dexie {
   movieFileTable!: EntityTable<MovieFileWithId, 'id'>;
   moviePosterTable!: EntityTable<MoviePosterWithId, 'id'>;
   movieDetailTable!: EntityTable<MovieDetailWithId, 'id'>;
-  movieUserStatusTable!: EntityTable<MovieUserStatus, 'id'>;
-  categoryTable!: EntityTable<Category, 'id'>;
-  movieCategoryTable!: EntityTable<MovieCategory, 'id'>;
+  movieUserStatusTable!: EntityTable<MovieUserStatusWithId, 'id'>;
+  categoryTable!: EntityTable<CategoryWithId, 'id'>;
+  movieCategoryTable!: EntityTable<MovieCategoryWithId, 'id'>;
 
   constructor() {
     super('LocalMovieAppDB');
 
     this.version(0.1).stores({
-      movieFileTable: `++id, ${movieFileSchema}`,
-      moviePosterTable: `++id, ${moviePosterSchema}`,
-      movieDetailTable: `++id, ${movieDetailSchema}`,
-      movieUserStatusTable: `++id, imdbID`,
-      categoryTable: `++id, name`,
-      movieCategoryTable: `++id, imdbID, categoryId`,
+      movieFileTable: `++id, ${movieFileSchemaStr}`,
+      moviePosterTable: `++id, ${moviePosterSchemaStr}`,
+      movieDetailTable: `++id, ${movieDetailSchemaStr}`,
+      movieUserStatusTable: `++id, ${movieUserStatusSchemaStr}`,
+      categoryTable: `++id, ${categorySchemaStr}`,
+      movieCategoryTable: `++id, ${movieCategorySchemaStr}`,
     });
 
     logger.success('LocalMovieAppDB created successfully');

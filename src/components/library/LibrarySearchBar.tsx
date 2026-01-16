@@ -5,6 +5,8 @@ import { logger } from '@/core/logger';
 import { toast } from 'sonner';
 import { omdbApiService } from '@/services/OmdbApiService';
 import { movieDbService } from '@/services/MovieDbService';
+import { utilityApiService } from '@/services/UtilityApiService';
+import type { MoviePoster } from '@/models/MovieModel';
 
 interface LibrarySearchBarProps {
   onMovieAdded: () => void;
@@ -58,9 +60,19 @@ export const LibrarySearchBar = ({
 
       const movieFromApi = await omdbApiService.getMovieByImdbId(imdbId);
 
-      if (movieFromApi.data && movieFromApi.data.Response === 'True') {
-        const poster = await omdbApiService.getPoster(movieFromApi.data);
-        await movieDbService.addMovie(movieFromApi.data, poster);
+      if (
+        movieFromApi &&
+        movieFromApi.Response === 'True' &&
+        movieFromApi.Poster !== 'N/A'
+      ) {
+        const poster = await utilityApiService.getPosterImage(
+          movieFromApi.Poster,
+        );
+        await movieDbService.addMovie(movieFromApi, {
+          imdbID: movieFromApi.imdbID,
+          title: movieFromApi.Title,
+          blob: poster,
+        } as MoviePoster);
         toast.success('Movie added to library');
         onMovieAdded();
       } else {

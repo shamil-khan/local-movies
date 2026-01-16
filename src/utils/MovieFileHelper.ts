@@ -1,4 +1,5 @@
-import { type MovieFile } from '@/models/MovieModel';
+import { type MovieFile, type MovieDetail } from '@/models/MovieModel';
+import { type OmdbMovieResult } from '@/services/OmdbApiService';
 import { MovieAttributes, MovieExtensions } from '@/utils/MovieAttributes';
 import { logger } from '@/core/logger';
 
@@ -24,14 +25,19 @@ function removeWordsFromString(
   return result;
 }
 
-export const toMovieFile = (filename: string): MovieFile | undefined => {
-  const extMatch = filename.match(/\.(\w+)$/);
+export const toMovieFile = (fileName: string): MovieFile | undefined => {
+  const extMatch = fileName.match(/\.(\w+)$/);
   if (!extMatch) {
-    logger.warn(`No extension found for filename: ${filename}`);
+    logger.warn(`No extension found for filename: ${fileName}`);
     return undefined;
   }
 
-  const title = removeWordsFromString(filename, MovieAttributes)
+  if (MovieExtensions.includes(extMatch[1].toLowerCase())) {
+    logger.warn(`The given ${fileName} is not a valid movie extension.`);
+    return undefined;
+  }
+
+  const title = removeWordsFromString(fileName, MovieAttributes)
     .replace(/[._-]/g, ' ')
     .replace(/[[\]()]/g, ' ')
     .trim();
@@ -42,10 +48,9 @@ export const toMovieFile = (filename: string): MovieFile | undefined => {
   //   `Parsing extension for filename: ${filename}, found => ${movieName}==${extMatch?.[1]}==${yearMatch?.[1]}`,
   // );
   return {
+    fileName: fileName,
     title: yearMatch ? title.replace(/(\d{4})$/, '').trim() : title,
     year: yearMatch ? parseInt(yearMatch[1]) : NaN,
-    ext: extMatch[1],
-    filename: filename,
   };
 };
 
@@ -55,9 +60,6 @@ export const toMovieFiles = (filenames: string[]): MovieFile[] => {
   const movieFiles = filenames
     .map((filename) => toMovieFile(filename))
     .filter((movieFile) => movieFile !== undefined)
-    .filter((movieFile) =>
-      MovieExtensions.includes(movieFile.ext.toLowerCase()),
-    )
     .toSorted((a, b) =>
       a.title.localeCompare(b.title, undefined, { sensitivity: 'base' }),
     );
@@ -117,3 +119,23 @@ export async function compressImageBuffer(
     };
   });
 }
+
+export const toMovieDetail = (omdbResult: OmdbMovieResult): MovieDetail => {
+  return {
+    imdbID: omdbResult.imdbID,
+    title: omdbResult.Title,
+    year: omdbResult.Year,
+    rated: omdbResult.Rated,
+    runtime: omdbResult.Runtime,
+    genre: omdbResult.Genre,
+    plot: omdbResult.Plot,
+    language: omdbResult.Language,
+    country: omdbResult.Country,
+    awards: omdbResult.Awards,
+    poster: omdbResult.Poster,
+    metascore: omdbResult.Metascore,
+    imdbRating: omdbResult.imdbRating,
+    imdbVotes: omdbResult.imdbVotes,
+    type: omdbResult.Type,
+  };
+};

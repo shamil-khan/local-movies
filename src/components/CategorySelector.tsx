@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { movieDbService } from '@/services/MovieDbService';
 import { type Category } from '@/models/MovieModel';
 import { toast } from 'sonner';
-import { useFileProcessingStore } from '@/store/useFileProcessingStore';
+import { useFileProcessingPanelStore } from '@/store/useFileProcessingPanelStore';
 import { cn } from '@/lib/utils';
 
 interface CategorySelectorProps {
@@ -35,11 +35,11 @@ export const CategorySelector = ({
   const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [initialized, setInitialized] = useState(false);
-  const storeSelectedCategoryIds = useFileProcessingStore(
-    (s) => s.selectedCategoryIds,
+  const storeSelectedCategoryIds = useFileProcessingPanelStore(
+    (s) => s.categoryIds,
   );
-  const setStoreSelectedCategoryIds = useFileProcessingStore(
-    (s) => s.setSelectedCategoryIds,
+  const setStoreSelectedCategoryIds = useFileProcessingPanelStore(
+    (s) => s.setCategoryIds,
   );
 
   const loadCategories = async () => {

@@ -1,23 +1,19 @@
 import { useState } from 'react';
 import { CompactFolderUpload } from '@/components/CompactFolderUpload';
-import { type XFile } from '@/components/mine/xfileinput';
-import { type FilterCriteria, type ExtractedTitle } from '@/models/AppModels';
-import { LibrarySearchBar } from '@/components/library/LibrarySearchBar';
+import { type MovieFilterCriteria } from '@/models/MovieModel';
+// import { LibrarySearchBar } from '@/components/library/LibrarySearchBar';
 import { LibraryFilterBar } from '@/components/library/LibraryFilterBar';
-import { FileProcessingStatus } from '@/components/library/FileProcessingStatus';
+import { FileProcessingPanel } from '@/components/library/FileProcessingPanel';
 import { LibraryFilterToggleGroup } from '@/components/library/LibraryFilterToggleGroup';
 import { LibraryDeleteDialog } from '@/components/library/LibraryDeleteDialog';
 
 interface LibraryHeaderProps {
   onMovieAdded: () => void;
-  onFolderUpload: (files: XFile[]) => void;
-  folderLoading: boolean;
-  folderError: string | null;
   onClearLibrary: (deleteCategories: boolean) => void | Promise<void>;
 
   // Filters
-  filters: FilterCriteria;
-  onFilterChange: (filters: FilterCriteria) => void;
+  filters: MovieFilterCriteria;
+  onFilterChange: (filters: MovieFilterCriteria) => void;
   clearFilters: () => void;
   availableGenres: string[];
   availableYears: string[];
@@ -27,25 +23,10 @@ interface LibraryHeaderProps {
   availableCountries: string[];
   availableCategories: Array<{ label: string; value: string }>;
   onReloadCategories: () => void;
-
-  // File Processing
-  selectedFiles: XFile[];
-  extractedTitles: ExtractedTitle[];
-  successTitles: ExtractedTitle[];
-  failedTitles: ExtractedTitle[];
-  onRemoveFile: (file: XFile) => void;
-  onRemoveTitle: (title: ExtractedTitle) => void;
-  onRemoveSuccessTitle: (title: ExtractedTitle) => void;
-  onRemoveFailedTitle: (title: ExtractedTitle) => void;
-  onProcessTitles: (categoryIds?: number[]) => void;
-  onClearProcessing: () => void;
 }
 
 export const LibraryHeader = ({
   onMovieAdded,
-  onFolderUpload,
-  folderLoading,
-  folderError,
   onClearLibrary,
   filters,
   onFilterChange,
@@ -57,37 +38,26 @@ export const LibraryHeader = ({
   availableLanguages,
   availableCountries,
   availableCategories,
-  selectedFiles,
-  extractedTitles,
-  successTitles,
-  failedTitles,
-  onRemoveFile,
-  onRemoveTitle,
-  onRemoveSuccessTitle,
-  onRemoveFailedTitle,
-  onProcessTitles,
-  onClearProcessing,
   onReloadCategories,
 }: LibraryHeaderProps) => {
   const [showFilters, setShowFilters] = useState(false);
+  const [uploadedFileNames, setUploadedFileNames] = useState<string[]>([]);
 
   return (
     <div className='p-4 space-y-4'>
       <div className='flex w-full items-center relative z-20'>
         <div className='flex items-center flex-1'>
           <CompactFolderUpload
-            onUpload={onFolderUpload}
-            loading={folderLoading}
-            error={folderError}
-            selectedFiles={selectedFiles}
+            onUploaded={(fileNames) => setUploadedFileNames(fileNames)}
+            uploadedFileNames={uploadedFileNames}
           />
 
           <div className='flex-1'>
-            <LibrarySearchBar
+            {/* <LibrarySearchBar
               onMovieAdded={onMovieAdded}
               onQueryChange={(query) => onFilterChange({ ...filters, query })}
               query={filters.query}
-            />
+            /> */}
           </div>
         </div>
 
@@ -118,19 +88,7 @@ export const LibraryHeader = ({
         />
       )}
 
-      <FileProcessingStatus
-        selectedFiles={selectedFiles}
-        extractedTitles={extractedTitles}
-        successTitles={successTitles}
-        failedTitles={failedTitles}
-        loading={folderLoading}
-        onRemoveFile={onRemoveFile}
-        onRemoveTitle={onRemoveTitle}
-        onRemoveSuccessTitle={onRemoveSuccessTitle}
-        onRemoveFailedTitle={onRemoveFailedTitle}
-        onProcessTitles={onProcessTitles}
-        onClearAll={onClearProcessing}
-      />
+      <FileProcessingPanel fileNames={uploadedFileNames} />
     </div>
   );
 };

@@ -1,15 +1,63 @@
 import logger from '@/core/logger';
-import { type MovieDetail, type MoviePoster } from '@/models/MovieModel';
 import { ApiService } from '@/services/ApiService';
-import { compressImageBuffer } from '@/utils/MovieFileHelper';
 
 const baseURL = import.meta.env.VITE_OMDB_API_URL;
 const apiKey = import.meta.env.VITE_OMDB_API_KEY;
 
-logger.info(`MovieApiService: baseURL: ${baseURL}`);
+logger.info(`OmdbApiService: baseURL: ${baseURL}`);
 logger.info(
-  `MovieApiService: apiKey: ${apiKey ? '***configured***' : 'NOT SET'}`,
+  `OmdbApiService: apiKey: ${apiKey ? '***configured***' : 'NOT SET'}`,
 );
+
+// Response interfaces
+export interface OmdbSearchMovie {
+  Title: string;
+  Year: string;
+  imdbID: string;
+  Type: string;
+  Poster: string;
+}
+
+export interface OmdbSearchResponse {
+  Search?: OmdbSearchMovie[];
+  totalResults?: string;
+  Response: 'True' | 'False';
+  Error?: string;
+}
+
+export interface OmdbMovieResult {
+  imdbID: string;
+  Title: string;
+  Year: string;
+  Rated: string;
+  Released: string;
+  Runtime: string;
+  Genre: string;
+  Director: string;
+  Writer: string;
+  Actors: string;
+  Plot: string;
+  Language: string;
+  Country: string;
+  Awards: string;
+  Poster: string;
+  Ratings: [
+    { Source: string; Value: string },
+    { Source: string; Value: string },
+    { Source: string; Value: string },
+  ];
+  Metascore: string;
+  imdbRating: string;
+  imdbVotes: string;
+  Type: string;
+  DVD: string;
+  BoxOffice: string;
+  Production: string;
+  Website: string;
+  Response: 'True' | 'False';
+  Error?: string;
+}
+
 class OmdbApiService {
   private apiService: ApiService;
 
@@ -23,65 +71,94 @@ class OmdbApiService {
     });
   }
 
-  getMovieByTitle = async (title: string) =>
-    await this.apiService.get<MovieDetail>(`?t='${title}'&apikey=${apiKey}`);
+  /**
+   * Search for movies by title (returns multiple results)
+   */
+  searchMovies = async (
+    query: string,
+    year?: number,
+  ): Promise<OmdbSearchMovie[]> => {
+    try {
+      const params: Record<string, string | number> = {
+        apikey: apiKey,
+        s: query,
+      };
+      if (year) params.y = year;
 
-  getMovieByTitleAndYear = async (title: string, year: number) =>
-    await this.apiService.get<MovieDetail>(
-      `?t=${title}&year=${year}&apikey=${apiKey}`,
-    );
+      const response = await this.apiService.get<OmdbSearchResponse>('', {
+        params,
+      });
 
-  getMovieByImdbId = async (imdbId: string) =>
-    await this.apiService.get<MovieDetail>(`?i=${imdbId}&apikey=${apiKey}`);
+      if (response.data.Response === 'False') {
+        logger.warn(
+          `No movies found for query '${query}': ${response.data.Error}`,
+        );
+        return [];
+      }
 
-  getPoster = async (movie: {
-    imdbID: string;
-    Title: string;
-    Poster: string;
-  }): Promise<MoviePoster> => {
-    const response = await this.apiService.get(movie.Poster, {
-      responseType: 'arraybuffer',
-    });
-
-    const blob = await compressImageBuffer(
-      response.data as ArrayBuffer,
-      response.headers['content-type'],
-    );
-
-    const poster = {
-      imdbID: movie.imdbID,
-      title: movie.Title,
-      url: movie.Poster,
-      mime: 'image/jpeg',
-      blob: blob,
-    };
-
-    return poster;
+      return response.data.Search || [];
+    } catch (error) {
+      logger.error(`Error searching for movies '${query}':`, error);
+      throw error;
+    }
   };
 
-  getPosterOriginal = async (movie: {
-    imdbID: string;
-    Title: string;
-    Poster: string;
-  }): Promise<MoviePoster> => {
-    const response = await this.apiService.get(movie.Poster, {
-      responseType: 'blob',
-    });
+  /**
+   * Get movie details by title
+   */
+  getMovieByTitle = async (
+    title: string,
+    year?: number,
+  ): Promise<OmdbMovieResult> => {
+    try {
+      const params: Record<string, string | number> = {
+        apikey: apiKey,
+        t: title,
+      };
+      if (year) params.y = year;
 
-    // Extract the MIME type from the response headers
-    const mimeType = response.headers['content-type'];
-    if (!mimeType || !mimeType.startsWith('image/')) {
-      throw new Error('Did not receive an image MIME type');
+      const response = await this.apiService.get<OmdbMovieResult>('', {
+        params,
+      });
+
+      if (response.data.Response === 'False') {
+        logger.warn(
+          `Movie not found for title '${title}': ${response.data.Error}`,
+        );
+        throw new Error(response.data.Error || 'Movie not found');
+      }
+
+      return response.data;
+    } catch (error) {
+      logger.error(`Error getting movie by title '${title}':`, error);
+      throw error;
     }
-    const poster = {
-      imdbID: movie.imdbID,
-      title: movie.Title,
-      url: movie.Poster,
-      mime: mimeType as string,
-      blob: response.data as Blob,
-    };
+  };
 
-    return poster;
+  /**
+   * Get movie details by IMDb ID
+   */
+  getMovieByImdbId = async (imdbId: string): Promise<OmdbMovieResult> => {
+    try {
+      const response = await this.apiService.get<OmdbMovieResult>('', {
+        params: {
+          apikey: apiKey,
+          i: imdbId,
+        },
+      });
+
+      if (response.data.Response === 'False') {
+        logger.warn(
+          `Movie not found for IMDb ID '${imdbId}': ${response.data.Error}`,
+        );
+        throw new Error(response.data.Error || 'Movie not found');
+      }
+
+      return response.data;
+    } catch (error) {
+      logger.error(`Error getting movie by IMDb ID '${imdbId}':`, error);
+      throw error;
+    }
   };
 }
 

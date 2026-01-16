@@ -9,13 +9,15 @@ import logger from '@/core/logger';
 import { db } from '@/lib/db';
 
 class MovieDbService {
-  fileExists = async (filename: string): Promise<[string, boolean]> => {
+  fileExists = async (fileName: string): Promise<boolean> => {
     const result = await db.movieFileTable
-      .where(movieFileSchema.filename)
-      .equals(filename)
+      .where(movieFileSchema.fileName)
+      .equals(fileName)
       .first();
-    logger.info(`movie exits ${filename}`, !!result);
-    return [filename, !!result];
+    logger.info(
+      `Movie file name ${fileName} ${result ? 'already' : 'does not'} exits `,
+    );
+    return !!result;
   };
 
   addFile = async (movieFile: MovieFile): Promise<number | undefined> => {
@@ -69,6 +71,22 @@ class MovieDbService {
         db.movieCategoryTable.where('imdbID').equals(imdbID).delete();
       },
     );
+  };
+
+  updateMovieFileImdbID = async (
+    fileName: string,
+    imdbID: string,
+  ): Promise<void> => {
+    const existing = await db.movieUserStatusTable
+      .where(movieFileSchema.fileName)
+      .equals(fileName)
+      .first();
+
+    if (existing && (!existing.imdbID || existing.imdbID !== imdbID)) {
+      await db.movieUserStatusTable.update(existing.id!, {
+        imdbID: imdbID,
+      });
+    }
   };
 
   updateUserStatus = async (
@@ -181,7 +199,7 @@ class MovieDbService {
   ): Promise<void> => {
     await db.transaction('rw', db.movieCategoryTable, async () => {
       // Remove existing links for this movie
-      await db.movieCategoryTable.where('imdbID').equals(imdbID).delete();
+      // await db.movieCategoryTable.where('imdbID').equals(imdbID).delete();
       // Add new links
       for (const categoryId of categoryIds) {
         await db.movieCategoryTable.add({ imdbID, categoryId });
