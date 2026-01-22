@@ -1,30 +1,12 @@
 import { MultiSelect } from '@/components/ui/multi-select';
-import { CategoryMultiSelect } from '@/components/ui/category-multi-select';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
-import { type MovieFilterCriteria } from '@/models/MovieModel';
-import { movieDbService } from '@/services/MovieDbService';
-import { toast } from 'sonner';
+import { useMovieFilters } from '@/hooks/library/useMovieFilters';
 
-interface LibraryFilterBarProps {
-  filters: MovieFilterCriteria;
-  onFilterChange: (filters: MovieFilterCriteria) => void;
-  availableCategories: Array<{ label: string; value: string }>;
-  onClearFilters: () => void;
-  onReloadCategories: () => void;
-}
-
-export const LibraryFilterBar = ({
-  filters,
-  onFilterChange,
-  availableCategories,
-  onClearFilters,
-  onReloadCategories,
-}: LibraryFilterBarProps) => {
+export const LibraryFilterBar = () => {
   const {
     filterCriteria,
     setFilterCriteria,
-    filteredMovies,
     availableGenres,
     availableYears,
     availableRated,
@@ -32,7 +14,7 @@ export const LibraryFilterBar = ({
     availableLanguages,
     availableCountries,
     clearFilters,
-  } = useMovieFilters({ movies, userStatuses, movieCategoryMap });
+  } = useMovieFilters();
 
   type MultiFilterKey =
     | 'genre'
@@ -44,44 +26,43 @@ export const LibraryFilterBar = ({
     | 'category';
 
   const handleChange = (key: MultiFilterKey, value: string[]) => {
-    onFilterChange({ ...filters, [key]: value });
+    setFilterCriteria({ ...filterCriteria, [key]: value });
   };
 
-  const handleDeleteSingleCategory = async (value: string) => {
-    const id = parseInt(value, 10);
-    if (Number.isNaN(id)) return;
+  // const handleDeleteSingleCategory = async (value: string) => {
+  //   const id = parseInt(value, 10);
+  //   if (Number.isNaN(id)) return;
 
-    try {
-      await movieDbService.deleteCategory(id);
-      onReloadCategories();
-      const remaining =
-        filters.category?.filter((v) => parseInt(v, 10) !== id) ?? [];
-      onFilterChange({ ...filters, category: remaining });
-      toast.success('Category deleted');
-    } catch (err) {
-      console.error('Failed to delete category:', err);
-      toast.error('Failed to delete category');
-    }
-  };
+  //   try {
+  //     await movieDbService.deleteCategory(id);
+  //     onReloadCategories();
+  //     const remaining =
+  //       filters.category?.filter((v) => parseInt(v, 10) !== id) ?? [];
+  //     onFilterChange({ ...filters, category: remaining });
+  //     toast.success('Category deleted');
+  //   } catch (err) {
+  //     console.error('Failed to delete category:', err);
+  //     toast.error('Failed to delete category');
+  //   }
+  // };
 
   const hasActiveFilters =
-    (filters.genre && filters.genre.length > 0) ||
-    (filters.year && filters.year.length > 0) ||
-    (filters.rating && filters.rating.length > 0) ||
-    (filters.rated && filters.rated.length > 0) ||
-    (filters.language && filters.language.length > 0) ||
-    (filters.country && filters.country.length > 0) ||
-    (filters.category && filters.category.length > 0) ||
-    filters.isFavorite ||
-    filters.isWatched ||
-    (filters.query && filters.query.trim().length > 0);
-
+    (filterCriteria.genre && filterCriteria.genre.length > 0) ||
+    (filterCriteria.year && filterCriteria.year.length > 0) ||
+    (filterCriteria.rating && filterCriteria.rating.length > 0) ||
+    (filterCriteria.rated && filterCriteria.rated.length > 0) ||
+    (filterCriteria.language && filterCriteria.language.length > 0) ||
+    (filterCriteria.country && filterCriteria.country.length > 0) ||
+    (filterCriteria.category && filterCriteria.category.length > 0) ||
+    filterCriteria.isFavorite ||
+    filterCriteria.isWatched ||
+    (filterCriteria.query && filterCriteria.query.trim().length > 0);
   return (
     <div className='flex w-full flex-wrap items-center gap-2 p-4 bg-accent/20 rounded-lg animate-in slide-in-from-top-2 fade-in duration-200'>
       <div className='min-w-[120px]'>
         <MultiSelect
           options={availableGenres.map((g) => ({ label: g, value: g }))}
-          selected={filters.genre}
+          selected={filterCriteria.genre}
           onChange={(val) => handleChange('genre', val)}
           placeholder='Genre'
         />
@@ -89,7 +70,7 @@ export const LibraryFilterBar = ({
       <div className='min-w-[120px]'>
         <MultiSelect
           options={availableYears.map((y) => ({ label: y, value: y }))}
-          selected={filters.year}
+          selected={filterCriteria.year}
           onChange={(val) => handleChange('year', val)}
           placeholder='Year'
         />
@@ -97,7 +78,7 @@ export const LibraryFilterBar = ({
       <div className='min-w-[120px]'>
         <MultiSelect
           options={availableRatings.map((r) => ({ label: r, value: r }))}
-          selected={filters.rating}
+          selected={filterCriteria.rating}
           onChange={(val) => handleChange('rating', val)}
           placeholder='Rating'
         />
@@ -105,7 +86,7 @@ export const LibraryFilterBar = ({
       <div className='min-w-[120px]'>
         <MultiSelect
           options={availableRated.map((r) => ({ label: r, value: r }))}
-          selected={filters.rated}
+          selected={filterCriteria.rated}
           onChange={(val) => handleChange('rated', val)}
           placeholder='Rated'
         />
@@ -113,7 +94,7 @@ export const LibraryFilterBar = ({
       <div className='min-w-[120px]'>
         <MultiSelect
           options={availableLanguages.map((l) => ({ label: l, value: l }))}
-          selected={filters.language}
+          selected={filterCriteria.language}
           onChange={(val) => handleChange('language', val)}
           placeholder='Language'
         />
@@ -121,12 +102,12 @@ export const LibraryFilterBar = ({
       <div className='min-w-[120px]'>
         <MultiSelect
           options={availableCountries.map((c) => ({ label: c, value: c }))}
-          selected={filters.country}
+          selected={filterCriteria.country}
           onChange={(val) => handleChange('country', val)}
           placeholder='Country'
         />
       </div>
-      {availableCategories.length > 0 && (
+      {/* {availableCategories.length > 0 && (
         <div className='min-w-[140px]'>
           <CategoryMultiSelect
             options={availableCategories}
@@ -136,12 +117,12 @@ export const LibraryFilterBar = ({
             placeholder='Category'
           />
         </div>
-      )}
+      )} */}
 
       {hasActiveFilters && (
         <Button
           variant='ghost'
-          onClick={onClearFilters}
+          onClick={clearFilters}
           className='ml-auto text-red-500 hover:text-red-700 hover:bg-red-100 whitespace-nowrap'>
           Clear All Filters <X className='ml-2 h-4 w-4' />
         </Button>

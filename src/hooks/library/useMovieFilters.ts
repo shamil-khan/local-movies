@@ -1,18 +1,8 @@
 import { useState, useMemo } from 'react';
-import { type MovieDetail, type MovieUserStatus } from '@/models/MovieModel';
 import { type MovieFilterCriteria } from '@/models/MovieModel';
+import { useMovieLibrary } from '@/hooks/library/useMovieLibrary';
 
-interface UseMovieFiltersProps {
-  movies: MovieDetail[];
-  userStatuses: Record<string, MovieUserStatus>;
-  movieCategoryMap: Record<string, number[]>;
-}
-
-export const useMovieFilters = ({
-  movies,
-  userStatuses,
-  movieCategoryMap,
-}: UseMovieFiltersProps) => {
+export const useMovieFilters = () => {
   const [filterCriteria, setFilterCriteria] = useState<MovieFilterCriteria>({
     query: '',
     genre: [],
@@ -26,75 +16,78 @@ export const useMovieFilters = ({
     isWatched: false,
   });
 
+  const { movies } = useMovieLibrary();
+  const movieDetails = useMemo(() => movies.map((m) => m.detail), [movies]);
+
   const availableGenres = useMemo(
     () =>
       Array.from(
         new Set(
-          movies
-            .flatMap((m) => m.Genre.split(',').map((g) => g.trim()))
+          movieDetails
+            .flatMap((m) => m.genre.split(',').map((g) => g.trim()))
             .filter(Boolean),
         ),
       ).sort(),
-    [movies],
+    [movieDetails],
   );
 
   const availableYears = useMemo(
     () =>
-      Array.from(new Set(movies.map((m) => m.Year).filter(Boolean))).sort(
+      Array.from(new Set(movieDetails.map((m) => m.year).filter(Boolean))).sort(
         (a, b) => b.localeCompare(a),
       ),
-    [movies],
+    [movieDetails],
   );
 
   const availableRated = useMemo(
     () =>
-      Array.from(new Set(movies.map((m) => m.Rated).filter(Boolean))).sort(),
-    [movies],
+      Array.from(
+        new Set(movieDetails.map((m) => m.rated).filter(Boolean)),
+      ).sort(),
+    [movieDetails],
   );
 
   const availableLanguages = useMemo(
     () =>
       Array.from(
         new Set(
-          movies
-            .flatMap((m) => m.Language.split(',').map((l) => l.trim()))
+          movieDetails
+            .flatMap((m) => m.language.split(',').map((l) => l.trim()))
             .filter(Boolean),
         ),
       ).sort(),
-    [movies],
+    [movieDetails],
   );
 
   const availableCountries = useMemo(
     () =>
       Array.from(
         new Set(
-          movies
-            .flatMap((m) => m.Country.split(',').map((c) => c.trim()))
+          movieDetails
+            .flatMap((m) => m.country.split(',').map((c) => c.trim()))
             .filter(Boolean),
         ),
       ).sort(),
-    [movies],
+    [movieDetails],
   );
 
   const availableRatings = useMemo(
     () =>
-      Array.from(new Set(movies.map((m) => m.imdbRating).filter(Boolean))).sort(
-        (a, b) => parseFloat(b) - parseFloat(a),
-      ),
-    [movies],
+      Array.from(
+        new Set(movieDetails.map((m) => m.imdbRating).filter(Boolean)),
+      ).sort((a, b) => parseFloat(b) - parseFloat(a)),
+    [movieDetails],
   );
 
   const filteredMovies = useMemo(() => {
     return movies.filter((movie) => {
-      const movieStatus = userStatuses[movie.imdbID];
-
       const matchesQuery = filterCriteria.query
-        ? movie.Title.toLowerCase().includes(filterCriteria.query.toLowerCase())
+        ? movie.title.toLowerCase().includes(filterCriteria.query.toLowerCase())
         : true;
 
-      const movieGenres = movie.Genre.split(',').map((g) =>
-        g.trim().toLowerCase(),
-      );
+      const movieGenres = movie.detail.genre
+        .split(',')
+        .map((g) => g.trim().toLowerCase());
       const matchesGenre =
         filterCriteria.genre.length === 0
           ? true
@@ -105,21 +98,21 @@ export const useMovieFilters = ({
       const matchesYear =
         filterCriteria.year.length === 0
           ? true
-          : filterCriteria.year.includes(movie.Year);
+          : filterCriteria.year.includes(movie.detail.year);
 
       const matchesRated =
         filterCriteria.rated.length === 0
           ? true
-          : filterCriteria.rated.includes(movie.Rated);
+          : filterCriteria.rated.includes(movie.detail.rated);
 
       const matchesRating =
         filterCriteria.rating.length === 0
           ? true
-          : filterCriteria.rating.includes(movie.imdbRating);
+          : filterCriteria.rating.includes(movie.detail.imdbRating);
 
-      const movieLanguages = movie.Language.split(',').map((l) =>
-        l.trim().toLowerCase(),
-      );
+      const movieLanguages = movie.detail.language
+        .split(',')
+        .map((l) => l.trim().toLowerCase());
       const matchesLanguage =
         filterCriteria.language.length === 0
           ? true
@@ -127,9 +120,9 @@ export const useMovieFilters = ({
               movieLanguages.includes(l.toLowerCase()),
             );
 
-      const movieCountries = movie.Country.split(',').map((c) =>
-        c.trim().toLowerCase(),
-      );
+      const movieCountries = movie.detail.country
+        .split(',')
+        .map((c) => c.trim().toLowerCase());
       const matchesCountry =
         filterCriteria.country.length === 0
           ? true
@@ -138,14 +131,13 @@ export const useMovieFilters = ({
             );
 
       const matchesFavorite = filterCriteria.isFavorite
-        ? movieStatus?.isFavorite
+        ? movie.status?.isFavorite
         : true;
 
       const matchesWatched = filterCriteria.isWatched
-        ? movieStatus?.isWatched
+        ? movie.status?.isWatched
         : true;
 
-      const movieCategoryIds = movieCategoryMap[movie.imdbID] || [];
       const selectedCategoryIds = filterCriteria.category.map((c) =>
         parseInt(c, 10),
       );
@@ -153,7 +145,7 @@ export const useMovieFilters = ({
         filterCriteria.category.length === 0
           ? true
           : selectedCategoryIds.some((catId) =>
-              movieCategoryIds.includes(catId),
+              movie.categories?.map((c) => c.id).includes(catId),
             );
 
       return (
@@ -169,7 +161,7 @@ export const useMovieFilters = ({
         matchesWatched
       );
     });
-  }, [movies, userStatuses, filterCriteria, movieCategoryMap]);
+  }, [movies, filterCriteria]);
 
   const clearFilters = () => {
     setFilterCriteria({

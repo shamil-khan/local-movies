@@ -1,34 +1,34 @@
 import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
-import { tmdbApiService } from '@/services/TmdbApiService';
+import {
+  tmdbApiService,
+  type TmdbMovieResult,
+} from '@/services/TmdbApiService';
 import { logger } from '@/core/logger';
 import { toast } from 'sonner';
 import { omdbApiService } from '@/services/OmdbApiService';
 import { movieDbService } from '@/services/MovieDbService';
 import { utilityApiService } from '@/services/UtilityApiService';
-import type { MoviePoster } from '@/models/MovieModel';
+import { type MovieInfo } from '@/models/MovieModel';
+import { useMovieFilters } from '@/hooks/library/useMovieFilters';
+import { toMovieDetail } from '@/utils/MovieFileHelper';
+import { useMovieLibrary } from '@/hooks/library/useMovieLibrary';
 
-interface LibrarySearchBarProps {
-  onMovieAdded: () => void;
-  onQueryChange: (query: string) => void;
-  query: string;
-}
-
-export const LibrarySearchBar = ({
-  onMovieAdded,
-  onQueryChange,
-  query,
-}: LibrarySearchBarProps) => {
-  const [searchResults, setSearchResults] = useState<
-    import('@/services/TmdbApiService').TmdbMovieResult[]
-  >([]);
+export const LibrarySearchBar = () => {
+  const { filterCriteria, setFilterCriteria } = useMovieFilters();
+  const { handleAddMovie } = useMovieLibrary();
+  const [searchResults, setSearchResults] = useState<TmdbMovieResult[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
+
+  const onQueryChange = (query: string) => {
+    setFilterCriteria({ ...filterCriteria, query: query.trim() });
+  };
 
   useEffect(() => {
     const searchTimer = setTimeout(async () => {
-      if (query.length >= 2) {
+      if (filterCriteria.query.length >= 2) {
         try {
-          const results = await tmdbApiService.search(query);
+          const results = await tmdbApiService.search(filterCriteria.query);
           setSearchResults(results.slice(0, 5));
           setShowDropdown(true);
         } catch (error) {
@@ -41,7 +41,7 @@ export const LibrarySearchBar = ({
     }, 500);
 
     return () => clearTimeout(searchTimer);
-  }, [query]);
+  }, [filterCriteria.query]);
 
   const handleSelectMovie = async (
     tmdbMovie: import('@/services/TmdbApiService').TmdbMovieResult,
@@ -65,16 +65,23 @@ export const LibrarySearchBar = ({
         movieFromApi.Response === 'True' &&
         movieFromApi.Poster !== 'N/A'
       ) {
-        const poster = await utilityApiService.getPosterImage(
+        const posterBlob = await utilityApiService.getPosterImage(
           movieFromApi.Poster,
         );
-        await movieDbService.addMovie(movieFromApi, {
+
+        const movie: MovieInfo = {
           imdbID: movieFromApi.imdbID,
           title: movieFromApi.Title,
-          blob: poster,
-        } as MoviePoster);
+          detail: toMovieDetail(movieFromApi),
+          poster: {
+            url: movieFromApi.Poster,
+            mime: posterBlob.type,
+            blob: posterBlob,
+          },
+        };
+        await movieDbService.addMovie(movie);
         toast.success('Movie added to library');
-        onMovieAdded();
+        handleAddMovie(movie);
       } else {
         toast.info('Detailed information not found.');
       }
@@ -89,7 +96,7 @@ export const LibrarySearchBar = ({
       <Input
         type='text'
         placeholder='Search Movie Title...'
-        value={query}
+        value={filterCriteria.query}
         onChange={(e) => onQueryChange(e.target.value)}
         onFocus={() => {
           if (searchResults.length > 0) setShowDropdown(true);
