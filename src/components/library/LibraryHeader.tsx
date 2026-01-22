@@ -2,9 +2,12 @@ import { CompactFolderUpload } from '@/components/CompactFolderUpload';
 import { FileProcessingPanel } from '@/components/library/FileProcessingPanel';
 import { LibraryDeleteDialog } from '@/components/library/LibraryDeleteDialog';
 import { useState } from 'react';
+import { LibrarySearchBar } from './LibrarySearchBar';
+import { LibraryFilterBar } from './LibraryFilterBar';
+import { LibraryFilterToggleGroup } from './LibraryFilterToggleGroup';
 
 export const LibraryHeader = () => {
-  //const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   const [uploadedFileNames, setUploadedFileNames] = useState<string[]>([]);
 
   return (
@@ -17,35 +20,21 @@ export const LibraryHeader = () => {
           />
 
           <div className='flex-1'>
-            {/* <LibrarySearchBar
-              onMovieAdded={onMovieAdded}
-              onQueryChange={(query) => onFilterChange({ ...filters, query })}
-              query={filters.query}
-            /> */}
+            <LibrarySearchBar />
           </div>
         </div>
 
         <div className='flex items-center gap-2'>
-          {/* <LibraryFilterToggleGroup
-            filters={filters}
-            onFilterChange={onFilterChange}
+          <LibraryFilterToggleGroup
             showFilters={showFilters}
             onToggleFilters={() => setShowFilters(!showFilters)}
-          /> */}
+          />
           <LibraryDeleteDialog />
         </div>
       </div>
-      {/* 
-      {showFilters && (
-        <LibraryFilterBar
-          filters={filters}
-          onFilterChange={onFilterChange}
-          availableCategories={availableCategories}
-          onClearFilters={clearFilters}
-          onReloadCategories={onReloadCategories}
-        />
-      )}
- */}
+
+      {showFilters && <LibraryFilterBar />}
+
       <FileProcessingPanel fileNames={uploadedFileNames} />
     </div>
   );

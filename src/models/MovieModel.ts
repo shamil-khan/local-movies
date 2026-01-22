@@ -110,6 +110,7 @@ export type MovieUploadInfo = {
 };
 
 export interface MovieFilterCriteria {
+  query: string;
   genre: string[];
   year: string[];
   rating: string[];
