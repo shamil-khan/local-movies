@@ -125,7 +125,7 @@ class OmdbApiService {
         logger.warn(
           `Movie not found for title '${title}': ${response.data.Error}`,
         );
-        throw new Error(response.data.Error || 'Movie not found');
+        // throw new Error(response.data.Error || 'Movie not found');
       }
 
       return response.data;
@@ -151,7 +151,7 @@ class OmdbApiService {
         logger.warn(
           `Movie not found for IMDb ID '${imdbId}': ${response.data.Error}`,
         );
-        throw new Error(response.data.Error || 'Movie not found');
+        // throw new Error(response.data.Error || 'Movie not found');
       }
 
       return response.data;

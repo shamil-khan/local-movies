@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Film, Info, X } from 'lucide-react';
+import { Film, Flag, X } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -18,17 +18,20 @@ export const FileProcessingEntriesList = () => {
         const movieFileName = movie.file.fileName;
         const headingClass = 'text-sm font-semibold text-foreground';
         const detailClass = 'text-xs text-muted-foreground truncate';
+        const notProcessed = !movie.detail && !movie.error;
 
-        const iconWrapperClass = movie.error
-          ? 'flex-shrink-0 w-7 h-7 rounded bg-green-100 flex items-center justify-center text-green-700 overflow-hidden'
-          : 'flex-shrink-0 w-7 h-7 rounded bg-red-100 flex items-center justify-center text-red-700 overflow-hidden';
+        // const iconWrapperClass = alreadyExists
+        //   ? 'flex-shrink-0 w-7 h-7 rounded  flex items-center justify-center overflow-hidden'
+        //   : movie.error
+        //     ? 'flex-shrink-0 w-7 h-7 flex items-center justify-center overflow-hidden'
+        //     : 'flex-shrink-0 w-7 h-7 rounded bg-red-100 flex items-center justify-center text-red-700 overflow-hidden';
 
         return (
           <div
             key={`${movie.file.fileName}-${index}`}
             className='group flex items-center justify-between py-1.5'>
             <div className='flex items-center gap-3 overflow-hidden'>
-              <div className={iconWrapperClass}>
+              <div className='flex-shrink-0 w-7 h-7 flex items-center justify-center overflow-hidden'>
                 {movie.poster ? (
                   <img
                     src={URL.createObjectURL(movie.poster.blob)}
@@ -51,17 +54,24 @@ export const FileProcessingEntriesList = () => {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div
-                      className={`w-4 h-4 rounded-full flex items-center justify-center ${
-                        movie.error
-                          ? 'bg-red-600 text-white'
-                          : 'bg-green-600 text-white'
+                      className={`w-4 h-4 flex items-center justify-center  ${
+                        notProcessed
+                          ? 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                          : movie.error
+                            ? 'text-red-600 hover:text-red-600 hover:bg-red-100'
+                            : 'text-green-600 hover:text-green-600 hover:bg-green-100'
                       }`}>
-                      <Info className='w-2.5 h-2.5' />
+                      <Flag />
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
                     <div className='max-w-xs'>
-                      {!movie.poster && (
+                      {notProcessed && (
+                        <p className='text-xs font-semibold mb-1'>
+                          Not Processed Yet
+                        </p>
+                      )}
+                      {movie.detail && !movie.poster && (
                         <p className='text-xs font-semibold mb-1'>
                           Poster is not available
                         </p>
@@ -72,17 +82,16 @@ export const FileProcessingEntriesList = () => {
                         </pre>
                       )}
                       {movie.error && (
-                        <>
-                          <span className='text-xs'>
-                            {movie.error.message ||
-                              'Failed to load movie details'}
-                          </span>
-                          {movie.error.detail && (
+                        <div className='text-xs'>
+                          {movie.error.message ||
+                            'Failed to load movie details'}
+
+                          {
                             <pre className='whitespace-pre-wrap text-[10px]'>
                               {JSON.stringify(movie.error.detail, null, 2)}
                             </pre>
-                          )}
-                        </>
+                          }
+                        </div>
                       )}
                     </div>
                   </TooltipContent>

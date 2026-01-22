@@ -62,7 +62,6 @@ const stepLoadDetails: WorkflowStep = async (store) => {
     if (r.status === 'fulfilled') {
       const detail = r.value;
       if (detail.Response === 'True') {
-        // movie.file.imdbID = detail.imdbID;
         store.setDetail(movie, toMovieDetail(detail));
       } else {
         store.setError(movie, {
