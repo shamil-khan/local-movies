@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { FileProcessingHeader } from '@/components/library/FileProcessingHeader';
 import { FileProcessingCategoryBar } from '@/components/library/FileProcessingCategoryBar';
@@ -12,10 +12,7 @@ interface FileProcessingPanelProps {
 export const FileProcessingPanel = ({
   fileNames,
 }: FileProcessingPanelProps) => {
-  const hasSynced = useRef(false);
-
   const [panelVisible, setPanelVisible] = useState(false);
-
   const { movies, load } = useMovieProcessor();
 
   useEffect(() => {
@@ -31,7 +28,7 @@ export const FileProcessingPanel = ({
       }
     };
     revisePanelVisibility();
-  }, [load]);
+  }, [movies.length]);
 
   return (
     <div className='flex flex-col items-start gap-2 w-full'>

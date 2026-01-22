@@ -17,7 +17,7 @@ import {
 import { toMovieFiles } from '@/utils/MovieFileHelper';
 import { omdbApiService } from '@/services/OmdbApiService';
 import { logger } from '@/core/logger';
-import { XMovieCard } from '@/components/XMovieCard';
+import { MovieCard } from '@/components/MovieCard';
 import { movieDbService } from '@/services/MovieDbService';
 
 export const FolderReader = () => {
@@ -204,7 +204,7 @@ export const FolderReader = () => {
       <CardContent>
         <div className='grid grid-flow-row-dense grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'>
           {movieDetails.map((movie) => (
-            <XMovieCard key={movie.imdbID} movieDetail={movie} />
+            <MovieCard key={movie.imdbID} movieDetail={movie} />
           ))}
         </div>
       </CardContent>

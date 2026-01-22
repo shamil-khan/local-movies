@@ -1,28 +1,13 @@
 import { type MovieDetail, type MovieUserStatus } from '@/models/MovieModel';
-import { XMovieCard } from '@/components/XMovieCard';
+import { MovieCard } from '@/components/MovieCard';
 import { Loader2 } from 'lucide-react';
+import { useMovieLibrary } from '@/hooks/library/useMovieLibrary';
+import { useState } from 'react';
 
-interface MovieGalleryProps {
-  movies: MovieDetail[];
-  userStatuses: Record<string, MovieUserStatus>;
-  onDelete?: (imdbID: string) => void;
-  onToggleFavorite?: (imdbID: string) => void;
-  onToggleWatched?: (imdbID: string) => void;
-  movieCategoryMap?: Record<string, number[]>;
-  onUpdateCategories?: (imdbID: string, categoryIds: number[]) => void;
-}
-
-export const MovieGallery = ({
-  movies,
-  userStatuses,
-  onDelete,
-  onToggleFavorite,
-  onToggleWatched,
-  movieCategoryMap,
-  onUpdateCategories,
-}: MovieGalleryProps) => {
+export const MovieGallery = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const { movies } = useMovieLibrary();
 
   if (error) {
     return (
@@ -43,16 +28,7 @@ export const MovieGallery = ({
       {movies.length > 0 ? (
         <div className='grid grid-flow-row-dense grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'>
           {movies.map((movie) => (
-            <XMovieCard
-              key={movie.imdbID}
-              movieDetail={movie}
-              userStatus={userStatuses[movie.imdbID]}
-              onDelete={onDelete}
-              onToggleFavorite={onToggleFavorite}
-              onToggleWatched={onToggleWatched}
-              movieCategoryIds={movieCategoryMap?.[movie.imdbID] ?? []}
-              onUpdateCategories={onUpdateCategories}
-            />
+            <MovieCard key={movie.imdbID} movie={movie} />
           ))}
         </div>
       ) : (
