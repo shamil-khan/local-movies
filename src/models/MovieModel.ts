@@ -103,15 +103,10 @@ export const MovieNotFound = {
 };
 
 export type MovieUploadInfo = {
-  file: MovieFile;
+  file: Omit<MovieFile, 'imdbID'>;
   detail?: MovieDetail;
   poster?: MoviePoster;
   error?: { message: string; detail?: object };
-};
-
-export type MovieUploadContext = {
-  movies: MovieUploadInfo[];
-  categoryIds?: number[];
 };
 
 export interface MovieFilterCriteria {

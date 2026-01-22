@@ -189,13 +189,14 @@ class MovieDbService {
     fileName: string,
     imdbID: string,
   ): Promise<void> => {
-    const existing = await db.movieUserStatusTable
+    logger.info(`Updating movie file imdbID ${fileName} ${imdbID}`);
+    const existing = await db.movieFileTable
       .where(movieFileSchema.fileName)
       .equals(fileName)
       .first();
 
     if (existing && (!existing.imdbID || existing.imdbID !== imdbID)) {
-      await db.movieUserStatusTable.update(existing.id!, {
+      await db.movieFileTable.update(existing.id!, {
         imdbID: imdbID,
       });
     }

@@ -1,11 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { FileProcessingHeader } from '@/components/library/FileProcessingHeader';
 import { FileProcessingCategoryBar } from '@/components/library/FileProcessingCategoryBar';
 import { useFileProcessingPanelStore } from '@/store/useFileProcessingPanelStore';
-import { useUploadFolder } from '@/hooks/library/useUploadFolder';
+import { useMovieProcessor } from '@/hooks/library/useMovieProcessor';
 import { FileProcessingEntriesList } from '@/components/library/FileProcessingEntriesList';
-import { type MovieUploadInfo } from '@/models/MovieModel';
 
 interface FileProcessingPanelProps {
   fileNames: string[];
@@ -18,16 +17,11 @@ export const FileProcessingPanel = ({
   const { panelVisible, closePanel, togglePanel } =
     useFileProcessingPanelStore();
 
-  const { movies } = useUploadFolder({
-    fileNames,
-  });
+  const { movies, load } = useMovieProcessor();
 
-  // const handleFolderUpload = (files: string[]) => {
-  //   resetState();
-  //   if (fileNames && fileNames.length > 0) {
-  //     setSelectedFiles(files);
-  //   }
-  // };
+  useEffect(() => {
+    load(fileNames);
+  }, [fileNames, load]);
 
   useEffect(() => {
     if (!panelVisible) {
@@ -36,7 +30,7 @@ export const FileProcessingPanel = ({
     hasSynced.current = true;
 
     // Auto-close when all items are gone.
-  }, [togglePanel]);
+  }, [panelVisible, togglePanel]);
 
   return (
     <div className='flex flex-col items-start gap-2 w-full'>

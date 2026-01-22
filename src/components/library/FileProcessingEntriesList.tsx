@@ -6,18 +6,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { useMovieUploadFolderStore } from '@/store/useMovieUploadFolderStore';
+import { useMovieProcessor } from '@/hooks/library/useMovieProcessor';
 
 export const FileProcessingEntriesList = () => {
-  const { context, removeFileName } = useMovieUploadFolderStore();
-
-  const onRemoveFileName = (fileName: string) => {
-    removeFileName(fileName);
-  };
+  const { movies, removeByFileName } = useMovieProcessor();
 
   return (
     <div className='px-3 pb-3 space-y-1'>
-      {context.movies.map((movie, index) => {
+      {movies.map((movie, index) => {
         const movieTitle = `${movie.file.title}${movie.file.year ? ` (${movie.file.year})` : ''}`;
         const movieFileName = movie.file.fileName;
         const headingClass = 'text-sm font-semibold text-foreground';
@@ -96,7 +92,7 @@ export const FileProcessingEntriesList = () => {
                 variant='ghost'
                 size='icon'
                 className='h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive'
-                onClick={() => onRemoveFileName(movie.file.fileName)}
+                onClick={() => removeByFileName(movie.file.fileName)}
                 title='Remove from list'>
                 <X className='w-4 h-4' />
               </Button>
