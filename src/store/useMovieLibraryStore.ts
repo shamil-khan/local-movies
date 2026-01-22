@@ -37,26 +37,24 @@ export const useMovieLibraryStore = create<MovieLibraryState>()(
     ): Promise<Omit<MovieUserStatus, 'imdbID'>> => {
       const movie = get().movies.find((m) => m.imdbID === imdbID)!;
 
-      if (!movie.status) {
-        movie.status = { isFavorite: false, isWatched: false };
-      }
+      const status = movie.status
+        ? {
+            isFavorite: movie.status.isFavorite,
+            isWatched: movie.status.isWatched,
+          }
+        : { isFavorite: false, isWatched: false };
 
-      movie.status.isFavorite = isFavorite
-        ? !movie.status?.isFavorite
-        : movie.status?.isFavorite;
-
-      movie.status.isWatched = isWatched
-        ? !movie.status?.isWatched
-        : movie.status?.isWatched;
+      status.isFavorite = isFavorite ? !status.isFavorite : status.isFavorite;
+      status.isWatched = isWatched ? !status.isWatched : status.isWatched;
 
       set((state) => {
         state.movies = state.movies.map((m) =>
-          m.imdbID === imdbID ? movie : m,
+          m.imdbID !== imdbID ? m : { ...m, status: status },
         );
       });
 
-      await movieDbService.addUpdateUserStatus(imdbID, movie.status);
-      return movie.status!;
+      await movieDbService.addUpdateUserStatus(imdbID, status);
+      return status!;
     };
 
     return {

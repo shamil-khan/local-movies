@@ -9,6 +9,11 @@ import { VitePWA } from 'vite-plugin-pwa';
 export default defineConfig({
   server: {
     port: 6601,
+    hmr: {
+      clientPort: 6601,
+      protocol: 'ws',
+      overlay: true,
+    },
   },
   preview: {
     port: 6602,
