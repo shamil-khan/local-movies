@@ -1,14 +1,39 @@
-import {
-  type MovieFile,
-  type MovieDetail,
-  type MoviePoster,
-  type Category,
-  movieFileSchema,
-} from '@/models/MovieModel';
 import logger from '@/core/logger';
 import { db } from '@/lib/db';
+import {
+  movieFileSchema,
+  type Category,
+  type MovieCategory,
+  type MovieDetail,
+  type MovieFile,
+  type MovieInfo,
+  type MoviePoster,
+  type MovieUserStatus,
+} from '@/models/MovieModel';
 
 class MovieDbService {
+  allMovieDetails = async (): Promise<MovieDetail[]> => {
+    return await db.movieDetailTable.toArray();
+  };
+
+  allMoviePosters = async (): Promise<MoviePoster[]> => {
+    return await db.moviePosterTable.toArray();
+  };
+
+  allMovieUserStatuses = async (): Promise<
+    import('@/models/MovieModel').MovieUserStatus[]
+  > => {
+    return await db.movieUserStatusTable.toArray();
+  };
+
+  allCategories = async (): Promise<Category[]> => {
+    return await db.categoryTable.toArray();
+  };
+
+  allMovieCategories = async (): Promise<MovieCategory[]> => {
+    return await db.movieCategoryTable.toArray();
+  };
+
   fileExists = async (fileName: string): Promise<boolean> => {
     const result = await db.movieFileTable
       .where(movieFileSchema.fileName)
@@ -24,30 +49,79 @@ class MovieDbService {
     return await db.movieFileTable.add(movieFile);
   };
 
-  addPoster = async (moviePoster: MoviePoster): Promise<number | undefined> => {
-    return await db.moviePosterTable.add(moviePoster);
-  };
-
-  getPoster = async (imdbID: string): Promise<MoviePoster | undefined> => {
-    return await db.moviePosterTable.where('imdbID').equals(imdbID).first();
-  };
-
   addDetail = async (movieDetail: MovieDetail): Promise<number | undefined> => {
     return await db.movieDetailTable.add(movieDetail);
   };
 
-  addMovie = async (
-    movieDetail: MovieDetail,
-    moviePoster: MoviePoster,
-  ): Promise<void> => {
-    await db.transaction('rw', db.movieDetailTable, db.moviePosterTable, () => {
-      db.movieDetailTable.add(movieDetail);
-      db.moviePosterTable.add(moviePoster);
+  addPoster = async (moviePoster: MoviePoster): Promise<number | undefined> => {
+    return await db.moviePosterTable.add(moviePoster);
+  };
+
+  // Category methods
+  addCategory = async (name: string): Promise<number | undefined> => {
+    const existing = await db.categoryTable
+      .where('name')
+      .equalsIgnoreCase(name)
+      .first();
+    if (existing) {
+      return existing.id;
+    }
+    return await db.categoryTable.add({
+      name: name.trim(),
     });
   };
 
-  allMovies = async (): Promise<MovieDetail[]> => {
-    return await db.movieDetailTable.toArray();
+  addUpdateUserStatus = async (
+    imdbID: string,
+    status: Partial<Omit<MovieUserStatus, 'id' | 'imdbID'>>,
+  ): Promise<void> => {
+    const existing = await db.movieUserStatusTable
+      .where('imdbID')
+      .equals(imdbID)
+      .first();
+
+    if (existing) {
+      await db.movieUserStatusTable.update(existing.id!, {
+        ...status,
+      });
+    } else {
+      await db.movieUserStatusTable.add({
+        imdbID,
+        isFavorite: status.isFavorite ?? false,
+        isWatched: status.isWatched ?? false,
+      });
+    }
+  };
+
+  updateCategory = async (
+    categoryId: number,
+    name: string,
+  ): Promise<boolean> => {
+    try {
+      const existing = await db.categoryTable
+        .where('id')
+        .equals(categoryId)
+        .first();
+      if (!existing) return false;
+      await db.categoryTable.update(categoryId, {
+        name: name.trim(),
+      });
+      return true;
+    } catch (err) {
+      logger.error('Failed to update category:', err);
+      return false;
+    }
+  };
+
+  deleteCategory = async (categoryId: number): Promise<void> => {
+    await db.transaction('rw', db.categoryTable, db.movieCategoryTable, () => {
+      db.categoryTable.where('id').equals(categoryId).delete();
+      db.movieCategoryTable.where('categoryId').equals(categoryId).delete();
+    });
+  };
+
+  getPoster = async (imdbID: string): Promise<MoviePoster | undefined> => {
+    return await db.moviePosterTable.where('imdbID').equals(imdbID).first();
   };
 
   findByTitle = async (title: string): Promise<MovieDetail | undefined> => {
@@ -55,6 +129,44 @@ class MovieDbService {
       .where('Title')
       .equalsIgnoreCase(title)
       .first();
+  };
+
+  addMovie = async (movie: MovieInfo): Promise<void> => {
+    await db.transaction(
+      'rw',
+      db.movieDetailTable,
+      db.moviePosterTable,
+      db.movieUserStatusTable,
+      db.movieCategoryTable,
+      () => {
+        db.movieDetailTable.add({
+          ...movie.detail,
+          imdbID: movie.imdbID,
+          title: movie.title,
+        });
+        if (movie.poster) {
+          db.moviePosterTable.add({
+            ...movie.poster,
+            imdbID: movie.imdbID,
+            title: movie.title,
+          });
+        }
+        if (movie.status) {
+          db.movieUserStatusTable.add({
+            ...movie.status,
+            imdbID: movie.imdbID,
+          });
+        }
+        if (movie.categories) {
+          movie.categories.forEach((c) =>
+            db.movieCategoryTable.add({
+              categoryId: c.id,
+              imdbID: movie.imdbID,
+            }),
+          );
+        }
+      },
+    );
   };
 
   deleteMovie = async (imdbID: string): Promise<void> => {
@@ -89,41 +201,6 @@ class MovieDbService {
     }
   };
 
-  updateUserStatus = async (
-    imdbID: string,
-    status: Partial<
-      Omit<
-        import('@/models/MovieModel').MovieUserStatus,
-        'id' | 'imdbID' | 'updatedAt'
-      >
-    >,
-  ): Promise<void> => {
-    const existing = await db.movieUserStatusTable
-      .where('imdbID')
-      .equals(imdbID)
-      .first();
-
-    if (existing) {
-      await db.movieUserStatusTable.update(existing.id!, {
-        ...status,
-        updatedAt: new Date(),
-      });
-    } else {
-      await db.movieUserStatusTable.add({
-        imdbID,
-        isFavorite: status.isFavorite ?? false,
-        isWatched: status.isWatched ?? false,
-        updatedAt: new Date(),
-      });
-    }
-  };
-
-  allUserStatuses = async (): Promise<
-    import('@/models/MovieModel').MovieUserStatus[]
-  > => {
-    return await db.movieUserStatusTable.toArray();
-  };
-
   clearDatabase = async (deleteCategories = false) => {
     await db.movieFileTable.clear();
     await db.movieDetailTable.clear();
@@ -139,48 +216,7 @@ class MovieDbService {
     // Note: Categories are kept even when clearing movies
   };
 
-  // Category methods
-  addCategory = async (name: string): Promise<number | undefined> => {
-    const existing = await db.categoryTable
-      .where('name')
-      .equalsIgnoreCase(name)
-      .first();
-    if (existing) {
-      return existing.id;
-    }
-    return await db.categoryTable.add({
-      name: name.trim(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-  };
-
-  updateCategory = async (
-    categoryId: number,
-    name: string,
-  ): Promise<boolean> => {
-    try {
-      const existing = await db.categoryTable
-        .where('id')
-        .equals(categoryId)
-        .first();
-      if (!existing) return false;
-      await db.categoryTable.update(categoryId, {
-        name: name.trim(),
-        updatedAt: new Date(),
-      });
-      return true;
-    } catch (err) {
-      logger.error('Failed to update category:', err);
-      return false;
-    }
-  };
-
-  allCategories = async (): Promise<Category[]> => {
-    return await db.categoryTable.toArray();
-  };
-
-  linkMovieToCategory = async (
+  addMovieToCategory = async (
     imdbID: string,
     categoryId: number,
   ): Promise<void> => {
@@ -193,7 +229,17 @@ class MovieDbService {
     }
   };
 
-  linkMovieToCategories = async (
+  removeMovieFromCategory = async (
+    imdbID: string,
+    categoryId: number,
+  ): Promise<void> => {
+    await db.movieCategoryTable
+      .where('[imdbID+categoryId]')
+      .equals([imdbID, categoryId])
+      .delete();
+  };
+
+  addMovieToCategories = async (
     imdbID: string,
     categoryIds: number[],
   ): Promise<void> => {
@@ -223,13 +269,6 @@ class MovieDbService {
       .equals(categoryId)
       .toArray();
     return movieCategories.map((mc) => mc.imdbID);
-  };
-
-  deleteCategory = async (categoryId: number): Promise<void> => {
-    await db.transaction('rw', db.categoryTable, db.movieCategoryTable, () => {
-      db.categoryTable.where('id').equals(categoryId).delete();
-      db.movieCategoryTable.where('categoryId').equals(categoryId).delete();
-    });
   };
 }
 

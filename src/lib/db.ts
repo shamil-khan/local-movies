@@ -33,10 +33,6 @@ interface MovieUserStatusWithId extends MovieUserStatus {
   id?: number;
 }
 
-interface CategoryWithId extends Category {
-  id?: number;
-}
-
 interface MovieCategoryWithId extends MovieCategory {
   id?: number;
 }
@@ -45,16 +41,14 @@ interface MovieCategoryWithId extends MovieCategory {
 const movieFileSchemaStr = Object.values(movieFileSchema).join(', ');
 const moviePosterSchemaStr = Object.values(moviePosterSchema).join(', ');
 const movieDetailSchemaStr = Object.values(movieDetailSchema).join(', ');
-const movieUserStatusSchemaStr = Object.values(movieUserStatusSchema).join(
-  ', ',
-);
+const movieStatusSchemaStr = Object.values(movieUserStatusSchema).join(', ');
 const categorySchemaStr = Object.values(categorySchema).join(', ');
 const movieCategorySchemaStr = Object.values(movieCategorySchema).join(', ');
 
 logger.info(`MovieFile Schema: ${movieFileSchemaStr}`);
 logger.info(`MoviePoster Schema: ${moviePosterSchemaStr}`);
 logger.info(`MovieDetail Schema: ${movieDetailSchemaStr}`);
-logger.info(`MovieUserStatus Schema: ${movieUserStatusSchemaStr}`);
+logger.info(`MovieUserStatus Schema: ${movieStatusSchemaStr}`);
 logger.info(`Category Schema: ${categorySchemaStr}`);
 logger.info(`MovieCategory Schema: ${movieCategorySchemaStr}`);
 
@@ -63,7 +57,7 @@ export class LocalMovieAppDB extends Dexie {
   moviePosterTable!: EntityTable<MoviePosterWithId, 'id'>;
   movieDetailTable!: EntityTable<MovieDetailWithId, 'id'>;
   movieUserStatusTable!: EntityTable<MovieUserStatusWithId, 'id'>;
-  categoryTable!: EntityTable<CategoryWithId, 'id'>;
+  categoryTable!: EntityTable<Category, 'id'>;
   movieCategoryTable!: EntityTable<MovieCategoryWithId, 'id'>;
 
   constructor() {
@@ -73,7 +67,7 @@ export class LocalMovieAppDB extends Dexie {
       movieFileTable: `++id, ${movieFileSchemaStr}`,
       moviePosterTable: `++id, ${moviePosterSchemaStr}`,
       movieDetailTable: `++id, ${movieDetailSchemaStr}`,
-      movieUserStatusTable: `++id, ${movieUserStatusSchemaStr}`,
+      movieUserStatusTable: `++id, ${movieStatusSchemaStr}`,
       categoryTable: `++id, ${categorySchemaStr}`,
       movieCategoryTable: `++id, ${movieCategorySchemaStr}`,
     });

@@ -37,13 +37,11 @@ export interface MovieUserStatus {
   imdbID: string;
   isFavorite: boolean;
   isWatched: boolean;
-  updatedAt: Date;
 }
 
 export interface Category {
+  id: number;
   name: string;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 export interface MovieCategory {
@@ -87,13 +85,11 @@ export const movieUserStatusSchema: Schema<MovieUserStatus> = {
   imdbID: 'imdbID',
   isFavorite: 'isFavorite',
   isWatched: 'isWatched',
-  updatedAt: 'updatedAt',
 };
 
 export const categorySchema: Schema<Category> = {
+  id: 'id',
   name: 'name',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
 };
 
 export const movieCategorySchema: Schema<MovieCategory> = {
@@ -129,3 +125,12 @@ export interface MovieFilterCriteria {
   isFavorite: boolean;
   isWatched: boolean;
 }
+
+export type MovieInfo = {
+  imdbID: string;
+  title: string;
+  detail: Omit<Omit<MovieDetail, 'imdbID'>, 'title'>;
+  poster?: Omit<Omit<MoviePoster, 'imdbID'>, 'title'>;
+  status?: Omit<MovieUserStatus, 'imdbID'>;
+  categories?: Category[];
+};

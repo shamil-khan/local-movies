@@ -9,12 +9,6 @@ import { toast } from 'sonner';
 interface LibraryFilterBarProps {
   filters: MovieFilterCriteria;
   onFilterChange: (filters: MovieFilterCriteria) => void;
-  availableGenres: string[];
-  availableYears: string[];
-  availableRated: string[];
-  availableRatings: string[];
-  availableLanguages: string[];
-  availableCountries: string[];
   availableCategories: Array<{ label: string; value: string }>;
   onClearFilters: () => void;
   onReloadCategories: () => void;
@@ -23,16 +17,23 @@ interface LibraryFilterBarProps {
 export const LibraryFilterBar = ({
   filters,
   onFilterChange,
-  availableGenres,
-  availableYears,
-  availableRated,
-  availableRatings,
-  availableLanguages,
-  availableCountries,
   availableCategories,
   onClearFilters,
   onReloadCategories,
 }: LibraryFilterBarProps) => {
+  const {
+    filterCriteria,
+    setFilterCriteria,
+    filteredMovies,
+    availableGenres,
+    availableYears,
+    availableRated,
+    availableRatings,
+    availableLanguages,
+    availableCountries,
+    clearFilters,
+  } = useMovieFilters({ movies, userStatuses, movieCategoryMap });
+
   type MultiFilterKey =
     | 'genre'
     | 'year'

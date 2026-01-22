@@ -7,24 +7,14 @@ import logger from '@/core/logger';
 
 interface useUploadFolderProps {
   fileNames: string[];
-  categoryIds: number[];
-  onMoviesUpdated: (movies: MovieUploadInfo[]) => void;
 }
 
-export const useUploadFolder = ({
-  fileNames,
-  categoryIds,
-  onMoviesUpdated,
-}: useUploadFolderProps) => {
-  const movieUploadStore = useMovieUploadFolderStore();
-
-  useUploadProcessor(movieUploadStore.context, (movies) => {
-    onMoviesUpdated(movies);
-  });
+export const useUploadFolder = ({ fileNames }: useUploadFolderProps) => {
+  const { context, setMovies } = useMovieUploadFolderStore();
 
   // Effect to set movies when fileNames changes
   useEffect(() => {
-    logger.info(`useMovieUploadFolder setting movies`);
+    logger.info(`useUploadFolder processing ${fileNames.length} files`);
 
     const movies: MovieUploadInfo[] =
       fileNames.length > 0
@@ -32,37 +22,10 @@ export const useUploadFolder = ({
             file: f,
           }))
         : [];
-    movieUploadStore.setMovies(movies);
-    handleProcessMovies();
-  }, [fileNames]);
-
-  // Effect to set categoryIds when categoryIds changes
-  useEffect(() => {
-    movieUploadStore.setCategoryIds(categoryIds);
-  }, [categoryIds]);
-
-  const handleProcessMovies = useCallback(
-    (categoryIds?: number[]) => {
-      movieUploadStore.setCategoryIds(categoryIds ?? []);
-    },
-    [movieUploadStore],
-  );
-
-  const handleRemoveFileName = useCallback(
-    (fileName: string) => {
-      movieUploadStore.removeFileName(fileName);
-    },
-    [movieUploadStore],
-  );
-
-  const resetState = useCallback(() => {
-    movieUploadStore.setMovies([]);
-  }, [movieUploadStore]);
+    setMovies(movies);
+  }, [fileNames, setMovies]);
 
   return {
-    movies: movieUploadStore.context.movies,
-    handleProcessMovies,
-    handleRemoveFileName,
-    resetState,
+    movies: context.movies,
   };
 };

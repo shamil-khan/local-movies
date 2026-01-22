@@ -5,8 +5,6 @@ import { Loader2 } from 'lucide-react';
 interface MovieGalleryProps {
   movies: MovieDetail[];
   userStatuses: Record<string, MovieUserStatus>;
-  loading: boolean;
-  error: Error | null;
   onDelete?: (imdbID: string) => void;
   onToggleFavorite?: (imdbID: string) => void;
   onToggleWatched?: (imdbID: string) => void;
@@ -17,14 +15,15 @@ interface MovieGalleryProps {
 export const MovieGallery = ({
   movies,
   userStatuses,
-  loading,
-  error,
   onDelete,
   onToggleFavorite,
   onToggleWatched,
   movieCategoryMap,
   onUpdateCategories,
 }: MovieGalleryProps) => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
   if (error) {
     return (
       <div className='flex items-center justify-center h-64'>

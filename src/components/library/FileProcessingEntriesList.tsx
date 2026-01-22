@@ -6,22 +6,20 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { type MovieUploadInfo } from '@/models/MovieModel';
+import { useMovieUploadFolderStore } from '@/store/useMovieUploadFolderStore';
 
-interface FileProcessingEntriesListProps {
-  movies: MovieUploadInfo[];
-  onRemoveFileName: (fileName: string) => void;
-}
+export const FileProcessingEntriesList = () => {
+  const { context, removeFileName } = useMovieUploadFolderStore();
 
-export const FileProcessingEntriesList = ({
-  movies,
-  onRemoveFileName,
-}: FileProcessingEntriesListProps) => {
+  const onRemoveFileName = (fileName: string) => {
+    removeFileName(fileName);
+  };
+
   return (
     <div className='px-3 pb-3 space-y-1'>
-      {movies.map((movie, index) => {
+      {context.movies.map((movie, index) => {
         const movieTitle = `${movie.file.title}${movie.file.year ? ` (${movie.file.year})` : ''}`;
-        const movieFileName = movie.file.filename;
+        const movieFileName = movie.file.fileName;
         const headingClass = 'text-sm font-semibold text-foreground';
         const detailClass = 'text-xs text-muted-foreground truncate';
 
@@ -31,7 +29,7 @@ export const FileProcessingEntriesList = ({
 
         return (
           <div
-            key={`${movie.file.filename}-${index}`}
+            key={`${movie.file.fileName}-${index}`}
             className='group flex items-center justify-between py-1.5'>
             <div className='flex items-center gap-3 overflow-hidden'>
               <div className={iconWrapperClass}>
@@ -98,7 +96,7 @@ export const FileProcessingEntriesList = ({
                 variant='ghost'
                 size='icon'
                 className='h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive'
-                onClick={() => onRemoveFileName(movie.file.filename)}
+                onClick={() => onRemoveFileName(movie.file.fileName)}
                 title='Remove from list'>
                 <X className='w-4 h-4' />
               </Button>

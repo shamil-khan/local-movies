@@ -1,7 +1,8 @@
 {
   "editor.formatOnSave": true, // Optional: Enables general formatting on save
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit" // Tells VS Code to fix all auto-fixable ESLint issues on save
+    "source.fixAll.eslint": "explicit", // Tells VS Code to fix all auto-fixable ESLint issues on save
+    // "source.organizeImports": "always" // Optional: Organizes imports on save
   },
   "eslint.validate": [
     "javascript",

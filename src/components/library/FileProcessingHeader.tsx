@@ -1,21 +1,17 @@
 import { Button } from '@/components/ui/button';
+import { useMovieUploadFolderStore } from '@/store/useMovieUploadFolderStore';
 import { Download, Film, Trash2, X } from 'lucide-react';
 
 interface FileProcessingHeaderProps {
-  moviesCount: number;
-  onClearAll: () => void;
   onClose: () => void;
-  onProcessMovies: () => void;
-  processDisabled: boolean;
 }
 
 export const FileProcessingHeader = ({
-  moviesCount,
-  onClearAll,
   onClose,
-  onProcessMovies,
-  processDisabled,
 }: FileProcessingHeaderProps) => {
+  const { context, resetState } = useMovieUploadFolderStore();
+  const moviesCount = context.movies.length;
+
   return (
     <div className='flex items-center justify-between p-3 border-b border-border bg-muted/30'>
       <div className='flex items-center gap-2 text-sm font-medium'>
@@ -30,8 +26,8 @@ export const FileProcessingHeader = ({
           variant='ghost'
           size='icon'
           className='h-7 w-7'
-          onClick={onProcessMovies}
-          disabled={processDisabled}
+          // onClick={onProcessMovies}
+          disabled={moviesCount === 0}
           title='Download movies details with their poster'>
           <Download className='w-4 h-4' />
         </Button>
@@ -39,7 +35,7 @@ export const FileProcessingHeader = ({
           variant='ghost'
           size='icon'
           className='h-7 w-7'
-          onClick={onClearAll}
+          onClick={resetState}
           disabled={moviesCount === 0}
           title='Remove all titles'>
           <Trash2 className='w-4 h-4' />

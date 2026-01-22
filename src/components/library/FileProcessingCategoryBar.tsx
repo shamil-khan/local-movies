@@ -1,15 +1,7 @@
 import { CategorySelector } from '@/components/CategorySelector';
 import { Tag } from 'lucide-react';
 
-interface FileProcessingCategoryBarProps {
-  selectedCategoryIds: number[];
-  onSelectedCategoryIdsChange: (categoryIds: number[]) => void;
-}
-
-export const FileProcessingCategoryBar = ({
-  selectedCategoryIds,
-  onSelectedCategoryIdsChange,
-}: FileProcessingCategoryBarProps) => {
+export const FileProcessingCategoryBar = () => {
   return (
     <div className='px-3 pt-3 pb-1 flex items-center justify-between'>
       <div className='flex items-center gap-2'>
@@ -19,10 +11,10 @@ export const FileProcessingCategoryBar = ({
             Categories
           </span>
         </div>
-        <CategorySelector
+        {/* <CategorySelector
           selectedCategoryIds={selectedCategoryIds}
           onCategoryChange={onSelectedCategoryIdsChange}
-        />
+        /> */}
       </div>
     </div>
   );

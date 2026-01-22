@@ -1,28 +1,29 @@
-import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Trash2, AlertOctagon } from 'lucide-react';
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogClose,
 } from '@/components/ui/dialog';
-import { movieDbService } from '@/services/MovieDbService';
+import { useMovieLibrary } from '@/hooks/library/useMovieLibrary';
 import { type Category } from '@/models/MovieModel';
+import { movieDbService } from '@/services/MovieDbService';
+import { AlertOctagon, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
-interface LibraryDeleteDialogProps {
-  onClearLibrary: (deleteCategories: boolean) => void | Promise<void>;
-}
-
-export const LibraryDeleteDialog = ({
-  onClearLibrary,
-}: LibraryDeleteDialogProps) => {
+export const LibraryDeleteDialog = () => {
+  const { handleClearLibrary } = useMovieLibrary();
   const [deleteCategories, setDeleteCategories] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
+
+  const handleClearLibraryWithReset = async () => {
+    // resetState();
+    await handleClearLibrary(deleteCategories);
+  };
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -90,11 +91,7 @@ export const LibraryDeleteDialog = ({
             <Button variant='ghost'>Cancel</Button>
           </DialogClose>
           <DialogClose asChild>
-            <Button
-              variant='destructive'
-              onClick={() => {
-                void onClearLibrary(deleteCategories);
-              }}>
+            <Button variant='destructive' onClick={handleClearLibraryWithReset}>
               Delete
             </Button>
           </DialogClose>

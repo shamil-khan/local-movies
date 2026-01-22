@@ -32,8 +32,10 @@ export const toMovieFile = (fileName: string): MovieFile | undefined => {
     return undefined;
   }
 
-  if (MovieExtensions.includes(extMatch[1].toLowerCase())) {
-    logger.warn(`The given ${fileName} is not a valid movie extension.`);
+  if (!MovieExtensions.includes(extMatch[1].toLowerCase())) {
+    logger.warn(
+      `The given ${fileName} is not a valid movie ${extMatch[1]} extension.`,
+    );
     return undefined;
   }
 

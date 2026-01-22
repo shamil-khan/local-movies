@@ -1,46 +1,10 @@
-import { useState } from 'react';
 import { CompactFolderUpload } from '@/components/CompactFolderUpload';
-import { type MovieFilterCriteria } from '@/models/MovieModel';
-// import { LibrarySearchBar } from '@/components/library/LibrarySearchBar';
-import { LibraryFilterBar } from '@/components/library/LibraryFilterBar';
 import { FileProcessingPanel } from '@/components/library/FileProcessingPanel';
-import { LibraryFilterToggleGroup } from '@/components/library/LibraryFilterToggleGroup';
 import { LibraryDeleteDialog } from '@/components/library/LibraryDeleteDialog';
+import { useState } from 'react';
 
-interface LibraryHeaderProps {
-  onMovieAdded: () => void;
-  onClearLibrary: (deleteCategories: boolean) => void | Promise<void>;
-
-  // Filters
-  filters: MovieFilterCriteria;
-  onFilterChange: (filters: MovieFilterCriteria) => void;
-  clearFilters: () => void;
-  availableGenres: string[];
-  availableYears: string[];
-  availableRated: string[];
-  availableRatings: string[];
-  availableLanguages: string[];
-  availableCountries: string[];
-  availableCategories: Array<{ label: string; value: string }>;
-  onReloadCategories: () => void;
-}
-
-export const LibraryHeader = ({
-  onMovieAdded,
-  onClearLibrary,
-  filters,
-  onFilterChange,
-  clearFilters,
-  availableGenres,
-  availableYears,
-  availableRated,
-  availableRatings,
-  availableLanguages,
-  availableCountries,
-  availableCategories,
-  onReloadCategories,
-}: LibraryHeaderProps) => {
-  const [showFilters, setShowFilters] = useState(false);
+export const LibraryHeader = () => {
+  //const [showFilters, setShowFilters] = useState(false);
   const [uploadedFileNames, setUploadedFileNames] = useState<string[]>([]);
 
   return (
@@ -62,32 +26,26 @@ export const LibraryHeader = ({
         </div>
 
         <div className='flex items-center gap-2'>
-          <LibraryFilterToggleGroup
+          {/* <LibraryFilterToggleGroup
             filters={filters}
             onFilterChange={onFilterChange}
             showFilters={showFilters}
             onToggleFilters={() => setShowFilters(!showFilters)}
-          />
-          <LibraryDeleteDialog onClearLibrary={onClearLibrary} />
+          /> */}
+          <LibraryDeleteDialog />
         </div>
       </div>
-
+      {/* 
       {showFilters && (
         <LibraryFilterBar
           filters={filters}
           onFilterChange={onFilterChange}
-          availableGenres={availableGenres}
-          availableYears={availableYears}
-          availableRated={availableRated}
-          availableRatings={availableRatings}
-          availableLanguages={availableLanguages}
-          availableCountries={availableCountries}
           availableCategories={availableCategories}
           onClearFilters={clearFilters}
           onReloadCategories={onReloadCategories}
         />
       )}
-
+ */}
       <FileProcessingPanel fileNames={uploadedFileNames} />
     </div>
   );

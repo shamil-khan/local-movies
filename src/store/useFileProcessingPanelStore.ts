@@ -1,19 +1,15 @@
 import { create } from 'zustand';
 
 interface FileProcessingPanelState {
-  categoryIds: number[];
-  setCategoryIds: (ids: number[]) => void;
-  showPanel: boolean;
-  setShowPanel: (v: boolean) => void;
-  toggleShowPanel: () => void;
+  panelVisible: boolean;
+  closePanel: () => void;
+  togglePanel: () => void;
 }
 
 export const useFileProcessingPanelStore = create<FileProcessingPanelState>(
   (set) => ({
-    categoryIds: [],
-    setCategoryIds: (ids: number[]) => set({ categoryIds: ids }),
-    showPanel: false,
-    setShowPanel: (v: boolean) => set({ showPanel: v }),
-    toggleShowPanel: () => set((s) => ({ showPanel: !s.showPanel })),
+    panelVisible: false,
+    closePanel: () => set({ panelVisible: false }),
+    togglePanel: () => set((s) => ({ panelVisible: !s.panelVisible })),
   }),
 );
