@@ -1,7 +1,7 @@
 import { MultiSelect } from '@/components/ui/multi-select';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
-import { useMovieFilters } from '@/hooks/library/useMovieFilters';
+import { useMovieFilters } from '@/hooks/useMovieFilters';
 import logger from '@/core/logger';
 
 export const LibraryFilterBar = () => {

@@ -1,6 +1,6 @@
 import { useEffect, useCallback } from 'react';
 
-import { useMovieProcessWorkflow } from '@/hooks/library/useMovieProcessWorkflow';
+import { useMovieProcessWorkflow } from '@/hooks/useMovieProcessWorkflow';
 import { toMovieFiles } from '@/utils/MovieFileHelper';
 import { type MovieUploadInfo } from '@/models/MovieModel';
 import logger from '@/core/logger';

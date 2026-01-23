@@ -6,7 +6,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { useMovieProcessor } from '@/hooks/library/useMovieProcessor';
+import { useMovieProcessor } from '@/hooks/useMovieProcessor';
 
 export const FileProcessingEntriesList = () => {
   const { movies, removeByFileName } = useMovieProcessor();

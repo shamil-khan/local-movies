@@ -1,7 +1,7 @@
 import { MovieCard } from '@/components/MovieCard';
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
-import { useMovieFilters } from '@/hooks/library/useMovieFilters';
+import { useMovieFilters } from '@/hooks/useMovieFilters';
 
 export const MovieGallery = () => {
   const [loading, setLoading] = useState(false);

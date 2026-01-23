@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { FileProcessingHeader } from '@/components/library/FileProcessingHeader';
 import { FileProcessingCategoryBar } from '@/components/library/FileProcessingCategoryBar';
-import { useMovieProcessor } from '@/hooks/library/useMovieProcessor';
+import { useMovieProcessor } from '@/hooks/useMovieProcessor';
 import { FileProcessingEntriesList } from '@/components/library/FileProcessingEntriesList';
 
 interface FileProcessingPanelProps {

@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { useMovieLibrary } from '@/hooks/library/useMovieLibrary';
+import { useMovieLibrary } from '@/hooks/useMovieLibrary';
 import { type Category } from '@/models/MovieModel';
 import { movieDbService } from '@/services/MovieDbService';
 import { AlertOctagon, Trash2 } from 'lucide-react';

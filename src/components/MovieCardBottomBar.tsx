@@ -7,7 +7,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { useMovieLibrary } from '@/hooks/library/useMovieLibrary';
+import { useMovieLibrary } from '@/hooks/useMovieLibrary';
 
 interface MovieCardBottomBarProps {
   movie: MovieInfo;

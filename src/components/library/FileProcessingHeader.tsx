@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { useMovieProcessor } from '@/hooks/library/useMovieProcessor';
+import { useMovieProcessor } from '@/hooks/useMovieProcessor';
 
 import { Download, Film, Trash2, X } from 'lucide-react';
 

@@ -10,9 +10,9 @@ import { omdbApiService } from '@/services/OmdbApiService';
 import { movieDbService } from '@/services/MovieDbService';
 import { utilityApiService } from '@/services/UtilityApiService';
 import { type MovieInfo } from '@/models/MovieModel';
-import { useMovieFilters } from '@/hooks/library/useMovieFilters';
+import { useMovieFilters } from '@/hooks/useMovieFilters';
 import { toMovieDetail } from '@/utils/MovieFileHelper';
-import { useMovieLibrary } from '@/hooks/library/useMovieLibrary';
+import { useMovieLibrary } from '@/hooks/useMovieLibrary';
 
 export const LibrarySearchBar = () => {
   const { filters, onFiltersUpdated } = useMovieFilters();

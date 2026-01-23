@@ -1,7 +1,7 @@
 import '@/App.css';
 import { useEffect } from 'react';
 import { Toaster } from 'sonner';
-import { useMovieLibrary } from '@/hooks/library/useMovieLibrary';
+import { useMovieLibrary } from '@/hooks/useMovieLibrary';
 import { LibraryHeader } from './components/library/LibraryHeader';
 import { MovieGallery } from './components/MovieGallery';
 import { ErrorBoundary } from '@/components/ErrorBoundary';

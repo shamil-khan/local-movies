@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Heart, Eye, ListFilter } from 'lucide-react';
-import { useMovieFilters } from '@/hooks/library/useMovieFilters';
+import { useMovieFilters } from '@/hooks/useMovieFilters';
 
 interface LibraryFilterToggleGroupProps {
   showFilters: boolean;
