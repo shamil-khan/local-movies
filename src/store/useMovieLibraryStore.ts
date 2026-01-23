@@ -3,6 +3,7 @@ import {
   type Category,
   type MovieInfo,
   type MovieUserStatus,
+  type MovieFilterCriteria,
 } from '@/models/MovieModel';
 import { movieDbService } from '@/services/MovieDbService';
 import { toast } from 'sonner';
@@ -12,6 +13,7 @@ import { immer } from 'zustand/middleware/immer';
 interface MovieLibraryState {
   movies: MovieInfo[];
   categories: Category[];
+  filters: MovieFilterCriteria;
   loadMovies: () => Promise<void>;
   addMovie: (movie: MovieInfo) => Promise<void>;
   removeMovie: (imdbID: string) => Promise<void>;
@@ -25,7 +27,10 @@ interface MovieLibraryState {
   ) => Promise<void>;
   toggleMovieFavorite: (imdbID: string) => Promise<void>;
   toggleMovieWatched: (imdbID: string) => Promise<void>;
+
   clearStore: (deleteCategories: boolean) => Promise<boolean>;
+  updatedFilters: (filters: MovieFilterCriteria) => void;
+  clearFilters: () => void;
 }
 
 export const useMovieLibraryStore = create<MovieLibraryState>()(
@@ -60,6 +65,18 @@ export const useMovieLibraryStore = create<MovieLibraryState>()(
     return {
       movies: [],
       categories: [],
+      filters: {
+        query: '',
+        genre: [],
+        year: [],
+        rating: [],
+        rated: [],
+        language: [],
+        country: [],
+        category: [],
+        isFavorite: false,
+        isWatched: false,
+      },
 
       loadMovies: async () => {
         try {
@@ -259,6 +276,29 @@ export const useMovieLibraryStore = create<MovieLibraryState>()(
           toast.error('Failed to clear library');
           return false;
         }
+      },
+
+      updatedFilters: (filters: MovieFilterCriteria) => {
+        set((state) => {
+          state.filters = filters;
+        });
+      },
+
+      clearFilters: () => {
+        set((state) => {
+          state.filters = {
+            query: '',
+            genre: [],
+            year: [],
+            rating: [],
+            rated: [],
+            language: [],
+            country: [],
+            category: [],
+            isFavorite: false,
+            isWatched: false,
+          }
+        });
       },
     };
   }),
