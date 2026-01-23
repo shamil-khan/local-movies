@@ -31,7 +31,9 @@ interface MovieCardProps {
 export const MovieCard = ({ movie }: MovieCardProps) => {
   const [trailerDialogOpen, setTrailerDialogOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
-  const [posterSrc, setPosterSrc] = useState<string>('');
+  const [posterSrc, setPosterSrc] = useState<string>(
+    '/generic-movie-poster.svg',
+  );
 
   useEffect(() => {
     let objectUrl: string | null = null;
