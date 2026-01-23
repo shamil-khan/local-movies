@@ -15,20 +15,20 @@ import { toMovieDetail } from '@/utils/MovieFileHelper';
 import { useMovieLibrary } from '@/hooks/library/useMovieLibrary';
 
 export const LibrarySearchBar = () => {
-  const { filterCriteria, setFilterCriteria } = useMovieFilters();
+  const { filters, onFiltersUpdated } = useMovieFilters();
   const { handleAddMovie } = useMovieLibrary();
   const [searchResults, setSearchResults] = useState<TmdbMovieResult[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
 
   const onQueryChange = (query: string) => {
-    setFilterCriteria({ ...filterCriteria, query: query.trim() });
+    onFiltersUpdated({ ...filters, query: query.trim() });
   };
 
   useEffect(() => {
     const searchTimer = setTimeout(async () => {
-      if (filterCriteria.query.length >= 2) {
+      if (filters.query.length >= 2) {
         try {
-          const results = await tmdbApiService.search(filterCriteria.query);
+          const results = await tmdbApiService.search(filters.query);
           setSearchResults(results.slice(0, 5));
           setShowDropdown(true);
         } catch (error) {
@@ -41,7 +41,7 @@ export const LibrarySearchBar = () => {
     }, 500);
 
     return () => clearTimeout(searchTimer);
-  }, [filterCriteria.query]);
+  }, [filters.query]);
 
   const handleSelectMovie = async (
     tmdbMovie: import('@/services/TmdbApiService').TmdbMovieResult,
@@ -96,7 +96,7 @@ export const LibrarySearchBar = () => {
       <Input
         type='text'
         placeholder='Search Movie Title...'
-        value={filterCriteria.query}
+        value={filters.query}
         onChange={(e) => onQueryChange(e.target.value)}
         onFocus={() => {
           if (searchResults.length > 0) setShowDropdown(true);

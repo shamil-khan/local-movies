@@ -2,18 +2,19 @@ import { MultiSelect } from '@/components/ui/multi-select';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import { useMovieFilters } from '@/hooks/library/useMovieFilters';
+import logger from '@/core/logger';
 
 export const LibraryFilterBar = () => {
   const {
-    filterCriteria,
-    setFilterCriteria,
+    filters,
+    onFiltersUpdated,
     availableGenres,
     availableYears,
     availableRated,
     availableRatings,
     availableLanguages,
     availableCountries,
-    clearFilters,
+    onRemoveFilters,
   } = useMovieFilters();
 
   type MultiFilterKey =
@@ -26,7 +27,8 @@ export const LibraryFilterBar = () => {
     | 'category';
 
   const handleChange = (key: MultiFilterKey, value: string[]) => {
-    setFilterCriteria({ ...filterCriteria, [key]: value });
+    logger.info(`Updating filter ${key} with values:`, value);
+    onFiltersUpdated({ ...filters, [key]: value });
   };
 
   // const handleDeleteSingleCategory = async (value: string) => {
@@ -47,22 +49,22 @@ export const LibraryFilterBar = () => {
   // };
 
   const hasActiveFilters =
-    (filterCriteria.genre && filterCriteria.genre.length > 0) ||
-    (filterCriteria.year && filterCriteria.year.length > 0) ||
-    (filterCriteria.rating && filterCriteria.rating.length > 0) ||
-    (filterCriteria.rated && filterCriteria.rated.length > 0) ||
-    (filterCriteria.language && filterCriteria.language.length > 0) ||
-    (filterCriteria.country && filterCriteria.country.length > 0) ||
-    (filterCriteria.category && filterCriteria.category.length > 0) ||
-    filterCriteria.isFavorite ||
-    filterCriteria.isWatched ||
-    (filterCriteria.query && filterCriteria.query.trim().length > 0);
+    (filters.genre && filters.genre.length > 0) ||
+    (filters.year && filters.year.length > 0) ||
+    (filters.rating && filters.rating.length > 0) ||
+    (filters.rated && filters.rated.length > 0) ||
+    (filters.language && filters.language.length > 0) ||
+    (filters.country && filters.country.length > 0) ||
+    (filters.category && filters.category.length > 0) ||
+    filters.isFavorite ||
+    filters.isWatched ||
+    (filters.query && filters.query.trim().length > 0);
   return (
     <div className='flex w-full flex-wrap items-center gap-2 p-4 bg-accent/20 rounded-lg animate-in slide-in-from-top-2 fade-in duration-200'>
       <div className='min-w-[120px]'>
         <MultiSelect
           options={availableGenres.map((g) => ({ label: g, value: g }))}
-          selected={filterCriteria.genre}
+          selected={filters.genre}
           onChange={(val) => handleChange('genre', val)}
           placeholder='Genre'
         />
@@ -70,7 +72,7 @@ export const LibraryFilterBar = () => {
       <div className='min-w-[120px]'>
         <MultiSelect
           options={availableYears.map((y) => ({ label: y, value: y }))}
-          selected={filterCriteria.year}
+          selected={filters.year}
           onChange={(val) => handleChange('year', val)}
           placeholder='Year'
         />
@@ -78,7 +80,7 @@ export const LibraryFilterBar = () => {
       <div className='min-w-[120px]'>
         <MultiSelect
           options={availableRatings.map((r) => ({ label: r, value: r }))}
-          selected={filterCriteria.rating}
+          selected={filters.rating}
           onChange={(val) => handleChange('rating', val)}
           placeholder='Rating'
         />
@@ -86,7 +88,7 @@ export const LibraryFilterBar = () => {
       <div className='min-w-[120px]'>
         <MultiSelect
           options={availableRated.map((r) => ({ label: r, value: r }))}
-          selected={filterCriteria.rated}
+          selected={filters.rated}
           onChange={(val) => handleChange('rated', val)}
           placeholder='Rated'
         />
@@ -94,7 +96,7 @@ export const LibraryFilterBar = () => {
       <div className='min-w-[120px]'>
         <MultiSelect
           options={availableLanguages.map((l) => ({ label: l, value: l }))}
-          selected={filterCriteria.language}
+          selected={filters.language}
           onChange={(val) => handleChange('language', val)}
           placeholder='Language'
         />
@@ -102,7 +104,7 @@ export const LibraryFilterBar = () => {
       <div className='min-w-[120px]'>
         <MultiSelect
           options={availableCountries.map((c) => ({ label: c, value: c }))}
-          selected={filterCriteria.country}
+          selected={filters.country}
           onChange={(val) => handleChange('country', val)}
           placeholder='Country'
         />
@@ -122,7 +124,7 @@ export const LibraryFilterBar = () => {
       {hasActiveFilters && (
         <Button
           variant='ghost'
-          onClick={clearFilters}
+          onClick={onRemoveFilters}
           className='ml-auto text-red-500 hover:text-red-700 hover:bg-red-100 whitespace-nowrap'>
           Clear All Filters <X className='ml-2 h-4 w-4' />
         </Button>

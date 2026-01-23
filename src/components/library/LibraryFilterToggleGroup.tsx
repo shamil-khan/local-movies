@@ -11,7 +11,7 @@ export const LibraryFilterToggleGroup = ({
   showFilters,
   onToggleFilters,
 }: LibraryFilterToggleGroupProps) => {
-  const { filterCriteria, setFilterCriteria } = useMovieFilters();
+  const { filters, onFiltersUpdated } = useMovieFilters();
 
   return (
     <div className='inline-flex rounded-md border border-input overflow-hidden'>
@@ -19,35 +19,33 @@ export const LibraryFilterToggleGroup = ({
         variant='ghost'
         size='icon'
         className={`rounded-none border-0 ${
-          filterCriteria.isFavorite ? 'bg-red-100 text-red-500' : ''
+          filters.isFavorite ? 'bg-red-100 text-red-500' : ''
         }`}
         onClick={() =>
-          setFilterCriteria({
-            ...filterCriteria,
-            isFavorite: !filterCriteria.isFavorite,
+          onFiltersUpdated({
+            ...filters,
+            isFavorite: !filters.isFavorite,
           })
         }
         title='Show Favorites Only'>
         <Heart
-          className={`h-5 w-5 ${filterCriteria.isFavorite ? 'fill-current' : ''}`}
+          className={`h-5 w-5 ${filters.isFavorite ? 'fill-current' : ''}`}
         />
       </Button>
       <Button
         variant='ghost'
         size='icon'
         className={`rounded-none border-0 ${
-          filterCriteria.isWatched ? 'bg-blue-100 text-blue-500' : ''
+          filters.isWatched ? 'bg-blue-100 text-blue-500' : ''
         }`}
         onClick={() =>
-          setFilterCriteria({
-            ...filterCriteria,
-            isWatched: !filterCriteria.isWatched,
+          onFiltersUpdated({
+            ...filters,
+            isWatched: !filters.isWatched,
           })
         }
         title='Show Watched Only'>
-        <Eye
-          className={`h-5 w-5 ${filterCriteria.isWatched ? 'fill-current' : ''}`}
-        />
+        <Eye className={`h-5 w-5 ${filters.isWatched ? 'fill-current' : ''}`} />
       </Button>
       <Button
         variant='ghost'

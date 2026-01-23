@@ -39,9 +39,9 @@ export const useMovieLibraryStore = create<MovieLibraryState>()(
 
       const status = movie.status
         ? {
-            isFavorite: movie.status.isFavorite,
-            isWatched: movie.status.isWatched,
-          }
+          isFavorite: movie.status.isFavorite,
+          isWatched: movie.status.isWatched,
+        }
         : { isFavorite: false, isWatched: false };
 
       status.isFavorite = isFavorite ? !status.isFavorite : status.isFavorite;
@@ -58,8 +58,6 @@ export const useMovieLibraryStore = create<MovieLibraryState>()(
     };
 
     return {
-      // Wrap the state creator with 'immer'
-      items: [],
       movies: [],
       categories: [],
 
@@ -187,9 +185,9 @@ export const useMovieLibraryStore = create<MovieLibraryState>()(
             state.movies = state.movies.map((movie) =>
               movie.imdbID === imdbID
                 ? {
-                    ...movie,
-                    categories: [...(movie.categories || []), category],
-                  }
+                  ...movie,
+                  categories: [...(movie.categories || []), category],
+                }
                 : movie,
             );
           });
@@ -207,11 +205,11 @@ export const useMovieLibraryStore = create<MovieLibraryState>()(
             state.movies = state.movies.map((movie) =>
               movie.imdbID === imdbID
                 ? {
-                    ...movie,
-                    categories: movie.categories?.filter(
-                      (c) => c.id !== category.id,
-                    ),
-                  }
+                  ...movie,
+                  categories: movie.categories?.filter(
+                    (c) => c.id !== category.id,
+                  ),
+                }
                 : movie,
             );
           });

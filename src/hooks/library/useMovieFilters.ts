@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { type MovieFilterCriteria } from '@/models/MovieModel';
 import { useMovieLibrary } from '@/hooks/library/useMovieLibrary';
+import logger from '@/core/logger';
 
 export const useMovieFilters = () => {
   const [filterCriteria, setFilterCriteria] = useState<MovieFilterCriteria>({
@@ -80,7 +81,8 @@ export const useMovieFilters = () => {
   );
 
   const filteredMovies = useMemo(() => {
-    return movies.filter((movie) => {
+    logger.info('Filtering movies with criteria:', filterCriteria);
+    const result = movies.filter((movie) => {
       const matchesQuery = filterCriteria.query
         ? movie.title.toLowerCase().includes(filterCriteria.query.toLowerCase())
         : true;
@@ -92,8 +94,8 @@ export const useMovieFilters = () => {
         filterCriteria.genre.length === 0
           ? true
           : filterCriteria.genre.some((g) =>
-              movieGenres.includes(g.toLowerCase()),
-            );
+            movieGenres.includes(g.toLowerCase()),
+          );
 
       const matchesYear =
         filterCriteria.year.length === 0
@@ -117,8 +119,8 @@ export const useMovieFilters = () => {
         filterCriteria.language.length === 0
           ? true
           : filterCriteria.language.some((l) =>
-              movieLanguages.includes(l.toLowerCase()),
-            );
+            movieLanguages.includes(l.toLowerCase()),
+          );
 
       const movieCountries = movie.detail.country
         .split(',')
@@ -127,8 +129,8 @@ export const useMovieFilters = () => {
         filterCriteria.country.length === 0
           ? true
           : filterCriteria.country.some((c) =>
-              movieCountries.includes(c.toLowerCase()),
-            );
+            movieCountries.includes(c.toLowerCase()),
+          );
 
       const matchesFavorite = filterCriteria.isFavorite
         ? movie.status?.isFavorite
@@ -145,8 +147,8 @@ export const useMovieFilters = () => {
         filterCriteria.category.length === 0
           ? true
           : selectedCategoryIds.some((catId) =>
-              movie.categories?.map((c) => c.id).includes(catId),
-            );
+            movie.categories?.map((c) => c.id).includes(catId),
+          );
 
       return (
         matchesQuery &&
@@ -161,7 +163,9 @@ export const useMovieFilters = () => {
         matchesWatched
       );
     });
-  }, [movies, filterCriteria]);
+    logger.info(`Filtered movies count: ${result.length}`);
+    return result;
+  }, [filterCriteria, movies]);
 
   const clearFilters = () => {
     setFilterCriteria({
@@ -178,16 +182,21 @@ export const useMovieFilters = () => {
     });
   };
 
+  const onFiltersUpdated = (filters: MovieFilterCriteria) => {
+    logger.info('Filters updated', filters);
+    setFilterCriteria(filters);
+  };
+
   return {
-    filterCriteria,
-    setFilterCriteria,
     filteredMovies,
+    filters: filterCriteria,
+    onFiltersUpdated,
+    onRemoveFilters: clearFilters,
     availableGenres,
     availableYears,
     availableRated,
     availableRatings,
     availableLanguages,
     availableCountries,
-    clearFilters,
   };
 };
