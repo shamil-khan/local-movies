@@ -39,7 +39,6 @@ export const MovieCard = ({ movie }: MovieCardProps) => {
     let objectUrl: string | null = null;
 
     const loadPoster = async () => {
-      logger.info(`Loading poster for ${movie.title} from DB`);
       try {
         const poster = await movieDbService.getPoster(movie.imdbID);
         if (poster && poster.blob) {
