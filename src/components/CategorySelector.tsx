@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { movieDbService } from '@/services/MovieDbService';
 import { type Category } from '@/models/MovieModel';
 import { toast } from 'sonner';
-import { useFileProcessingPanelStore } from '@/store/useFileProcessingPanelStore';
+// import { useFileProcessingPanelStore } from '@/store/useFileProcessingPanelStore';
 import { cn } from '@/lib/utils';
 
 interface CategorySelectorProps {
