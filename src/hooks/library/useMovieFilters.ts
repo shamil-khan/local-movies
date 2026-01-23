@@ -1,23 +1,11 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { type MovieFilterCriteria } from '@/models/MovieModel';
-import { useMovieLibrary } from '@/hooks/library/useMovieLibrary';
+import { useMovieLibraryStore } from '@/store/useMovieLibraryStore';
 import logger from '@/core/logger';
 
 export const useMovieFilters = () => {
-  const [filterCriteria, setFilterCriteria] = useState<MovieFilterCriteria>({
-    query: '',
-    genre: [],
-    year: [],
-    rating: [],
-    rated: [],
-    language: [],
-    country: [],
-    category: [],
-    isFavorite: false,
-    isWatched: false,
-  });
+  const { movies, filters, updatedFilters, clearFilters } = useMovieLibraryStore();
 
-  const { movies } = useMovieLibrary();
   const movieDetails = useMemo(() => movies.map((m) => m.detail), [movies]);
 
   const availableGenres = useMemo(
@@ -81,44 +69,44 @@ export const useMovieFilters = () => {
   );
 
   const filteredMovies = useMemo(() => {
-    logger.info('Filtering movies with criteria:', filterCriteria);
+    logger.info('Filtering movies with criteria:', filters);
     const result = movies.filter((movie) => {
-      const matchesQuery = filterCriteria.query
-        ? movie.title.toLowerCase().includes(filterCriteria.query.toLowerCase())
+      const matchesQuery = filters.query
+        ? movie.title.toLowerCase().includes(filters.query.toLowerCase())
         : true;
 
       const movieGenres = movie.detail.genre
         .split(',')
         .map((g) => g.trim().toLowerCase());
       const matchesGenre =
-        filterCriteria.genre.length === 0
+        filters.genre.length === 0
           ? true
-          : filterCriteria.genre.some((g) =>
+          : filters.genre.some((g) =>
             movieGenres.includes(g.toLowerCase()),
           );
 
       const matchesYear =
-        filterCriteria.year.length === 0
+        filters.year.length === 0
           ? true
-          : filterCriteria.year.includes(movie.detail.year);
+          : filters.year.includes(movie.detail.year);
 
       const matchesRated =
-        filterCriteria.rated.length === 0
+        filters.rated.length === 0
           ? true
-          : filterCriteria.rated.includes(movie.detail.rated);
+          : filters.rated.includes(movie.detail.rated);
 
       const matchesRating =
-        filterCriteria.rating.length === 0
+        filters.rating.length === 0
           ? true
-          : filterCriteria.rating.includes(movie.detail.imdbRating);
+          : filters.rating.includes(movie.detail.imdbRating);
 
       const movieLanguages = movie.detail.language
         .split(',')
         .map((l) => l.trim().toLowerCase());
       const matchesLanguage =
-        filterCriteria.language.length === 0
+        filters.language.length === 0
           ? true
-          : filterCriteria.language.some((l) =>
+          : filters.language.some((l) =>
             movieLanguages.includes(l.toLowerCase()),
           );
 
@@ -126,25 +114,25 @@ export const useMovieFilters = () => {
         .split(',')
         .map((c) => c.trim().toLowerCase());
       const matchesCountry =
-        filterCriteria.country.length === 0
+        filters.country.length === 0
           ? true
-          : filterCriteria.country.some((c) =>
+          : filters.country.some((c) =>
             movieCountries.includes(c.toLowerCase()),
           );
 
-      const matchesFavorite = filterCriteria.isFavorite
+      const matchesFavorite = filters.isFavorite
         ? movie.status?.isFavorite
         : true;
 
-      const matchesWatched = filterCriteria.isWatched
+      const matchesWatched = filters.isWatched
         ? movie.status?.isWatched
         : true;
 
-      const selectedCategoryIds = filterCriteria.category.map((c) =>
+      const selectedCategoryIds = filters.category.map((c) =>
         parseInt(c, 10),
       );
       const matchesCategory =
-        filterCriteria.category.length === 0
+        filters.category.length === 0
           ? true
           : selectedCategoryIds.some((catId) =>
             movie.categories?.map((c) => c.id).includes(catId),
@@ -165,31 +153,18 @@ export const useMovieFilters = () => {
     });
     logger.info(`Filtered movies count: ${result.length}`);
     return result;
-  }, [filterCriteria, movies]);
+  }, [filters, movies]);
 
-  const clearFilters = () => {
-    setFilterCriteria({
-      query: '',
-      genre: [],
-      year: [],
-      rating: [],
-      rated: [],
-      language: [],
-      country: [],
-      category: [],
-      isFavorite: false,
-      isWatched: false,
-    });
-  };
+
 
   const onFiltersUpdated = (filters: MovieFilterCriteria) => {
     logger.info('Filters updated', filters);
-    setFilterCriteria(filters);
+    updatedFilters(filters);
   };
 
   return {
     filteredMovies,
-    filters: filterCriteria,
+    filters: filters,
     onFiltersUpdated,
     onRemoveFilters: clearFilters,
     availableGenres,
