@@ -1,6 +1,6 @@
 ---
 name: TypeScript Best Practices
-globs: ["**/*.ts", "**/*.tsx"]
+globs: ['**/*.ts', '**/*.tsx']
 description: A description of your rule
 ---
 

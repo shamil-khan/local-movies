@@ -4,7 +4,8 @@ import { useMovieLibraryStore } from '@/store/useMovieLibraryStore';
 import logger from '@/core/logger';
 
 export const useMovieFilters = () => {
-  const { movies, filters, updatedFilters, clearFilters } = useMovieLibraryStore();
+  const { movies, filters, updatedFilters, clearFilters } =
+    useMovieLibraryStore();
 
   const movieDetails = useMemo(() => movies.map((m) => m.detail), [movies]);
 
@@ -81,9 +82,7 @@ export const useMovieFilters = () => {
       const matchesGenre =
         filters.genre.length === 0
           ? true
-          : filters.genre.some((g) =>
-            movieGenres.includes(g.toLowerCase()),
-          );
+          : filters.genre.some((g) => movieGenres.includes(g.toLowerCase()));
 
       const matchesYear =
         filters.year.length === 0
@@ -107,8 +106,8 @@ export const useMovieFilters = () => {
         filters.language.length === 0
           ? true
           : filters.language.some((l) =>
-            movieLanguages.includes(l.toLowerCase()),
-          );
+              movieLanguages.includes(l.toLowerCase()),
+            );
 
       const movieCountries = movie.detail.country
         .split(',')
@@ -117,26 +116,22 @@ export const useMovieFilters = () => {
         filters.country.length === 0
           ? true
           : filters.country.some((c) =>
-            movieCountries.includes(c.toLowerCase()),
-          );
+              movieCountries.includes(c.toLowerCase()),
+            );
 
       const matchesFavorite = filters.isFavorite
         ? movie.status?.isFavorite
         : true;
 
-      const matchesWatched = filters.isWatched
-        ? movie.status?.isWatched
-        : true;
+      const matchesWatched = filters.isWatched ? movie.status?.isWatched : true;
 
-      const selectedCategoryIds = filters.category.map((c) =>
-        parseInt(c, 10),
-      );
+      const selectedCategoryIds = filters.category.map((c) => parseInt(c, 10));
       const matchesCategory =
         filters.category.length === 0
           ? true
           : selectedCategoryIds.some((catId) =>
-            movie.categories?.map((c) => c.id).includes(catId),
-          );
+              movie.categories?.map((c) => c.id).includes(catId),
+            );
 
       return (
         matchesQuery &&
@@ -154,8 +149,6 @@ export const useMovieFilters = () => {
     logger.info(`Filtered movies count: ${result.length}`);
     return result;
   }, [filters, movies]);
-
-
 
   const onFiltersUpdated = (filters: MovieFilterCriteria) => {
     logger.info('Filters updated', filters);
