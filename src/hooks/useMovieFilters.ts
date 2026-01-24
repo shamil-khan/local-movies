@@ -4,7 +4,7 @@ import { useMovieLibraryStore } from '@/store/useMovieLibraryStore';
 import logger from '@/core/logger';
 
 export const useMovieFilters = () => {
-  const { movies, filters, updatedFilters, clearFilters } =
+  const { movies, categories, filters, updatedFilters, clearFilters } =
     useMovieLibraryStore();
 
   const movieDetails = useMemo(() => movies.map((m) => m.detail), [movies]);
@@ -59,6 +59,15 @@ export const useMovieFilters = () => {
         ),
       ).sort(),
     [movieDetails],
+  );
+
+  const availableCategories = useMemo(
+    () =>
+      categories.map((c) => ({
+        label: c.name,
+        value: c.id,
+      })),
+    [categories],
   );
 
   const availableRatings = useMemo(
@@ -166,5 +175,6 @@ export const useMovieFilters = () => {
     availableRatings,
     availableLanguages,
     availableCountries,
+    availableCategories,
   };
 };

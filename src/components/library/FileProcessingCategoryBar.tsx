@@ -1,7 +1,12 @@
-import { CategorySelector } from '@/components/CategorySelector';
 import { Tag } from 'lucide-react';
+import { MultiSelect } from '../ui/multi-select';
+import { useMovieLibrary } from '@/hooks/useMovieLibrary';
+import { useState } from 'react';
 
 export const FileProcessingCategoryBar = () => {
+  const { categories } = useMovieLibrary();
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+
   return (
     <div className='px-3 pt-3 pb-1 flex items-center justify-between'>
       <div className='flex items-center gap-2'>
@@ -11,10 +16,17 @@ export const FileProcessingCategoryBar = () => {
             Categories
           </span>
         </div>
-        {/* <CategorySelector
-          selectedCategoryIds={selectedCategoryIds}
-          onCategoryChange={onSelectedCategoryIdsChange}
-        /> */}
+        <div className='min-w-[140px]'>
+          <MultiSelect
+            options={categories.map((c) => ({
+              label: c.name,
+              value: c.id.toString(),
+            }))}
+            selected={selectedCategories}
+            onChange={(val) => setSelectedCategories(val)}
+            placeholder='Category'
+          />
+        </div>
       </div>
     </div>
   );

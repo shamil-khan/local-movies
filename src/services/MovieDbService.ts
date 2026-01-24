@@ -12,6 +12,15 @@ import {
 } from '@/models/MovieModel';
 
 class MovieDbService {
+  constructor() {
+    this.initDatabase();
+  }
+
+  async initDatabase() {
+    logger.info('Initializing MovieDbService database');
+    // await db.categoryTable.add({ name: `Test-${Date.now().toString()}` });
+  }
+
   allMovieDetails = async (): Promise<MovieDetail[]> => {
     return await db.movieDetailTable.toArray();
   };

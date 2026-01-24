@@ -8,13 +8,14 @@ export const LibraryFilterBar = () => {
   const {
     filters,
     onFiltersUpdated,
+    onRemoveFilters,
     availableGenres,
     availableYears,
     availableRated,
     availableRatings,
     availableLanguages,
     availableCountries,
-    onRemoveFilters,
+    availableCategories,
   } = useMovieFilters();
 
   type MultiFilterKey =
@@ -109,17 +110,19 @@ export const LibraryFilterBar = () => {
           placeholder='Country'
         />
       </div>
-      {/* {availableCategories.length > 0 && (
+      {availableCategories.length > 0 && (
         <div className='min-w-[140px]'>
-          <CategoryMultiSelect
-            options={availableCategories}
-            selected={filters.category || []}
+          <MultiSelect
+            options={availableCategories.map((c) => ({
+              label: c.label,
+              value: c.value.toString(),
+            }))}
+            selected={filters.category}
             onChange={(val) => handleChange('category', val)}
-            onRemoveOption={handleDeleteSingleCategory}
             placeholder='Category'
           />
         </div>
-      )} */}
+      )}
 
       {hasActiveFilters && (
         <Button
