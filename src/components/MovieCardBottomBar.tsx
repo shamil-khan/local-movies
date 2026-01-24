@@ -26,7 +26,7 @@ export const MovieCardBottomBar = ({
 
   return (
     <div
-      className='absolute bottom-0 left-0 right-0 flex justify-center gap-2 py-2 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-t from-blue-900/80 via-blue-900/60 to-transparent'
+      className='absolute bottom-0 left-0 right-0 flex justify-center gap-2 py-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity bg-gradient-to-t from-blue-900/80 via-blue-900/60 to-transparent'
       onClick={(e) => e.stopPropagation()}>
       <TooltipProvider>
         <Tooltip delayDuration={300}>
