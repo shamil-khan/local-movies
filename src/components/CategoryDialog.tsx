@@ -8,10 +8,14 @@ import {
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Trash2, Edit2, Plus, Check, X } from 'lucide-react';
+import { Trash2, Edit2, Plus, Check, X, Lock } from 'lucide-react';
 import { useMovieLibraryStore } from '@/store/useMovieLibraryStore';
 import { useCategoryDialog } from '@/hooks/useCategoryDialog';
-import { cn } from '@/lib/utils'; // Assuming cn utility exists
+import { cn } from '@/lib/utils';
+import {
+  SYSTEM_CATEGORY_SEARCHED,
+  SYSTEM_CATEGORY_UPLOADED,
+} from '@/services/MovieDbService';
 
 export const CategoryDialog = () => {
   const { isOpen, close, selectedMovie } = useCategoryDialog();
@@ -83,6 +87,12 @@ export const CategoryDialog = () => {
     }
   };
 
+  const isSystemCategory = (name: string) => {
+    return (
+      name === SYSTEM_CATEGORY_SEARCHED || name === SYSTEM_CATEGORY_UPLOADED
+    );
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && close()}>
       <DialogContent className='w-[calc(100%-2rem)] sm:max-w-[425px] rounded-lg'>
@@ -128,19 +138,21 @@ export const CategoryDialog = () => {
               activeMovie?.categories?.some((c) => c.id === category.id) ??
               false;
             const isEditing = editingCategoryId === category.id;
+            const isSystem = isSystemCategory(category.name);
 
             return (
               <div
                 key={category.id}
                 className={cn(
                   'flex items-center justify-between p-2 rounded-md transition-colors',
-                  activeMovie && !isEditing
+                  activeMovie && !isEditing && !isSystem
                     ? 'hover:bg-accent cursor-pointer'
                     : 'bg-transparent',
                   isSelected ? 'bg-accent/50' : '',
+                  isSystem ? 'opacity-70' : '',
                 )}
                 onClick={() => {
-                  if (activeMovie && !isEditing) {
+                  if (activeMovie && !isEditing && !isSystem) {
                     handleToggleCategoryForMovie(category);
                   }
                 }}>
@@ -183,15 +195,19 @@ export const CategoryDialog = () => {
                             isSelected
                               ? 'bg-primary border-primary'
                               : 'border-muted-foreground',
+                            isSystem ? 'opacity-50' : '',
                           )}>
                           {isSelected && (
                             <Check className='h-3 w-3 text-primary-foreground' />
                           )}
                         </div>
                       )}
-                      <span className='font-medium'>
+                      <span className='font-medium flex items-center gap-2'>
                         {category.name}
-                        <span className='ml-1.5 text-xs text-muted-foreground font-normal'>
+                        {isSystem && (
+                          <Lock className='w-3 h-3 text-muted-foreground' />
+                        )}
+                        <span className='text-xs text-muted-foreground font-normal'>
                           (
                           {
                             movies.filter((m) =>
@@ -203,34 +219,36 @@ export const CategoryDialog = () => {
                       </span>
                     </div>
 
-                    <div
-                      className='flex items-center'
-                      onClick={(e) => e.stopPropagation()}>
-                      <Button
-                        variant='ghost'
-                        size='icon'
-                        className='h-8 w-8 text-muted-foreground hover:text-foreground'
-                        onClick={() =>
-                          handleStartEdit(category.id, category.name)
-                        }>
-                        <Edit2 className='h-4 w-4' />
-                      </Button>
-                      <Button
-                        variant='ghost'
-                        size='icon'
-                        className='h-8 w-8 text-muted-foreground hover:text-destructive'
-                        onClick={() => {
-                          if (
-                            confirm(
-                              `Delete category "${category.name}"? This will remove it from all movies.`,
-                            )
-                          ) {
-                            removeCategory(category.id);
-                          }
-                        }}>
-                        <Trash2 className='h-4 w-4' />
-                      </Button>
-                    </div>
+                    {!isSystem && (
+                      <div
+                        className='flex items-center'
+                        onClick={(e) => e.stopPropagation()}>
+                        <Button
+                          variant='ghost'
+                          size='icon'
+                          className='h-8 w-8 text-muted-foreground hover:text-foreground'
+                          onClick={() =>
+                            handleStartEdit(category.id, category.name)
+                          }>
+                          <Edit2 className='h-4 w-4' />
+                        </Button>
+                        <Button
+                          variant='ghost'
+                          size='icon'
+                          className='h-8 w-8 text-muted-foreground hover:text-destructive'
+                          onClick={() => {
+                            if (
+                              confirm(
+                                `Delete category "${category.name}"? This will remove it from all movies.`,
+                              )
+                            ) {
+                              removeCategory(category.id);
+                            }
+                          }}>
+                          <Trash2 className='h-4 w-4' />
+                        </Button>
+                      </div>
+                    )}
                   </>
                 )}
               </div>
@@ -241,3 +259,4 @@ export const CategoryDialog = () => {
     </Dialog>
   );
 };
+
