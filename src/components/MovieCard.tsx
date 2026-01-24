@@ -67,7 +67,7 @@ export const MovieCard = ({ movie }: MovieCardProps) => {
 
   return (
     <Card className='w-full overflow-visible group'>
-      <CardContent className='py-0 px-2 h-full'>
+      <CardContent className='py-0 px-2 relative group'>
         <div className='text-center relative h-full flex flex-col'>
           <h3 className='text-sm font-bold mb-1'>{movie.title}</h3>
           <p className='text-xs font-semibold mb-1'>{movie.detail.year}</p>

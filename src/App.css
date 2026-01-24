@@ -40,3 +40,44 @@
 .read-the-docs {
   color: #888;
 }
+
+button:active {
+  transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: scale(0.9);
+}
+
+@layer theme {
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+    50% {
+      opacity: 0.8;
+    }
+    100% {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+  }
+
+  @keyframes pulse-glow {
+    0%,
+    100% {
+      opacity: 0.5;
+      filter: blur(8px);
+    }
+    50% {
+      opacity: 1;
+      filter: blur(12px);
+    }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 3s infinite ease-in-out;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s infinite ease-in-out;
+  }
+}
