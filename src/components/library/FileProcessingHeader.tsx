@@ -2,10 +2,13 @@ import { Button } from '@/components/ui/button';
 import { useMovieProcessor } from '@/hooks/useMovieProcessor';
 import { useCategoryDialog } from '@/hooks/useCategoryDialog';
 
-import { Download, Film, Tag, Trash2, X } from 'lucide-react';
+import { Download, Film, Tag, Trash2, X, Loader2 } from 'lucide-react';
 import { MultiSelect } from '../ui/multi-select';
 import { useMovieLibrary } from '@/hooks/useMovieLibrary';
-import { useState } from 'react';
+import {
+  SYSTEM_CATEGORY_SEARCHED,
+  SYSTEM_CATEGORY_UPLOADED,
+} from '@/services/MovieDbService';
 
 interface FileProcessingHeaderProps {
   onClose: () => void;
@@ -16,14 +19,27 @@ export const FileProcessingHeader = ({
 }: FileProcessingHeaderProps) => {
   const { open } = useCategoryDialog();
   const { categories } = useMovieLibrary();
-  const { movies, process, clear } = useMovieProcessor();
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const {
+    movies,
+    process,
+    clear,
+    categoryIds,
+    setCategoryIds,
+    isProcessing,
+    isComplete,
+  } = useMovieProcessor();
+
+  const userCategories = categories.filter(
+    (c) =>
+      c.name !== SYSTEM_CATEGORY_SEARCHED &&
+      c.name !== SYSTEM_CATEGORY_UPLOADED,
+  );
 
   return (
     <div className='flex items-center justify-between p-2 border-b border-border bg-muted/30 flex-wrap gap-y-1'>
       <div className='flex items-center gap-2 text-sm font-medium'>
         <Film className='w-4 h-4 text-primary' />
-        <span className='hidden sm:inline'>File &amp; Movie Details</span>
+        <span className='hidden sm:inline'>File & Movie Details</span>
         <span className='bg-primary/10 text-primary px-1.5 py-0.5 rounded text-xs'>
           {movies.length}
         </span>
@@ -40,12 +56,16 @@ export const FileProcessingHeader = ({
         </Button>
         <MultiSelect
           className='w-32 sm:w-48'
-          options={categories.map((c) => ({
+          options={userCategories.map((c) => ({
             label: c.name,
             value: c.id.toString(),
           }))}
-          selected={selectedCategories}
-          onChange={(val) => setSelectedCategories(val)}
+          selected={(categoryIds || []).map((id) => id.toString())}
+          onChange={(val) =>
+            setCategoryIds(
+              val.map((v) => parseInt(v, 10)).filter((v) => !isNaN(v)),
+            )
+          }
           placeholder='Category'
         />
       </div>
@@ -55,9 +75,17 @@ export const FileProcessingHeader = ({
           size='icon'
           className='h-7 w-7'
           onClick={process}
-          disabled={movies.length === 0}
-          title='Download movies details with their poster'>
-          <Download className='w-4 h-4' />
+          disabled={movies.length === 0 || isProcessing || isComplete}
+          title={
+            isComplete
+              ? 'Processing complete'
+              : 'Download movies details with their poster'
+          }>
+          {isProcessing ? (
+            <Loader2 className='w-4 h-4 animate-spin' />
+          ) : (
+            <Download className='w-4 h-4' />
+          )}
         </Button>
         <Button
           variant='ghost'

@@ -18,8 +18,8 @@ export const useMovieProcessor = () => {
       const movies: MovieUploadInfo[] =
         fileNames.length > 0
           ? toMovieFiles(fileNames).map((f) => ({
-              file: f,
-            }))
+            file: f,
+          }))
           : [];
       setMovies(movies);
     },
@@ -32,5 +32,9 @@ export const useMovieProcessor = () => {
     process: runWorkflow,
     removeByFileName: removeFileName,
     clear: resetState,
+    categoryIds: useMovieProcessorStore((state) => state.categoryIds),
+    setCategoryIds: useMovieProcessorStore((state) => state.setCategoryIds),
+    isProcessing: useMovieProcessorStore((state) => state.isProcessing),
+    isComplete: useMovieProcessorStore((state) => state.isComplete),
   };
 };

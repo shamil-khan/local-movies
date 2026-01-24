@@ -154,22 +154,53 @@ const stepSavePosters: WorkflowStep = async (store) => {
   logger.info(`Saved all posters in DB`, withPoster);
 };
 
+import { SYSTEM_CATEGORY_UPLOADED } from '@/services/MovieDbService';
+import { db } from '@/lib/db';
+
 const stepSaveMovieToCategories: WorkflowStep = async (store) => {
   const movies = store.getMovies();
-  if (!store.categoryIds || store.categoryIds.length === 0) return;
+  // if (movies.length === 0) return; // Allow running if only to categorize? No, need movies.
 
   if (movies.length === 0) return;
 
+  // 1. Get "Uploaded" category ID
+  let uploadedCategoryId: number | undefined;
+  try {
+    const uploadedCategory = await db.categoryTable
+      .where('name')
+      .equalsIgnoreCase(SYSTEM_CATEGORY_UPLOADED)
+      .first();
+    uploadedCategoryId = uploadedCategory?.id;
+  } catch (err) {
+    logger.error('Failed to find Uploaded category', err);
+  }
+
+  // 2. Prepare all category IDs (User selected + System "Uploaded")
+  const allCategoryIds = new Set<number>();
+  if (store.categoryIds) {
+    store.categoryIds.forEach((id) => allCategoryIds.add(id));
+  }
+  if (uploadedCategoryId) {
+    allCategoryIds.add(uploadedCategoryId);
+  }
+
+  if (allCategoryIds.size === 0) {
+    logger.info('No categories to assign.');
+    return;
+  }
+
+  const categoryIdsToAssign = Array.from(allCategoryIds);
+
   logger.info(`Linking categories to movies`, {
-    categoryIds: store.categoryIds,
+    categoryIds: categoryIdsToAssign,
     movieCount: movies.length,
   });
 
   for (const movie of movies) {
-    await movieDbService.addMovieToCategories(
-      movie.detail?.imdbID ?? '',
-      store.categoryIds!,
-    );
+    const imdbID = movie.detail?.imdbID;
+    if (imdbID) {
+      await movieDbService.addMovieToCategories(imdbID, categoryIdsToAssign);
+    }
   }
 
   logger.success(`Linked categories to all movies`);
@@ -185,11 +216,16 @@ const workflow: WorkflowStep[] = [
   stepSaveMovieToCategories,
 ];
 
+import { useMovieLibraryStore } from '@/store/useMovieLibraryStore';
+
 export const useMovieProcessWorkflow = () => {
   const store = useMovieProcessorStore();
 
   const runWorkflow = useCallback(async () => {
     logger.info('Starting the movie loading workflow');
+    store.setIsProcessing(true);
+    store.setIsComplete(false); // Reset complete state
+
     for (const step of workflow) {
       try {
         await step(store);
@@ -198,6 +234,11 @@ export const useMovieProcessWorkflow = () => {
       }
     }
 
+    // Refresh the main library
+    await useMovieLibraryStore.getState().loadMovies();
+
+    store.setIsProcessing(false);
+    store.setIsComplete(true);
     logger.success('The movie loading workflow completed');
   }, [store]);
 

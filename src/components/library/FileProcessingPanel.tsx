@@ -15,8 +15,10 @@ export const FileProcessingPanel = ({
   const { movies, load } = useMovieProcessor();
 
   useEffect(() => {
-    load(fileNames);
-  }, [fileNames, load]);
+    if (fileNames.length > 0) {
+      load(fileNames);
+    }
+  }, [fileNames]); // Remove 'load' from dependencies to prevent re-execution loop if 'load' isn't stable
 
   useEffect(() => {
     const revisePanelVisibility = async () => {
