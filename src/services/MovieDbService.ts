@@ -11,6 +11,10 @@ import {
   type MovieUserStatus,
 } from '@/models/MovieModel';
 
+// System Category Names
+export const SYSTEM_CATEGORY_SEARCHED = 'Searched';
+export const SYSTEM_CATEGORY_UPLOADED = 'Uploaded';
+
 class MovieDbService {
   constructor() {
     this.initDatabase();
@@ -18,7 +22,20 @@ class MovieDbService {
 
   async initDatabase() {
     logger.info('Initializing MovieDbService database');
-    // await db.categoryTable.add({ name: `Test-${Date.now().toString()}` });
+    await this.ensureCategory(SYSTEM_CATEGORY_SEARCHED);
+    await this.ensureCategory(SYSTEM_CATEGORY_UPLOADED);
+  }
+
+  // Helper to ensure a category exists
+  private async ensureCategory(name: string) {
+    const existing = await db.categoryTable
+      .where('name')
+      .equalsIgnoreCase(name)
+      .first();
+    if (!existing) {
+      await db.categoryTable.add({ name });
+      logger.info(`Initialized system category: ${name}`);
+    }
   }
 
   allMovieDetails = async (): Promise<MovieDetail[]> => {
@@ -148,31 +165,72 @@ class MovieDbService {
       db.movieUserStatusTable,
       db.movieCategoryTable,
       () => {
-        db.movieDetailTable.add({
-          ...movie.detail,
-          imdbID: movie.imdbID,
-          title: movie.title,
-        });
+        // Check and add movie details
+        db.movieDetailTable
+          .where('imdbID')
+          .equals(movie.imdbID)
+          .first()
+          .then((existing) => {
+            if (!existing) {
+              db.movieDetailTable.add({
+                ...movie.detail,
+                imdbID: movie.imdbID,
+                title: movie.title,
+              });
+            } else {
+              logger.info(`Movie detail already exists for ${movie.title}`);
+            }
+          });
+
         if (movie.poster) {
-          db.moviePosterTable.add({
-            ...movie.poster,
-            imdbID: movie.imdbID,
-            title: movie.title,
-          });
+          db.moviePosterTable
+            .where('imdbID')
+            .equals(movie.imdbID)
+            .first()
+            .then((existing) => {
+              if (!existing && movie.poster) {
+                db.moviePosterTable.add({
+                  imdbID: movie.imdbID,
+                  title: movie.title,
+                  url: movie.poster.url || '',
+                  mime: movie.poster.mime || '',
+                  blob: movie.poster.blob || new Blob(),
+                });
+              }
+            });
         }
+
         if (movie.status) {
-          db.movieUserStatusTable.add({
-            ...movie.status,
-            imdbID: movie.imdbID,
-          });
+          db.movieUserStatusTable
+            .where('imdbID')
+            .equals(movie.imdbID)
+            .first()
+            .then((existing) => {
+              if (!existing && movie.status) {
+                db.movieUserStatusTable.add({
+                  imdbID: movie.imdbID,
+                  isFavorite: movie.status.isFavorite || false,
+                  isWatched: movie.status.isWatched || false,
+                });
+              }
+            });
         }
+
         if (movie.categories) {
-          movie.categories.forEach((c) =>
-            db.movieCategoryTable.add({
-              categoryId: c.id,
-              imdbID: movie.imdbID,
-            }),
-          );
+          movie.categories.forEach((c) => {
+            db.movieCategoryTable
+              .where('[imdbID+categoryId]')
+              .equals([movie.imdbID, c.id])
+              .first()
+              .then((existing) => {
+                if (!existing) {
+                  db.movieCategoryTable.add({
+                    categoryId: c.id,
+                    imdbID: movie.imdbID,
+                  });
+                }
+              });
+          });
         }
       },
     );

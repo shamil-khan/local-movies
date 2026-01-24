@@ -8,7 +8,7 @@ import {
 import { logger } from '@/core/logger';
 import { toast } from 'sonner';
 import { omdbApiService } from '@/services/OmdbApiService';
-import { movieDbService } from '@/services/MovieDbService';
+import { movieDbService, SYSTEM_CATEGORY_SEARCHED } from '@/services/MovieDbService';
 import { utilityApiService } from '@/services/UtilityApiService';
 import { type MovieInfo } from '@/models/MovieModel';
 import { useMovieFilters } from '@/hooks/useMovieFilters';
@@ -17,7 +17,7 @@ import { useMovieLibrary } from '@/hooks/useMovieLibrary';
 
 export const LibrarySearchBar = () => {
   const { filters, onFiltersUpdated } = useMovieFilters();
-  const { handleAddMovie, movies } = useMovieLibrary();
+  const { handleAddMovie, movies, categories } = useMovieLibrary();
   const [searchResults, setSearchResults] = useState<TmdbMovieResult[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -103,6 +103,11 @@ export const LibrarySearchBar = () => {
           movieFromApi.Poster,
         );
 
+        // Find "Searched" category
+        const searchedCategory = categories.find(
+          (c) => c.name === SYSTEM_CATEGORY_SEARCHED,
+        );
+
         const movie: MovieInfo = {
           imdbID: movieFromApi.imdbID,
           title: movieFromApi.Title,
@@ -112,9 +117,13 @@ export const LibrarySearchBar = () => {
             mime: posterBlob.type,
             blob: posterBlob,
           },
+          categories: searchedCategory ? [searchedCategory] : [],
         };
         await movieDbService.addMovie(movie);
-        toast.success('Movie added to library');
+        toast.success(
+          `Movie added to library${searchedCategory ? ` (in "${SYSTEM_CATEGORY_SEARCHED}")` : ''
+          }`,
+        );
         handleAddMovie(movie);
       } else {
         toast.info('Detailed information not found.');
