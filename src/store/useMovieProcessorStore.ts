@@ -10,6 +10,10 @@ import { immer } from 'zustand/middleware/immer';
 export interface MovieProcessorStoreState {
   categoryIds: number[];
   movies: MovieUploadInfo[];
+  isProcessing: boolean;
+  isComplete: boolean;
+  setIsProcessing: (isProcessing: boolean) => void;
+  setIsComplete: (isComplete: boolean) => void;
   setCategoryIds: (ids: number[]) => void;
   getMovies: () => MovieUploadInfo[];
   setMovies: (movies: MovieUploadInfo[]) => void;
@@ -27,6 +31,18 @@ export const useMovieProcessorStore = create<MovieProcessorStoreState>()(
   immer((set, get) => ({
     categoryIds: [] as number[],
     movies: [] as MovieUploadInfo[],
+    isProcessing: false,
+    isComplete: false,
+
+    setIsProcessing: (isProcessing: boolean) =>
+      set((state) => {
+        state.isProcessing = isProcessing;
+      }),
+
+    setIsComplete: (isComplete: boolean) =>
+      set((state) => {
+        state.isComplete = isComplete;
+      }),
 
     setCategoryIds: (ids: number[]) =>
       set((state) => {
@@ -38,6 +54,8 @@ export const useMovieProcessorStore = create<MovieProcessorStoreState>()(
     setMovies: (movies: MovieUploadInfo[]) =>
       set((state) => {
         state.movies = movies;
+        state.isComplete = false; // Reset complete when new movies are set
+        state.isProcessing = false;
       }),
 
     setDetail: (movie: MovieUploadInfo, detail: MovieDetail) =>
@@ -89,6 +107,8 @@ export const useMovieProcessorStore = create<MovieProcessorStoreState>()(
       set((state) => {
         state.movies = [];
         state.categoryIds = [];
+        state.isProcessing = false;
+        state.isComplete = false;
       }),
   })),
 );

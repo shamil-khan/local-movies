@@ -8,7 +8,10 @@ import {
 import { logger } from '@/core/logger';
 import { toast } from 'sonner';
 import { omdbApiService } from '@/services/OmdbApiService';
-import { movieDbService, SYSTEM_CATEGORY_SEARCHED } from '@/services/MovieDbService';
+import {
+  movieDbService,
+  SYSTEM_CATEGORY_SEARCHED,
+} from '@/services/MovieDbService';
 import { utilityApiService } from '@/services/UtilityApiService';
 import { type MovieInfo } from '@/models/MovieModel';
 import { useMovieFilters } from '@/hooks/useMovieFilters';
@@ -121,7 +124,8 @@ export const LibrarySearchBar = () => {
         };
         await movieDbService.addMovie(movie);
         toast.success(
-          `Movie added to library${searchedCategory ? ` (in "${SYSTEM_CATEGORY_SEARCHED}")` : ''
+          `Movie added to library${
+            searchedCategory ? ` (in "${SYSTEM_CATEGORY_SEARCHED}")` : ''
           }`,
         );
         handleAddMovie(movie);
@@ -191,8 +195,9 @@ export const LibrarySearchBar = () => {
           {searchResults.map((result, index) => (
             <div
               key={result.id}
-              className={`flex items-center gap-3 p-2 cursor-pointer transition-colors ${index === activeIndex ? 'bg-accent' : 'hover:bg-accent'
-                }`}
+              className={`flex items-center gap-3 p-2 cursor-pointer transition-colors ${
+                index === activeIndex ? 'bg-accent' : 'hover:bg-accent'
+              }`}
               onClick={() => handleSelectMovie(result)}
               onMouseEnter={() => setActiveIndex(index)}>
               {result.poster_path ? (
