@@ -279,7 +279,10 @@ class MovieDbService {
     await db.movieUserStatusTable.clear();
     await db.movieCategoryTable.clear();
     if (deleteCategories) {
-      await db.categoryTable.clear();
+      await db.categoryTable
+        .where('name')
+        .noneOf([SYSTEM_CATEGORY_SEARCHED, SYSTEM_CATEGORY_UPLOADED])
+        .delete();
     }
     // Note: Categories are kept even when clearing movies
   };
