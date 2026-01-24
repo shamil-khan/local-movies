@@ -63,13 +63,13 @@ export class LocalMovieAppDB extends Dexie {
   constructor() {
     super('LocalMovieAppDB');
 
-    this.version(0.1).stores({
+    this.version(0.2).stores({
       movieFileTable: `++id, ${movieFileSchemaStr}`,
       moviePosterTable: `++id, ${moviePosterSchemaStr}`,
       movieDetailTable: `++id, ${movieDetailSchemaStr}`,
       movieUserStatusTable: `++id, ${movieStatusSchemaStr}`,
       categoryTable: `++id, ${categorySchemaStr}`,
-      movieCategoryTable: `++id, ${movieCategorySchemaStr}`,
+      movieCategoryTable: `++id, ${movieCategorySchemaStr}, [imdbID+categoryId]`,
     });
 
     logger.success('LocalMovieAppDB created successfully');

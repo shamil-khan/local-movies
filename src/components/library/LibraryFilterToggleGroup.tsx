@@ -14,11 +14,11 @@ export const LibraryFilterToggleGroup = ({
   const { filters, onFiltersUpdated } = useMovieFilters();
 
   return (
-    <div className='inline-flex rounded-md border border-input overflow-hidden'>
+    <div className='inline-flex items-center rounded-md border border-input overflow-hidden h-8'>
       <Button
         variant='ghost'
-        size='icon'
-        className={`rounded-none border-0 ${
+        size='sm'
+        className={`rounded-none border-0 px-2 h-8 ${
           filters.isFavorite ? 'bg-red-100 text-red-500' : ''
         }`}
         onClick={() =>
@@ -29,13 +29,13 @@ export const LibraryFilterToggleGroup = ({
         }
         title='Show Favorites Only'>
         <Heart
-          className={`h-5 w-5 ${filters.isFavorite ? 'fill-current' : ''}`}
+          className={`h-4 w-4 ${filters.isFavorite ? 'fill-current' : ''}`}
         />
       </Button>
       <Button
         variant='ghost'
-        size='icon'
-        className={`rounded-none border-0 ${
+        size='sm'
+        className={`rounded-none border-0 px-2 h-8 ${
           filters.isWatched ? 'bg-blue-100 text-blue-500' : ''
         }`}
         onClick={() =>
@@ -45,15 +45,15 @@ export const LibraryFilterToggleGroup = ({
           })
         }
         title='Show Watched Only'>
-        <Eye className={`h-5 w-5 ${filters.isWatched ? 'fill-current' : ''}`} />
+        <Eye className={`h-4 w-4 ${filters.isWatched ? 'fill-current' : ''}`} />
       </Button>
       <Button
         variant='ghost'
-        size='icon'
-        className={`rounded-none border-0 ${showFilters ? 'bg-accent' : ''}`}
+        size='sm'
+        className={`rounded-none border-0 px-2 h-8 ${showFilters ? 'bg-accent' : ''}`}
         onClick={onToggleFilters}
         title='Show Filters'>
-        <ListFilter className='h-5 w-5' />
+        <ListFilter className='h-4 w-4' />
       </Button>
     </div>
   );

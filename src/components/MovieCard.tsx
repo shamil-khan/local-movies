@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 import { movieDbService } from '@/services/MovieDbService';
 import { MovieCardBottomBar } from '@/components/MovieCardBottomBar';
 import { TrailerDialog } from '@/components/TrailerDialog';
-import { CategoryDialog } from '@/components/CategoryDialog';
+import { useCategoryDialog } from '@/hooks/useCategoryDialog';
 import logger from '@/core/logger';
 
 const toCompact = (value: string) =>
@@ -30,7 +30,7 @@ interface MovieCardProps {
 
 export const MovieCard = ({ movie }: MovieCardProps) => {
   const [trailerDialogOpen, setTrailerDialogOpen] = useState(false);
-  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+  const { open } = useCategoryDialog();
   const [posterSrc, setPosterSrc] = useState<string>(
     '/generic-movie-poster.svg',
   );
@@ -123,18 +123,12 @@ export const MovieCard = ({ movie }: MovieCardProps) => {
           <p className='text-xs font-normal'>{movie.detail.plot}</p>
           <MovieCardBottomBar
             movie={movie}
-            onCategoryOpen={() => setCategoryDialogOpen(true)}
+            onCategoryOpen={() => open(movie)}
           />
 
           <TrailerDialog
             open={trailerDialogOpen}
             onClose={() => setTrailerDialogOpen(false)}
-            movie={movie}
-          />
-
-          <CategoryDialog
-            open={categoryDialogOpen}
-            onClose={() => setCategoryDialogOpen(false)}
             movie={movie}
           />
         </div>

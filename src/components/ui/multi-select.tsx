@@ -56,7 +56,7 @@ export function MultiSelect({
     <div className={cn('relative', className)} ref={containerRef}>
       <div
         className={cn(
-          'flex min-h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer',
+          'flex min-h-8 w-full items-center justify-between rounded-md border border-input bg-background px-2 py-1 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer',
           open ? 'ring-2 ring-ring ring-offset-2' : '',
         )}
         onClick={() => setOpen(!open)}>
