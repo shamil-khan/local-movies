@@ -189,7 +189,18 @@ export const CategoryDialog = () => {
                           )}
                         </div>
                       )}
-                      <span className='font-medium'>{category.name}</span>
+                      <span className='font-medium'>
+                        {category.name}
+                        <span className='ml-1.5 text-xs text-muted-foreground font-normal'>
+                          (
+                          {
+                            movies.filter((m) =>
+                              m.categories?.some((c) => c.id === category.id),
+                            ).length
+                          }
+                          )
+                        </span>
+                      </span>
                     </div>
 
                     <div
