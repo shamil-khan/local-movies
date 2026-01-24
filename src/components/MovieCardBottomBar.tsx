@@ -1,5 +1,5 @@
 import { type MovieInfo } from '@/models/MovieModel';
-import { Trash2, Heart, Eye, Tags } from 'lucide-react';
+import { Trash2, Heart, Eye, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -79,7 +79,7 @@ export const MovieCardBottomBar = ({
                 e.stopPropagation();
                 onCategoryOpen();
               }}>
-              <Tags className='w-4 h-4' />
+              <Tag className='w-4 h-4' />
             </Button>
           </TooltipTrigger>
           <TooltipContent className='text-xs font-medium'>
