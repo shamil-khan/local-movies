@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { FileProcessingHeader } from '@/components/library/FileProcessingHeader';
-import { FileProcessingCategoryBar } from '@/components/library/FileProcessingCategoryBar';
 import { useMovieProcessor } from '@/hooks/useMovieProcessor';
 import { FileProcessingEntriesList } from '@/components/library/FileProcessingEntriesList';
 
@@ -46,7 +45,6 @@ export const FileProcessingPanel = ({
           <FileProcessingHeader onClose={() => setPanelVisible(false)} />
 
           <div className='max-h-80 overflow-y-auto'>
-            <FileProcessingCategoryBar />
             <FileProcessingEntriesList />
           </div>
         </div>

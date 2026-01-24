@@ -1,10 +1,12 @@
 import { MultiSelect } from '@/components/ui/multi-select';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
+import { Tag, X } from 'lucide-react';
 import { useMovieFilters } from '@/hooks/useMovieFilters';
 import logger from '@/core/logger';
+import { useCategoryDialog } from '@/hooks/useCategoryDialog';
 
 export const LibraryFilterBar = () => {
+  const { open } = useCategoryDialog();
   const {
     filters,
     onFiltersUpdated,
@@ -31,23 +33,6 @@ export const LibraryFilterBar = () => {
     logger.info(`Updating filter ${key} with values:`, value);
     onFiltersUpdated({ ...filters, [key]: value });
   };
-
-  // const handleDeleteSingleCategory = async (value: string) => {
-  //   const id = parseInt(value, 10);
-  //   if (Number.isNaN(id)) return;
-
-  //   try {
-  //     await movieDbService.deleteCategory(id);
-  //     onReloadCategories();
-  //     const remaining =
-  //       filters.category?.filter((v) => parseInt(v, 10) !== id) ?? [];
-  //     onFilterChange({ ...filters, category: remaining });
-  //     toast.success('Category deleted');
-  //   } catch (err) {
-  //     console.error('Failed to delete category:', err);
-  //     toast.error('Failed to delete category');
-  //   }
-  // };
 
   const hasActiveFilters =
     (filters.genre && filters.genre.length > 0) ||
@@ -123,6 +108,15 @@ export const LibraryFilterBar = () => {
           />
         </div>
       )}
+
+      <div className='flex items-center rounded-md gap-2'>
+        <Button variant='ghost' onClick={() => open()}>
+          <Tag className='w-4 h-4 text-muted-foreground' />
+          <span className='text-xs font-medium text-muted-foreground'>
+            Categories
+          </span>
+        </Button>
+      </div>
 
       {hasActiveFilters && (
         <Button

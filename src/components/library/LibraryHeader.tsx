@@ -12,19 +12,17 @@ export const LibraryHeader = () => {
 
   return (
     <div className='p-4 space-y-4'>
-      <div className='flex w-full items-center relative z-20'>
-        <div className='flex items-center flex-1'>
+      <div className='flex w-full items-center flex-col sm:flex-row gap-4 sm:gap-2 relative z-20'>
+        <div className='w-full sm:flex-1'>
+          <LibrarySearchBar />
+        </div>
+
+        <div className='flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto'>
           <CompactFolderUpload
             onUploaded={(fileNames) => setUploadedFileNames(fileNames)}
             uploadedFileNames={uploadedFileNames}
           />
 
-          <div className='flex-1'>
-            <LibrarySearchBar />
-          </div>
-        </div>
-
-        <div className='flex items-center gap-2'>
           <LibraryFilterToggleGroup
             showFilters={showFilters}
             onToggleFilters={() => setShowFilters(!showFilters)}

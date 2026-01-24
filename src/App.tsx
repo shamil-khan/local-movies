@@ -5,6 +5,7 @@ import { useMovieLibrary } from '@/hooks/useMovieLibrary';
 import { LibraryHeader } from './components/library/LibraryHeader';
 import { MovieGallery } from './components/MovieGallery';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { CategoryDialog } from '@/components/CategoryDialog';
 
 function App() {
   const { movies, loadMovies } = useMovieLibrary();
@@ -24,6 +25,7 @@ function App() {
 
       <MovieGallery />
       <Toaster />
+      <CategoryDialog />
     </ErrorBoundary>
   );
 }
