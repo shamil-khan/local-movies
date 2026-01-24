@@ -1,4 +1,4 @@
-import { useRef, useState, type ChangeEvent } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { Upload, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { clogger } from '@/core/ChalkLogger';
@@ -16,6 +16,21 @@ export const CompactFolderUpload = ({
   const filesInputRef = useRef<HTMLInputElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleUploadFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     setLoading(true);
@@ -45,7 +60,7 @@ export const CompactFolderUpload = ({
   };
 
   return (
-    <div className='flex items-center gap-1'>
+    <div className='flex items-center gap-1' ref={containerRef}>
       <input
         id='folder-upload'
         type='file'
