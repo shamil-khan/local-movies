@@ -30,6 +30,7 @@ export const TrailerDialog = ({ movie, open, onClose }: TrailerDialogProps) => {
   const [error, setError] = useState<string | null>(null);
   // suggestions for autocomplete based on stored search history
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [hasTyped, setHasTyped] = useState(false);
 
   // Load last search from history when dialog opens
   useEffect(() => {
@@ -49,7 +50,7 @@ export const TrailerDialog = ({ movie, open, onClose }: TrailerDialogProps) => {
 
   // Update suggestions whenever the search input changes
   useEffect(() => {
-    if (!open) {
+    if (!open || !hasTyped) {
       setSuggestions([]);
       return;
     }
@@ -68,7 +69,7 @@ export const TrailerDialog = ({ movie, open, onClose }: TrailerDialogProps) => {
       console.error('Failed to filter suggestions', e);
       setSuggestions([]);
     }
-  }, [searchYT, open]);
+  }, [searchYT, open, hasTyped]);
 
   useEffect(() => {
     if (!open || trailer || loading) {
@@ -104,7 +105,11 @@ export const TrailerDialog = ({ movie, open, onClose }: TrailerDialogProps) => {
   }, [open, trailer, loading, movie.imdbID, movie.title]);
 
   const handleSearchYoutube = async () => {
-    const searchable = searchYT.trim().replaceAll(' ', '+');
+    const searchable = [movie.title, movie.detail.year, 'Movie', searchYT]
+      .join(' ')
+      .trim()
+      .replaceAll(' ', '+');
+
     const url = `${Youtube_Site_Link}/results?search_query=${searchable}`;
     logger.info(`Youtube Search Triggered ${searchable}`);
 
@@ -204,7 +209,10 @@ export const TrailerDialog = ({ movie, open, onClose }: TrailerDialogProps) => {
                 type='search'
                 placeholder='Search critics or explanation on YouTube...'
                 value={searchYT}
-                onChange={(e) => setSearchYT(e.target.value)}
+                onChange={(e) => {
+                  setSearchYT(e.target.value);
+                  if (!hasTyped) setHasTyped(true);
+                }}
                 className='h-10 border-none bg-transparent shadow-none focus-visible:ring-0 text-sm font-semibold text-zinc-900 placeholder:text-zinc-400'
               />
               {/* Autocomplete dropdown */}
