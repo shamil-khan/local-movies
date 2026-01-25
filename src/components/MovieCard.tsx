@@ -2,13 +2,14 @@ import { type MovieInfo } from '@/models/MovieModel';
 import { Card, CardContent } from '@/components/ui/card';
 import { format, parse } from 'numerable';
 import { en } from 'numerable/locale';
-import { Star, Award, Play } from 'lucide-react';
+import { Star, Play } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { movieDbService } from '@/services/MovieDbService';
 import { MovieCardBottomBar } from '@/components/MovieCardBottomBar';
 import { TrailerDialog } from '@/components/TrailerDialog';
 import { useCategoryDialog } from '@/hooks/useCategoryDialog';
 import logger from '@/core/logger';
+import { ImdbLink } from '@/components/ImdbLink';
 
 const toCompact = (value: string) =>
   format(parse(value), '0.00 a', { locale: en }).replace(/\.00$/, '');
@@ -76,22 +77,22 @@ export const MovieCard = ({ movie }: MovieCardProps) => {
               <span className='text-xs font-bold italic'>
                 {movie.detail.rated}
               </span>
-              <div className='flex items-center justify-center space-x-2 ml-4'>
-                <span className='flex items-center'>
-                  <Star className='w-3 h-3 fill-current' />
+              <div className='flex items-center justify-center space-x-2 ml-8'>
+                <ImdbLink imdbID={movie.imdbID} title={movie.title} />
+                <span className='flex items-center gap-1'>
+                  <Star className='text-[#F5C518] w-4 h-4 fill-current' />
                   <span className='text-xs font-semibold ml-0'>
                     {movie.detail.imdbRating}
                   </span>
                 </span>
                 <span className='flex items-center'>
-                  <Award className='w-3 h-3' />
-                  <span className='text-xs font-semibold ml-0'>
+                  <span className='w-8 h-5 text-[10px] rounded-md inline-flex items-center justify-center bg-blue-800 text-white font-bold leading-none shrink-0 shadow-sm'>
                     {movie.detail.metascore}
                   </span>
                 </span>
               </div>
             </div>
-            <p className='text-[0.6rem] font-medium'>
+            <p className='text-[0.7rem] font-bold'>
               {toCompact(movie.detail.imdbVotes)}
             </p>
           </div>

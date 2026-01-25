@@ -1,4 +1,4 @@
-import { type MovieInfo } from '@/models/MovieModel';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -7,7 +7,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Loader2, AlertCircle } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { ImdbLink } from '@/components/ImdbLink';
+import { type MovieInfo } from '@/models/MovieModel';
 import { tmdbApiService, type MovieTrailer } from '@/services/TmdbApiService';
 import logger from '@/core/logger';
 
@@ -109,6 +110,7 @@ export const TrailerDialog = ({ movie, open, onClose }: TrailerDialogProps) => {
               </div>
               <div className='flex items-center justify-between text-xs text-muted-foreground'>
                 <span>IMDb ID: {movie.imdbID}</span>
+                <ImdbLink imdbID={movie.imdbID} title={movie.title} size='lg' />
                 {trailer.official && (
                   <span className='text-green-600 font-semibold'>
                     Official Trailer
