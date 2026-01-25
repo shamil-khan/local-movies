@@ -10,10 +10,13 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useMovieLibrary } from '@/hooks/useMovieLibrary';
+import { cn } from '@/lib/utils';
 import { type Category } from '@/models/MovieModel';
 import { movieDbService } from '@/services/MovieDbService';
 import { AlertOctagon, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { ActionTooltip } from '../ActionTooltip';
+import { TooltipProvider } from '@radix-ui/react-tooltip';
 
 export const LibraryDeleteDialog = () => {
   const { handleClearLibrary } = useMovieLibrary();
@@ -35,15 +38,27 @@ export const LibraryDeleteDialog = () => {
 
   return (
     <Dialog>
-      <DialogTrigger asChild>
-        <Button
-          variant='ghost'
-          size='icon'
-          className='text-destructive hover:text-destructive hover:bg-destructive/10'
-          title='Delete Library'>
-          <Trash2 className='h-5 w-5' />
-        </Button>
-      </DialogTrigger>
+      <TooltipProvider>
+        <ActionTooltip label='Delete Library' variant='destructive'>
+          <DialogTrigger asChild>
+            <Button
+              variant='ghost'
+              size='icon'
+              className={cn(
+                'h-10 w-10 rounded-xl',
+                'bg-red-500/10 border border-red-500/20 active:bg-red-500/30',
+                'active:scale-90 transition-all',
+              )}
+              title='Delete Library'>
+              <Trash2
+                className='w-5 h-5 text-red-600 group-hover:text-white 
+               drop-shadow-[0_2px_4px_rgba(220,38,38,0.25)] 
+               transition-colors duration-200'
+              />
+            </Button>
+          </DialogTrigger>
+        </ActionTooltip>
+      </TooltipProvider>
       <DialogContent>
         <DialogHeader>
           <DialogTitle className='flex items-center gap-2 text-destructive'>

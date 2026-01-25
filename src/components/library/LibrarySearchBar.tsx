@@ -50,7 +50,7 @@ export const LibrarySearchBar = () => {
       if (filters.query.length >= 2) {
         try {
           const results = await tmdbApiService.search(filters.query);
-          setSearchResults(results.slice(0, 5));
+          setSearchResults(results.slice(0, 15));
           setShowDropdown(true);
           setActiveIndex(-1);
         } catch (error) {

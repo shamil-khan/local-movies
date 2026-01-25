@@ -3,6 +3,9 @@ import { Upload, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { clogger } from '@/core/ChalkLogger';
 import logger from '@/core/logger';
+import { cn } from '@/lib/utils';
+import { TooltipProvider } from '@radix-ui/react-tooltip';
+import { ActionTooltip } from './ActionTooltip';
 
 interface CompactFolderUploadProps {
   onUploaded: (files: string[]) => void;
@@ -80,17 +83,25 @@ export const CompactFolderUpload = ({
         className='hidden'
       />
       <div className='relative'>
-        <Button
-          type='button'
-          variant='outline'
-          size='sm'
-          onClick={() => setMenuOpen((open) => !open)}
-          title='Upload movies'
-          disabled={loading}
-          className='rounded-md'>
-          <Upload className='h-4 w-4 mr-1' />
-          <ChevronDown className='h-4 w-4' />
-        </Button>
+        <TooltipProvider>
+          <ActionTooltip label='Upload movie folder or files' variant='amber'>
+            <Button
+              type='button'
+              variant='outline'
+              size='sm'
+              onClick={() => setMenuOpen((open) => !open)}
+              title='Upload movies'
+              className={cn(
+                'h-10 w-15 rounded-xl',
+                'bg-amber-500/10 border border-amber-500/20 active:bg-amber-500/30',
+                'active:scale-90 transition-all',
+              )}
+              disabled={loading}>
+              <Upload className='w-5 h-5 text-amber-600 drop-shadow-[0_2px_4px_rgba(217,119,6,0.2)]' />
+              <ChevronDown className='w-5 h-5 text-amber-600 drop-shadow-[0_2px_4px_rgba(217,119,6,0.2)]' />
+            </Button>
+          </ActionTooltip>
+        </TooltipProvider>
         {menuOpen && (
           <div className='absolute left-0 mt-1 w-40 rounded-md border bg-background shadow-md z-50'>
             <button
