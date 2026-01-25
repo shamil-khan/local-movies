@@ -2,11 +2,10 @@ import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Loader2, AlertCircle, Search } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { ImdbLink } from '@/components/ImdbLink';
 import { type MovieInfo } from '@/models/MovieModel';
 import { tmdbApiService, type MovieTrailer } from '@/services/TmdbApiService';
@@ -29,6 +28,47 @@ export const TrailerDialog = ({ movie, open, onClose }: TrailerDialogProps) => {
   const [trailer, setTrailer] = useState<MovieTrailer | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // suggestions for autocomplete based on stored search history
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+
+  // Load last search from history when dialog opens
+  useEffect(() => {
+    if (open) {
+      try {
+        const history = JSON.parse(
+          localStorage.getItem('trailerDialogSearchHistory') ?? '[]',
+        );
+        if (Array.isArray(history) && history.length > 0) {
+          setSearchYT(history[history.length - 1]);
+        }
+      } catch (e) {
+        console.error('Failed to load search history', e);
+      }
+    }
+  }, [open]);
+
+  // Update suggestions whenever the search input changes
+  useEffect(() => {
+    if (!open) {
+      setSuggestions([]);
+      return;
+    }
+    const storageKey = 'trailerDialogSearchHistory';
+    try {
+      const history: string[] = JSON.parse(
+        localStorage.getItem(storageKey) ?? '[]',
+      );
+      const filtered = history.filter(
+        (s) =>
+          s.toLowerCase().includes(searchYT.toLowerCase()) && s.trim() !== '',
+      );
+      // Show most recent matches first, limit to 5
+      setSuggestions(filtered.slice(-5).reverse());
+    } catch (e) {
+      console.error('Failed to filter suggestions', e);
+      setSuggestions([]);
+    }
+  }, [searchYT, open]);
 
   useEffect(() => {
     if (!open || trailer || loading) {
@@ -64,14 +104,23 @@ export const TrailerDialog = ({ movie, open, onClose }: TrailerDialogProps) => {
   }, [open, trailer, loading, movie.imdbID, movie.title]);
 
   const handleSearchYoutube = async () => {
-    const searchable = [movie.title, movie.detail.year, searchYT]
-      .join(' ')
-      .trim()
-      .replaceAll(' ', '+');
-
+    const searchable = searchYT.trim().replaceAll(' ', '+');
     const url = `${Youtube_Site_Link}/results?search_query=${searchable}`;
     logger.info(`Youtube Search Triggered ${searchable}`);
 
+    // Update search history in localStorage
+    const storageKey = 'trailerDialogSearchHistory';
+    try {
+      const existing: string[] = JSON.parse(
+        localStorage.getItem(storageKey) ?? '[]',
+      );
+      const updated = [...existing, searchYT].filter(Boolean);
+      const unique = Array.from(new Set(updated));
+      const limited = unique.slice(-5);
+      localStorage.setItem(storageKey, JSON.stringify(limited));
+    } catch (e) {
+      console.error('Failed to update search history', e);
+    }
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
@@ -147,7 +196,7 @@ export const TrailerDialog = ({ movie, open, onClose }: TrailerDialogProps) => {
 
           {/* 3. The "Light-Mode" Action Dock */}
           <div className='p-6 bg-white/40 border-t border-zinc-100'>
-            <div className='flex items-center gap-3 rounded-2xl bg-white/80 p-2 shadow-sm ring-1 ring-zinc-200 focus-within:ring-2 focus-within:ring-red-500/30 transition-all'>
+            <div className='relative flex items-center gap-3 rounded-2xl bg-white/80 p-2 shadow-sm ring-1 ring-zinc-200 focus-within:ring-2 focus-within:ring-red-500/30 transition-all'>
               <div className='pl-2 border-r border-zinc-100 pr-3'>
                 <ImdbLink imdbID={movie.imdbID} title={movie.title} size='md' />
               </div>
@@ -158,6 +207,22 @@ export const TrailerDialog = ({ movie, open, onClose }: TrailerDialogProps) => {
                 onChange={(e) => setSearchYT(e.target.value)}
                 className='h-10 border-none bg-transparent shadow-none focus-visible:ring-0 text-sm font-semibold text-zinc-900 placeholder:text-zinc-400'
               />
+              {/* Autocomplete dropdown */}
+              {suggestions.length > 0 && (
+                <ul className='absolute bottom-full left-0 mb-1 max-h-48 w-full overflow-y-auto rounded bg-white shadow-lg border border-zinc-200 z-40'>
+                  {suggestions.map((s, idx) => (
+                    <li
+                      key={idx}
+                      className='px-3 py-2 hover:bg-zinc-100 cursor-pointer text-sm text-zinc-800'
+                      onMouseDown={() => {
+                        setSearchYT(s);
+                        setSuggestions([]);
+                      }}>
+                      {s}
+                    </li>
+                  ))}
+                </ul>
+              )}
               <Button
                 onClick={handleSearchYoutube}
                 className='group/yt relative h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-red-600 shadow-lg transition-all hover:bg-red-700 active:scale-90'>
