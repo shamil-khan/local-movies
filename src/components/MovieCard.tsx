@@ -66,8 +66,8 @@ export const MovieCard = ({ movie }: MovieCardProps) => {
   }, [movie.imdbID, movie.poster, movie.title]);
 
   return (
-    <Card className='w-full overflow-visible group'>
-      <CardContent className='py-0 px-2 relative group'>
+    <Card className='group relative h-full flex flex-col overflow-hidden'>
+      <CardContent className='py-0 px-2 flex-1 flex flex-col'>
         <div className='text-center relative h-full flex flex-col'>
           <h3 className='text-sm font-bold mb-1'>{movie.title}</h3>
           <p className='text-xs font-semibold mb-1'>{movie.detail.year}</p>

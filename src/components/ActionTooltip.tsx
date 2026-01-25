@@ -10,7 +10,16 @@ import { cn } from '@/lib/utils';
 interface ActionTooltipProps {
   label: string;
   children: React.ReactNode;
-  variant?: 'default' | 'emerald' | 'indigo' | 'rose';
+  variant?:
+    | 'default'
+    | 'emerald'
+    | 'indigo'
+    | 'rose'
+    | 'amber'
+    | 'violet'
+    | 'sky'
+    | 'slate'
+    | 'destructive';
 }
 
 export const ActionTooltip = ({
@@ -22,10 +31,16 @@ export const ActionTooltip = ({
   const variants = {
     default: 'border-white/20 bg-black/80 shadow-white/5',
     emerald:
-      'border-emerald-500/30 bg-emerald-950/90 text-emerald-100 shadow-emerald-500/20',
+      'border-emerald-200 bg-emerald-50 text-emerald-700 shadow-emerald-200/50',
     indigo:
-      'border-indigo-500/30 bg-indigo-950/90 text-indigo-100 shadow-indigo-500/20',
-    rose: 'border-rose-500/30 bg-rose-950/90 text-rose-100 shadow-rose-500/20',
+      'border-indigo-200 bg-indigo-50 text-indigo-700 shadow-indigo-200/50',
+    rose: 'border-rose-200 bg-rose-50 text-rose-700 shadow-rose-200/50',
+    amber: 'border-amber-200 bg-amber-50 text-amber-700 shadow-amber-200/50',
+    violet:
+      'border-violet-200 bg-violet-50 text-violet-700 shadow-violet-200/50',
+    sky: 'border-sky-200 bg-sky-50 text-sky-700 shadow-sky-200/50',
+    slate: 'border-slate-200 bg-slate-50 text-slate-700 shadow-slate-200/50',
+    destructive: 'border-red-200 bg-red-50 text-red-700 shadow-red-200/50',
   };
 
   return (

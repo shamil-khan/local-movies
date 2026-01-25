@@ -24,7 +24,6 @@ export const LibraryHeader = () => {
           />
 
           <LibraryFilterToggleGroup
-            showFilters={showFilters}
             onToggleFilters={() => setShowFilters(!showFilters)}
           />
           <LibraryDeleteDialog />

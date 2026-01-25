@@ -28,7 +28,7 @@ export const MovieCardBottomBar = ({
         /* MOBILE: Light Scrim, expands card vertically, permanent visibility */
         'relative w-full py-2.5 px-3 bg-white/60 border-t border-zinc-200',
         /* DESKTOP (sm): Floating White Glass Island, only appears on hover */
-        'sm:absolute sm:bottom-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-[92%]',
+        'sm:absolute sm:-bottom-5 sm:left-1/2 sm:-translate-x-1/2 sm:w-[92%]',
         'sm:rounded-2xl sm:border sm:border-zinc-100 sm:bg-white/50 sm:backdrop-blur-md',
         'sm:opacity-0 sm:group-hover:opacity-100 sm:translate-y-0',
       )}
@@ -41,11 +41,11 @@ export const MovieCardBottomBar = ({
           {/* 1. FAVORITE - Rose Pulse */}
           <ActionTooltip
             label={
-              movie.status?.isFavorite
-                ? 'Remove from Favorites'
-                : 'Add to Favorites'
+              !movie.status?.isFavorite
+                ? 'Add to Favorites'
+                : 'Remove from Favorites'
             }
-            variant={movie.status?.isFavorite ? 'rose' : 'default'}>
+            variant='rose'>
             <Button
               variant='ghost'
               size='icon'
@@ -68,9 +68,9 @@ export const MovieCardBottomBar = ({
           {/* 2. WATCH - Emerald Border Glow */}
           <ActionTooltip
             label={
-              movie.status?.isWatched ? 'Unmark as Watched' : 'Mark as Watched'
+              !movie.status?.isWatched ? 'Mark as Watched' : 'Unmark as Watched'
             }
-            variant={movie.status?.isWatched ? 'emerald' : 'default'}>
+            variant='emerald'>
             <Button
               variant='ghost'
               size='icon'
@@ -96,7 +96,7 @@ export const MovieCardBottomBar = ({
           </ActionTooltip>
 
           {/* 3. CATEGORY - Vivid Indigo */}
-          <ActionTooltip label='Category' variant='indigo'>
+          <ActionTooltip label='Manage Categories' variant='indigo'>
             <Button
               variant='ghost'
               size='icon'
@@ -110,7 +110,7 @@ export const MovieCardBottomBar = ({
           </ActionTooltip>
 
           {/* 4. DELETE - Clean Rose */}
-          <ActionTooltip label='Delete' variant='rose'>
+          <ActionTooltip label='Delete Movie' variant='rose'>
             <Button
               variant='ghost'
               size='icon'
