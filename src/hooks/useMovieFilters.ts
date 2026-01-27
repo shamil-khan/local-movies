@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { type MovieFilterCriteria } from '@/models/MovieModel';
 import { useMovieLibraryStore } from '@/store/useMovieLibraryStore';
-import logger from '@/core/logger';
 
 export const useMovieFilters = () => {
   const { movies, categories, filters, updatedFilters, clearFilters } =

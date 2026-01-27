@@ -20,8 +20,8 @@ interface TrailerDialogProps {
   onClose: () => void;
 }
 
-const Youtube_Site_Link = 'https://www.youtube.com';
-const Youtube_Site_Embed = `${Youtube_Site_Link}/embed/`;
+const Youtube_Site_Embed = 'https://www.youtube.com/embed/';
+const Youtube_Site_Search = 'https://www.youtube.com/results?search_query=';
 
 export const TrailerDialog = ({ movie, open, onClose }: TrailerDialogProps) => {
   const [searchYT, setSearchYT] = useState<string>('');
@@ -104,13 +104,16 @@ export const TrailerDialog = ({ movie, open, onClose }: TrailerDialogProps) => {
     void loadTrailer();
   }, [open, trailer, movie.imdbID, movie.title]);
 
-  const handleSearchYoutube = async () => {
-    const searchable = [movie.title, movie.detail.year, 'Movie', searchYT]
+  const encodeSearchMovie = (value: string) =>
+    [movie.title, movie.detail.year, 'Movie', value]
       .join(' ')
       .trim()
       .replaceAll(' ', '+');
 
-    const url = `${Youtube_Site_Link}/results?search_query=${searchable}`;
+  const handleSearchYoutube = async () => {
+    const searchable = encodeSearchMovie(searchYT);
+
+    const url = `${Youtube_Site_Search}${searchable}`;
     logger.info(`Youtube Search Triggered ${searchable}`);
 
     // Update search history in localStorage
@@ -203,7 +206,12 @@ export const TrailerDialog = ({ movie, open, onClose }: TrailerDialogProps) => {
                   not avaiable.
                 </div>
                 <div className='text-sm lg:text-lg animate-pulse font-bold text-zinc-900 tracking-widest p-4'>
-                  Click below youtube logo to watch.
+                  <a
+                    href={`${Youtube_Site_Search}${encodeSearchMovie('Trailer')}`}
+                    target='_blank'
+                    rel='noopener noreferrer'>
+                    Click here to watch trailer on youtube.
+                  </a>
                 </div>
               </div>
             )}
