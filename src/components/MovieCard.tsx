@@ -1,15 +1,13 @@
-import { type MovieInfo } from '@/models/MovieModel';
-import { Card, CardContent } from '@/components/ui/card';
+import { useState, useEffect } from 'react';
+import { Star, Play } from 'lucide-react';
 import { format, parse } from 'numerable';
 import { en } from 'numerable/locale';
-import { Star, Play } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { movieDbService } from '@/services/MovieDbService';
+import { type MovieInfo } from '@/models/MovieModel';
+import { Card, CardContent } from '@/components/ui/card';
 import { MovieCardBottomBar } from '@/components/MovieCardBottomBar';
 import { TrailerDialog } from '@/components/TrailerDialog';
-import { useCategoryDialog } from '@/hooks/useCategoryDialog';
-import logger from '@/core/logger';
 import { ImdbLink } from '@/components/ImdbLink';
+import { useCategoryDialog } from '@/hooks/useCategoryDialog';
 
 const toCompact = (value: string) =>
   format(parse(value), '0.00 a', { locale: en }).replace(/\.00$/, '');
@@ -40,19 +38,10 @@ export const MovieCard = ({ movie }: MovieCardProps) => {
     let objectUrl: string | null = null;
 
     const loadPoster = async () => {
-      try {
-        const poster = await movieDbService.getPoster(movie.imdbID);
-        if (poster && poster.blob) {
-          objectUrl = URL.createObjectURL(poster.blob);
-          setPosterSrc(objectUrl);
-          logger.success(`Loaded poster for ${movie.title} from DB`);
-        } else {
-          // If not in DB, use a generic movie poster image
-          logger.warn(`Failed to load poster for ${movie.title} from DB`);
-          setPosterSrc('/generic-movie-poster.svg');
-        }
-      } catch (e) {
-        logger.error(`Failed to load poster for ${movie.title}`, e);
+      if (movie.poster && movie.poster.blob) {
+        objectUrl = URL.createObjectURL(movie.poster.blob);
+        setPosterSrc(objectUrl);
+      } else {
         setPosterSrc('/generic-movie-poster.svg');
       }
     };

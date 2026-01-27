@@ -1,9 +1,8 @@
 type Schema<T> = Record<keyof T, string>;
 
 export interface MovieFile {
-  imdbID?: string;
   title: string;
-  year: number;
+  year: string;
   fileName: string;
 }
 
@@ -48,13 +47,6 @@ export interface MovieCategory {
   imdbID: string;
   categoryId: number;
 }
-
-export const movieFileSchema: Schema<MovieFile> = {
-  imdbID: 'imdbID',
-  title: 'title',
-  year: 'year',
-  fileName: 'fileName',
-};
 
 export const movieDetailSchema: Schema<MovieDetail> = {
   imdbID: 'imdbID',
@@ -102,13 +94,6 @@ export const MovieNotFound = {
   Error: 'Movie not found!',
 };
 
-export type MovieUploadInfo = {
-  file: Omit<MovieFile, 'imdbID'>;
-  detail?: MovieDetail;
-  poster?: MoviePoster;
-  error?: { message: string; detail?: object };
-};
-
 export interface MovieFilterCriteria {
   query: string;
   genre: string[];
@@ -125,6 +110,7 @@ export interface MovieFilterCriteria {
 export type MovieInfo = {
   imdbID: string;
   title: string;
+  year: string;
   detail: Omit<Omit<MovieDetail, 'imdbID'>, 'title'>;
   poster?: Omit<Omit<MoviePoster, 'imdbID'>, 'title'>;
   status?: Omit<MovieUserStatus, 'imdbID'>;

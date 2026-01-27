@@ -1,13 +1,11 @@
 // src/lib/db.ts
 import Dexie, { type EntityTable } from 'dexie';
 import {
-  type MovieFile,
   type MovieDetail,
   type MoviePoster,
   type MovieUserStatus,
   type Category,
   type MovieCategory,
-  movieFileSchema,
   movieDetailSchema,
   moviePosterSchema,
   movieUserStatusSchema,
@@ -16,10 +14,6 @@ import {
 } from '@/models/MovieModel';
 
 import logger from '@/core/logger';
-
-interface MovieFileWithId extends MovieFile {
-  id?: number;
-}
 
 interface MovieDetailWithId extends MovieDetail {
   id?: number;
@@ -38,24 +32,21 @@ interface MovieCategoryWithId extends MovieCategory {
 }
 
 // Automated schema generation using imported schemas
-const movieFileSchemaStr = Object.values(movieFileSchema).join(', ');
-const moviePosterSchemaStr = Object.values(moviePosterSchema).join(', ');
 const movieDetailSchemaStr = Object.values(movieDetailSchema).join(', ');
+const moviePosterSchemaStr = Object.values(moviePosterSchema).join(', ');
 const movieStatusSchemaStr = Object.values(movieUserStatusSchema).join(', ');
 const categorySchemaStr = Object.values(categorySchema).join(', ');
 const movieCategorySchemaStr = Object.values(movieCategorySchema).join(', ');
 
-logger.info(`MovieFile Schema: ${movieFileSchemaStr}`);
-logger.info(`MoviePoster Schema: ${moviePosterSchemaStr}`);
 logger.info(`MovieDetail Schema: ${movieDetailSchemaStr}`);
+logger.info(`MoviePoster Schema: ${moviePosterSchemaStr}`);
 logger.info(`MovieUserStatus Schema: ${movieStatusSchemaStr}`);
 logger.info(`Category Schema: ${categorySchemaStr}`);
 logger.info(`MovieCategory Schema: ${movieCategorySchemaStr}`);
 
 export class LocalMovieAppDB extends Dexie {
-  movieFileTable!: EntityTable<MovieFileWithId, 'id'>;
-  moviePosterTable!: EntityTable<MoviePosterWithId, 'id'>;
   movieDetailTable!: EntityTable<MovieDetailWithId, 'id'>;
+  moviePosterTable!: EntityTable<MoviePosterWithId, 'id'>;
   movieUserStatusTable!: EntityTable<MovieUserStatusWithId, 'id'>;
   categoryTable!: EntityTable<Category, 'id'>;
   movieCategoryTable!: EntityTable<MovieCategoryWithId, 'id'>;
@@ -63,13 +54,12 @@ export class LocalMovieAppDB extends Dexie {
   constructor() {
     super('LocalMovieAppDB');
 
-    this.version(0.2).stores({
-      movieFileTable: `++id, ${movieFileSchemaStr}`,
-      moviePosterTable: `++id, ${moviePosterSchemaStr}`,
+    this.version(0.1).stores({
       movieDetailTable: `++id, ${movieDetailSchemaStr}`,
+      moviePosterTable: `++id, ${moviePosterSchemaStr}`,
       movieUserStatusTable: `++id, ${movieStatusSchemaStr}`,
       categoryTable: `++id, ${categorySchemaStr}`,
-      movieCategoryTable: `++id, ${movieCategorySchemaStr}, [imdbID+categoryId]`,
+      movieCategoryTable: `++id, ${movieCategorySchemaStr}, [${movieCategorySchema.imdbID}+${movieCategorySchema.categoryId}]`,
     });
 
     logger.success('LocalMovieAppDB created successfully');

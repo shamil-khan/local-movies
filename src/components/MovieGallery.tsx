@@ -1,6 +1,5 @@
-import { MovieCard } from '@/components/MovieCard';
 import { Loader2 } from 'lucide-react';
-// import { useState } from 'react';
+import { MovieCard } from '@/components/MovieCard';
 import { useMovieFilters } from '@/hooks/useMovieFilters';
 
 export const MovieGallery = () => {
@@ -23,8 +22,12 @@ export const MovieGallery = () => {
           ))}
         </div>
       ) : (
-        <div className='flex h-64 items-center justify-center'>
-          <div>No Movie found</div>
+        <div className='flex h-64 items-center justify-center '>
+          <div className='relative flex rounded-full'>
+            <div className='animate-pulse text-3xl font-semibold'>
+              There is no movie in Local Library.
+            </div>
+          </div>
         </div>
       )}
     </div>

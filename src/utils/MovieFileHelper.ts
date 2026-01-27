@@ -52,7 +52,7 @@ export const toMovieFile = (fileName: string): MovieFile | undefined => {
   return {
     fileName: fileName,
     title: yearMatch ? title.replace(/(\d{4})$/, '').trim() : title,
-    year: yearMatch ? parseInt(yearMatch[1]) : NaN,
+    year: yearMatch ? yearMatch[1] : '',
   };
 };
 
