@@ -102,7 +102,7 @@ export const TrailerDialog = ({ movie, open, onClose }: TrailerDialogProps) => {
     };
 
     void loadTrailer();
-  }, [open, trailer, loading, movie.imdbID, movie.title]);
+  }, [open, trailer, movie.imdbID, movie.title]);
 
   const handleSearchYoutube = async () => {
     const searchable = [movie.title, movie.detail.year, 'Movie', searchYT]
@@ -138,37 +138,35 @@ export const TrailerDialog = ({ movie, open, onClose }: TrailerDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       {/* No Trigger - Controlled by state */}
-      <DialogContent className='sm:max-w-[700px] max-w-4xl border-white/40 bg-white/60 p-0 backdrop-blur-3xl shadow-[0_32px_80px_-20px_rgba(0,0,0,0.1)] overflow-hidden'>
+      <DialogContent className='md:max-w-110 lg:max-w-200 border-white/40 bg-white/60 p-0 backdrop-blur-3xl shadow-[0_32px_80px_-20px_rgba(0,0,0,0.1)] overflow-hidden'>
         <div className='flex flex-col h-full'>
-          {/* 1. Header: Bold High-Contrast Typography */}
-          <DialogHeader className='p-6 pb-5 flex flex-row items-end justify-between border-b border-zinc-200/50'>
-            <div className='flex flex-col gap-1.5'>
-              <DialogTitle className='text-3xl font-black tracking-tight text-zinc-950 flex items-baseline gap-2'>
+          <DialogHeader className='p-3 flex flex-col items-start justify-between border-b border-zinc-200/50 gap-4'>
+            <div className='w-full flex flex-col gap-1.5'>
+              <DialogTitle className='w-full text-lg lg:text-2xl md:text-sm font-black tracking-tight text-zinc-950 flex items-baseline gap-2'>
                 {movie.title}
-                {/* Increased visibility for Year: Using zinc-700 instead of 500 */}
-                <span className='text-lg font-bold text-zinc-700 tracking-tighter'>
-                  ({movie.detail.year})
-                </span>
+                {movie.year && (
+                  <span className='text-lg lg:text-2xl md:text-sm font-bold text-zinc-700 tracking-tighter'>
+                    ({movie.year})
+                  </span>
+                )}
               </DialogTitle>
 
-              {/* Visibility Fix: High-contrast sub-header */}
-              <p className='text-xs font-bold text-zinc-800 uppercase tracking-wide flex items-center gap-2'>
+              <p className='text-xs font-bold text-zinc-800 uppercase tracking-tight flex items-center gap-2'>
                 <span className='text-red-600 font-black'>FEATURED:</span>
                 {trailer?.name ||
                   (loading ? 'LOCATING TRAILER...' : 'TRAILER NOT FOUND')}
               </p>
             </div>
 
-            <div className='flex flex-col items-end gap-3 shrink-0'>
+            <div className='hidden lg:flex flex-col items-end gap-3 shrink-0'>
               <div className='flex items-center gap-2'>
-                {/* Metadata: Using monospace for technical depth */}
                 <span className='text-[10px] font-mono font-bold text-zinc-500 bg-zinc-100 px-1.5 py-0.5 rounded'>
                   ID: {movie.imdbID}
                 </span>
 
                 <span className='inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-[9px] font-black text-emerald-700 border border-emerald-200'>
                   <div className='h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse' />
-                  {trailer?.official ? '' : 'NOT'} 'VERIFIED OFFICIAL'
+                  {trailer?.official ? '' : 'NOT'} VERIFIED OFFICIAL
                 </span>
               </div>
             </div>
@@ -196,6 +194,18 @@ export const TrailerDialog = ({ movie, open, onClose }: TrailerDialogProps) => {
                 allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
                 allowFullScreen
               />
+            )}
+
+            {!loading && error && (
+              <div className='absolute inset-0 flex flex-col items-center justify-center gap-4 bg-white/90 backdrop-blur-md'>
+                <div className='text-sm lg:text-lg font-medium text-zinc-900 tracking-normal p-4'>
+                  {movie.title} {movie.year ? `(${movie.year})` : ''} trialer is
+                  not avaiable.
+                </div>
+                <div className='text-sm lg:text-lg animate-pulse font-bold text-zinc-900 tracking-widest p-4'>
+                  Click below youtube logo to watch.
+                </div>
+              </div>
             )}
           </div>
 
