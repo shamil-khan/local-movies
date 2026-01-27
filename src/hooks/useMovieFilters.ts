@@ -21,14 +21,22 @@ export const useMovieFilters = () => {
     [movieDetails],
   );
 
-  const availableYears = useMemo(
-    () =>
-      Array.from(new Set(movieDetails.map((m) => m.year).filter(Boolean))).sort(
-        (a, b) => b.localeCompare(a),
-      ),
-    [movieDetails],
-  );
-
+  const availableYears = useMemo(() => {
+    const spans = Array.from(
+      new Set(movieDetails.map((m) => m.year).filter(Boolean)),
+    )
+      .sort((a, b) => b.localeCompare(a))
+      .map((y) => {
+        const year = parseInt(y, 10);
+        if (Number.isNaN(year)) {
+          return 'N/A';
+        }
+        const yStart = Math.floor(year / 5) * 5;
+        const yEnd = yStart + 4;
+        return `${yStart} - ${yEnd}`;
+      });
+    return Array.from(new Set(spans));
+  }, [movieDetails]);
   const availableRated = useMemo(
     () =>
       Array.from(
@@ -36,6 +44,22 @@ export const useMovieFilters = () => {
       ).sort(),
     [movieDetails],
   );
+
+  const availableRatings = useMemo(() => {
+    const ratings = Array.from(
+      new Set(movieDetails.map((m) => m.imdbRating).filter(Boolean)),
+    )
+      .sort((a, b) => parseFloat(b) - parseFloat(a))
+      .map((r) => {
+        const rating = parseFloat(r);
+        if (Number.isNaN(rating)) return 'N/A';
+        const start = Math.floor(rating * 2) / 2;
+        const end = start + 0.4;
+        return `${start.toFixed(1)} - ${end.toFixed(1)}`;
+      });
+
+    return Array.from(new Set(ratings));
+  }, [movieDetails]);
 
   const availableLanguages = useMemo(
     () =>
@@ -63,24 +87,40 @@ export const useMovieFilters = () => {
 
   const availableCategories = useMemo(
     () =>
-      categories.map((c) => ({
-        label: c.name,
-        value: c.id,
-      })),
+      categories
+        .map((c) => ({
+          label: c.name,
+          value: c.id,
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
     [categories],
   );
 
-  const availableRatings = useMemo(
-    () =>
-      Array.from(
-        new Set(movieDetails.map((m) => m.imdbRating).filter(Boolean)),
-      ).sort((a, b) => parseFloat(b) - parseFloat(a)),
-    [movieDetails],
-  );
-
   const filteredMovies = useMemo(() => {
-    logger.info('Filtering movies with criteria:', filters);
-    const result = movies.filter((movie) => {
+    const isYearInGroups = (value: string): boolean => {
+      const year = parseInt(value);
+      if (Number.isNaN(year)) {
+        return filters.year.includes('N/A');
+      }
+
+      const spanStart = Math.floor(year / 5) * 5;
+      const targetSpan = `${spanStart} - ${spanStart + 4}`;
+
+      return filters.year.includes(targetSpan);
+    };
+
+    const isRatingInGroups = (value: string): boolean => {
+      const rating = parseFloat(value);
+      if (Number.isNaN(rating)) {
+        return filters.rating.includes('N/A');
+      }
+      const spanStart = Math.floor(rating * 2) / 2;
+      const spanEnd = spanStart + 0.4;
+      const targetSpan = `${spanStart.toFixed(1)} - ${spanEnd.toFixed(1)}`;
+
+      return filters.rating.includes(targetSpan);
+    };
+    return movies.filter((movie) => {
       const matchesQuery = filters.query
         ? movie.title.toLowerCase().includes(filters.query.toLowerCase())
         : true;
@@ -94,9 +134,7 @@ export const useMovieFilters = () => {
           : filters.genre.some((g) => movieGenres.includes(g.toLowerCase()));
 
       const matchesYear =
-        filters.year.length === 0
-          ? true
-          : filters.year.includes(movie.detail.year);
+        filters.year.length === 0 ? true : isYearInGroups(movie.detail.year);
 
       const matchesRated =
         filters.rated.length === 0
@@ -106,7 +144,7 @@ export const useMovieFilters = () => {
       const matchesRating =
         filters.rating.length === 0
           ? true
-          : filters.rating.includes(movie.detail.imdbRating);
+          : isRatingInGroups(movie.detail.imdbRating);
 
       const movieLanguages = movie.detail.language
         .split(',')
@@ -114,8 +152,8 @@ export const useMovieFilters = () => {
       const matchesLanguage =
         filters.language.length === 0
           ? true
-          : filters.language.some((l) =>
-              movieLanguages.includes(l.toLowerCase()),
+          : filters.language.some((v) =>
+              movieLanguages.includes(v.toLowerCase()),
             );
 
       const movieCountries = movie.detail.country
@@ -155,12 +193,9 @@ export const useMovieFilters = () => {
         matchesWatched
       );
     });
-    logger.info(`Filtered movies count: ${result.length}`);
-    return result;
   }, [filters, movies]);
 
   const onFiltersUpdated = (filters: MovieFilterCriteria) => {
-    logger.info('Filters updated', filters);
     updatedFilters(filters);
   };
 
@@ -180,7 +215,9 @@ export const useMovieFilters = () => {
   );
 
   return {
-    filteredMovies,
+    filteredMovies: filteredMovies.sort((a, b) =>
+      a.title.localeCompare(b.title),
+    ),
     filters: filters,
     hasActiveFilters,
     onFiltersUpdated,
