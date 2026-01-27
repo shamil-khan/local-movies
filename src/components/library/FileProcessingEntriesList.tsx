@@ -8,19 +8,19 @@ import {
 } from '@/components/ui/tooltip';
 import { useMovieProcessor } from '@/hooks/useMovieProcessor';
 import type { MovieUploadInfo } from '@/store/useMovieProcessorStore';
+import { cn } from '@/lib/utils';
 
 export const FileProcessingEntriesList = () => {
   const { movies, removeFile } = useMovieProcessor();
 
-  const getTooltipFlagStyle = (movie: MovieUploadInfo) => {
-    return movie.inDb === undefined
-      ? 'text-gray-600 hover:text-gray-600 hover:bg-gray-100'
+  const getTooltipFlagStyle = (movie: MovieUploadInfo) =>
+    movie.inDb === undefined
+      ? 'text-gray-600 hover:text-gray-600 hover:bg-gray-100 opacity-0 md:opacity-100 md:group-hover:opacity-100 transition-opacity'
       : movie.inDb === true
         ? 'text-blue-600 hover:text-blue-600 hover:bg-blue-100'
         : movie.detail
           ? 'text-green-600 hover:text-green-600 hover:bg-green-100'
           : 'text-red-600 hover:text-red-600 hover:bg-red-100';
-  };
 
   const getTooltipContent = (
     movie: MovieUploadInfo,
@@ -97,9 +97,7 @@ export const FileProcessingEntriesList = () => {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div
-                      className={`w-4 h-4 flex items-center justify-center  ${getTooltipFlagStyle(
-                        movie,
-                      )}`}>
+                      className={`w-4 h-4 flex items-center justify-center ${getTooltipFlagStyle(movie)}`}>
                       <Flag />
                     </div>
                   </TooltipTrigger>
@@ -121,7 +119,11 @@ export const FileProcessingEntriesList = () => {
                 <Button
                   variant='ghost'
                   size='icon'
-                  className='h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive'
+                  className={cn(
+                    'h-7 w-7',
+                    'opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity',
+                    'text-destructive md:text-muted-foreground md:hover:text-destructive',
+                  )}
                   onClick={() => removeFile(movie.file)}
                   title='Remove from list'>
                   <X className='w-4 h-4' />

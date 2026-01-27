@@ -164,9 +164,25 @@ export const useMovieFilters = () => {
     updatedFilters(filters);
   };
 
+  const hasActiveFilters = useMemo(
+    () =>
+      (filters.genre && filters.genre.length > 0) ||
+      (filters.year && filters.year.length > 0) ||
+      (filters.rating && filters.rating.length > 0) ||
+      (filters.rated && filters.rated.length > 0) ||
+      (filters.language && filters.language.length > 0) ||
+      (filters.country && filters.country.length > 0) ||
+      (filters.category && filters.category.length > 0) ||
+      filters.isFavorite ||
+      filters.isWatched ||
+      (filters.query && filters.query.trim().length > 0),
+    [filters],
+  );
+
   return {
     filteredMovies,
     filters: filters,
+    hasActiveFilters,
     onFiltersUpdated,
     onRemoveFilters: clearFilters,
     availableGenres,

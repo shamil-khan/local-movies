@@ -3,7 +3,6 @@ import { MovieCard } from '@/components/MovieCard';
 import { useMovieFilters } from '@/hooks/useMovieFilters';
 
 export const MovieGallery = () => {
-  // const [loading, setLoading] = useState(false);
   const loading = false;
   const { filteredMovies } = useMovieFilters();
 
@@ -25,7 +24,7 @@ export const MovieGallery = () => {
         <div className='flex h-64 items-center justify-center '>
           <div className='relative flex rounded-full'>
             <div className='animate-pulse text-3xl font-semibold'>
-              There is no movie in Local Library.
+              There is no movie in Local Library for your search.
             </div>
           </div>
         </div>
