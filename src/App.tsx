@@ -11,7 +11,7 @@ import { pluralName } from '@/utils/Helper';
 
 function App() {
   const { movies, loadMovies } = useMovieLibrary();
-  const { filteredMovies } = useMovieFilters();
+  const { hasActiveFilters, filteredMovies } = useMovieFilters();
 
   useEffect(() => {
     loadMovies();
@@ -23,17 +23,26 @@ function App() {
         <h3 className='text-2xl font-bold'>
           Movie Library has {movies.length} {pluralName(movies, 'movie')}
         </h3>
-        {movies.length > filteredMovies.length && (
-          <h6 className='text-md text-muted-foreground'>
-            Filtered {filteredMovies.length}{' '}
+        {hasActiveFilters && (
+          <h6 className='text-md text-muted-foreground font-medium'>
+            Filtering result {filteredMovies.length}{' '}
             {pluralName(filteredMovies, 'movie')}
           </h6>
         )}
 
         <LibraryHeader />
       </div>
-
-      <MovieGallery />
+      {movies.length === 0 ? (
+        <div className='flex h-64 items-center justify-center '>
+          <div className='relative flex rounded-full'>
+            <div className='animate-pulse text-3xl font-semibold'>
+              There is no movie in Local Library.
+            </div>
+          </div>
+        </div>
+      ) : (
+        <MovieGallery />
+      )}
       <Toaster />
       <CategoryDialog />
     </ErrorBoundary>

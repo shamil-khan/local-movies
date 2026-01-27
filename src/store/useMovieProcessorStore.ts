@@ -113,7 +113,7 @@ export const useMovieProcessorStore = create<MovieProcessorStoreState>()(
         );
         const message = `Title [${file.title} (${file.year})] for File '${file.fileName}' has been removed from processing`;
         logger.info(message);
-        toast(message);
+        toast.warning(message);
       }),
 
     reset: () =>
