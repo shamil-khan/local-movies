@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import { AlertOctagon, Trash2 } from 'lucide-react';
+import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -9,32 +12,21 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { ActionTooltip } from '@/components/ActionTooltip';
 import { useMovieLibrary } from '@/hooks/useMovieLibrary';
+import { useMovieProcessor } from '@/hooks/useMovieProcessor';
 import { cn } from '@/lib/utils';
-import { type Category } from '@/models/MovieModel';
-import { movieDbService } from '@/services/MovieDbService';
-import { AlertOctagon, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { ActionTooltip } from '../ActionTooltip';
-import { TooltipProvider } from '@radix-ui/react-tooltip';
 
 export const LibraryDeleteDialog = () => {
-  const { handleClearLibrary } = useMovieLibrary();
+  const { categories, handleClearLibrary } = useMovieLibrary();
+  const { clear } = useMovieProcessor();
   const [deleteCategories, setDeleteCategories] = useState(false);
-  const [categories, setCategories] = useState<Category[]>([]);
 
   const handleClearLibraryWithReset = async () => {
-    // resetState();
+    clear();
     await handleClearLibrary(deleteCategories);
+    setDeleteCategories(false);
   };
-
-  useEffect(() => {
-    const loadCategories = async () => {
-      const allCategories = await movieDbService.allCategories();
-      setCategories(allCategories);
-    };
-    void loadCategories();
-  }, []);
 
   return (
     <Dialog>

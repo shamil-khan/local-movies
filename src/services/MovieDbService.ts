@@ -1,15 +1,18 @@
-import logger from '@/core/logger';
 import { db } from '@/lib/db';
 import {
-  movieFileSchema,
-  type Category,
-  type MovieCategory,
   type MovieDetail,
-  type MovieFile,
-  type MovieInfo,
   type MoviePoster,
   type MovieUserStatus,
+  type MovieCategory,
+  type Category,
+  type MovieInfo,
+  movieDetailSchema,
+  moviePosterSchema,
+  movieUserStatusSchema,
+  categorySchema,
+  movieCategorySchema,
 } from '@/models/MovieModel';
+import logger from '@/core/logger';
 
 // System Category Names
 export const SYSTEM_CATEGORY_SEARCHED = 'Searched';
@@ -29,7 +32,7 @@ class MovieDbService {
   // Helper to ensure a category exists
   private async ensureCategory(name: string) {
     const existing = await db.categoryTable
-      .where('name')
+      .where(categorySchema.name)
       .equalsIgnoreCase(name)
       .first();
     if (!existing) {
@@ -38,71 +41,45 @@ class MovieDbService {
     }
   }
 
-  allMovieDetails = async (): Promise<MovieDetail[]> => {
-    return await db.movieDetailTable.toArray();
-  };
+  allMovieDetails = async (): Promise<MovieDetail[]> =>
+    await db.movieDetailTable.toArray();
 
-  allMoviePosters = async (): Promise<MoviePoster[]> => {
-    return await db.moviePosterTable.toArray();
-  };
+  allMoviePosters = async (): Promise<MoviePoster[]> =>
+    await db.moviePosterTable.toArray();
 
-  allMovieUserStatuses = async (): Promise<
-    import('@/models/MovieModel').MovieUserStatus[]
-  > => {
-    return await db.movieUserStatusTable.toArray();
-  };
+  allMovieUserStatuses = async (): Promise<MovieUserStatus[]> =>
+    await db.movieUserStatusTable.toArray();
 
-  allCategories = async (): Promise<Category[]> => {
-    return await db.categoryTable.toArray();
-  };
+  allCategories = async (): Promise<Category[]> =>
+    await db.categoryTable.toArray();
 
-  allMovieCategories = async (): Promise<MovieCategory[]> => {
-    return await db.movieCategoryTable.toArray();
-  };
+  allMovieCategories = async (): Promise<MovieCategory[]> =>
+    await db.movieCategoryTable.toArray();
 
-  fileExists = async (fileName: string): Promise<boolean> => {
-    const result = await db.movieFileTable
-      .where(movieFileSchema.fileName)
-      .equals(fileName)
+  findMovieDetailByTitle = async (
+    title: string,
+    year: string,
+  ): Promise<MovieDetail | undefined> =>
+    await db.movieDetailTable
+      .where(`${movieDetailSchema.title}`)
+      .equalsIgnoreCase(title)
+      .and((x) => x.year === year)
       .first();
-    logger.info(
-      `Movie file name ${fileName} ${result ? 'already' : 'does not'} exits `,
-    );
-    return !!result;
-  };
 
-  addFile = async (movieFile: MovieFile): Promise<number | undefined> => {
-    return await db.movieFileTable.add(movieFile);
-  };
-
-  addDetail = async (movieDetail: MovieDetail): Promise<number | undefined> => {
-    return await db.movieDetailTable.add(movieDetail);
-  };
-
-  addPoster = async (moviePoster: MoviePoster): Promise<number | undefined> => {
-    return await db.moviePosterTable.add(moviePoster);
-  };
-
-  // Category methods
-  addCategory = async (name: string): Promise<number | undefined> => {
-    const existing = await db.categoryTable
-      .where('name')
-      .equalsIgnoreCase(name)
+  findMovieDetailByImdbID = async (
+    imdbID: string,
+  ): Promise<MovieDetail | undefined> =>
+    await db.movieDetailTable
+      .where(`${movieDetailSchema.imdbID}`)
+      .equalsIgnoreCase(imdbID)
       .first();
-    if (existing) {
-      return existing.id;
-    }
-    return await db.categoryTable.add({
-      name: name.trim(),
-    });
-  };
 
   addUpdateUserStatus = async (
     imdbID: string,
     status: Partial<Omit<MovieUserStatus, 'id' | 'imdbID'>>,
   ): Promise<void> => {
     const existing = await db.movieUserStatusTable
-      .where('imdbID')
+      .where(movieUserStatusSchema.imdbID)
       .equals(imdbID)
       .first();
 
@@ -119,13 +96,26 @@ class MovieDbService {
     }
   };
 
+  addCategory = async (name: string): Promise<number | undefined> => {
+    const existing = await db.categoryTable
+      .where(categorySchema.name)
+      .equalsIgnoreCase(name)
+      .first();
+    if (existing) {
+      return existing.id;
+    }
+    return await db.categoryTable.add({
+      name: name.trim(),
+    });
+  };
+
   updateCategory = async (
     categoryId: number,
     name: string,
   ): Promise<boolean> => {
     try {
       const existing = await db.categoryTable
-        .where('id')
+        .where(categorySchema.id)
         .equals(categoryId)
         .first();
       if (!existing) return false;
@@ -139,35 +129,31 @@ class MovieDbService {
     }
   };
 
-  deleteCategory = async (categoryId: number): Promise<void> => {
-    await db.transaction('rw', db.categoryTable, db.movieCategoryTable, () => {
-      db.categoryTable.where('id').equals(categoryId).delete();
-      db.movieCategoryTable.where('categoryId').equals(categoryId).delete();
+  deleteCategory = async (categoryId: number): Promise<void> =>
+    db.transaction('rw', db.categoryTable, db.movieCategoryTable, () => {
+      db.categoryTable.where(categorySchema.id).equals(categoryId).delete();
+      db.movieCategoryTable
+        .where(movieCategorySchema.categoryId)
+        .equals(categoryId)
+        .delete();
     });
-  };
 
-  getPoster = async (imdbID: string): Promise<MoviePoster | undefined> => {
-    return await db.moviePosterTable.where('imdbID').equals(imdbID).first();
-  };
-
-  findByTitle = async (title: string): Promise<MovieDetail | undefined> => {
-    return await db.movieDetailTable
-      .where('Title')
-      .equalsIgnoreCase(title)
+  getPoster = async (imdbID: string): Promise<MoviePoster | undefined> =>
+    await db.moviePosterTable
+      .where(moviePosterSchema.imdbID)
+      .equals(imdbID)
       .first();
-  };
 
   addMovie = async (movie: MovieInfo): Promise<void> => {
     await db.transaction(
       'rw',
       db.movieDetailTable,
       db.moviePosterTable,
-      db.movieUserStatusTable,
       db.movieCategoryTable,
       () => {
         // Check and add movie details
         db.movieDetailTable
-          .where('imdbID')
+          .where(movieDetailSchema.imdbID)
           .equals(movie.imdbID)
           .first()
           .then((existing) => {
@@ -184,7 +170,7 @@ class MovieDbService {
 
         if (movie.poster) {
           db.moviePosterTable
-            .where('imdbID')
+            .where(moviePosterSchema.imdbID)
             .equals(movie.imdbID)
             .first()
             .then((existing) => {
@@ -200,26 +186,12 @@ class MovieDbService {
             });
         }
 
-        if (movie.status) {
-          db.movieUserStatusTable
-            .where('imdbID')
-            .equals(movie.imdbID)
-            .first()
-            .then((existing) => {
-              if (!existing && movie.status) {
-                db.movieUserStatusTable.add({
-                  imdbID: movie.imdbID,
-                  isFavorite: movie.status.isFavorite || false,
-                  isWatched: movie.status.isWatched || false,
-                });
-              }
-            });
-        }
-
         if (movie.categories) {
           movie.categories.forEach((c) => {
             db.movieCategoryTable
-              .where('[imdbID+categoryId]')
+              .where(
+                `[${movieCategorySchema.imdbID}+${movieCategorySchema.categoryId}]`,
+              )
               .equals([movie.imdbID, c.id])
               .first()
               .then((existing) => {
@@ -244,47 +216,37 @@ class MovieDbService {
       db.movieUserStatusTable,
       db.movieCategoryTable,
       () => {
-        db.movieDetailTable.where('imdbID').equals(imdbID).delete();
-        db.moviePosterTable.where('imdbID').equals(imdbID).delete();
-        db.movieUserStatusTable.where('imdbID').equals(imdbID).delete();
-        db.movieCategoryTable.where('imdbID').equals(imdbID).delete();
+        db.movieDetailTable
+          .where(movieDetailSchema.imdbID)
+          .equals(imdbID)
+          .delete();
+        db.moviePosterTable
+          .where(moviePosterSchema.imdbID)
+          .equals(imdbID)
+          .delete();
+        db.movieUserStatusTable
+          .where(movieUserStatusSchema.imdbID)
+          .equals(imdbID)
+          .delete();
+        db.movieCategoryTable
+          .where(movieCategorySchema.imdbID)
+          .equals(imdbID)
+          .delete();
       },
     );
   };
 
-  updateMovieFileImdbID = async (
-    fileName: string,
-    imdbID: string,
-  ): Promise<void> => {
-    logger.info(`Updating movie file imdbID ${fileName} ${imdbID}`);
-    const existing = await db.movieFileTable
-      .where(movieFileSchema.fileName)
-      .equals(fileName)
-      .first();
-
-    if (existing && (!existing.imdbID || existing.imdbID !== imdbID)) {
-      await db.movieFileTable.update(existing.id!, {
-        imdbID: imdbID,
-      });
-    }
-  };
-
   clearDatabase = async (deleteCategories = false) => {
-    await db.movieFileTable.clear();
     await db.movieDetailTable.clear();
     await db.moviePosterTable.clear();
-    // await db.movieUserStatusTable.clear(); // Keep user statuses? User said "delete local-movies library".
-    // Usually means content. But if I delete movies, status for them is orphan.
-    // Let's clear everything for a true reset.
     await db.movieUserStatusTable.clear();
     await db.movieCategoryTable.clear();
     if (deleteCategories) {
       await db.categoryTable
-        .where('name')
+        .where(categorySchema.name)
         .noneOf([SYSTEM_CATEGORY_SEARCHED, SYSTEM_CATEGORY_UPLOADED])
         .delete();
     }
-    // Note: Categories are kept even when clearing movies
   };
 
   addMovieToCategory = async (
@@ -292,7 +254,9 @@ class MovieDbService {
     categoryId: number,
   ): Promise<void> => {
     const existing = await db.movieCategoryTable
-      .where('[imdbID+categoryId]')
+      .where(
+        `[${movieCategorySchema.imdbID}+${movieCategorySchema.categoryId}]`,
+      )
       .equals([imdbID, categoryId])
       .first();
     if (!existing) {
@@ -305,41 +269,11 @@ class MovieDbService {
     categoryId: number,
   ): Promise<void> => {
     await db.movieCategoryTable
-      .where('[imdbID+categoryId]')
+      .where(
+        `[${movieCategorySchema.imdbID}+${movieCategorySchema.categoryId}]`,
+      )
       .equals([imdbID, categoryId])
       .delete();
-  };
-
-  addMovieToCategories = async (
-    imdbID: string,
-    categoryIds: number[],
-  ): Promise<void> => {
-    await db.transaction('rw', db.movieCategoryTable, async () => {
-      // Remove existing links for this movie
-      // await db.movieCategoryTable.where('imdbID').equals(imdbID).delete();
-      // Add new links
-      for (const categoryId of categoryIds) {
-        await db.movieCategoryTable.add({ imdbID, categoryId });
-      }
-    });
-  };
-
-  getMovieCategories = async (imdbID: string): Promise<Category[]> => {
-    const movieCategories = await db.movieCategoryTable
-      .where('imdbID')
-      .equals(imdbID)
-      .toArray();
-    const categoryIds = movieCategories.map((mc) => mc.categoryId);
-    if (categoryIds.length === 0) return [];
-    return await db.categoryTable.where('id').anyOf(categoryIds).toArray();
-  };
-
-  getMoviesByCategory = async (categoryId: number): Promise<string[]> => {
-    const movieCategories = await db.movieCategoryTable
-      .where('categoryId')
-      .equals(categoryId)
-      .toArray();
-    return movieCategories.map((mc) => mc.imdbID);
   };
 }
 

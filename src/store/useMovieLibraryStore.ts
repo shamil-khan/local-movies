@@ -1,4 +1,6 @@
-import logger from '@/core/logger';
+import { create } from 'zustand';
+import { immer } from 'zustand/middleware/immer';
+import { toast } from 'sonner';
 import {
   type Category,
   type MovieInfo,
@@ -6,9 +8,7 @@ import {
   type MovieFilterCriteria,
 } from '@/models/MovieModel';
 import { movieDbService } from '@/services/MovieDbService';
-import { toast } from 'sonner';
-import { create } from 'zustand';
-import { immer } from 'zustand/middleware/immer';
+import logger from '@/core/logger';
 
 interface MovieLibraryState {
   movies: MovieInfo[];
@@ -19,6 +19,7 @@ interface MovieLibraryState {
   removeMovie: (imdbID: string) => Promise<void>;
   addCategory: (name: string) => Promise<void>;
   removeCategory: (categoryId: number) => Promise<void>;
+  getCategory: (name: string) => Category | undefined;
   updateCategory: (categoryId: number, name: string) => Promise<void>;
   addMovieToCategory: (imdbID: string, category: Category) => Promise<void>;
   removeMovieFromCategory: (
@@ -92,6 +93,7 @@ export const useMovieLibraryStore = create<MovieLibraryState>()(
           const movies: MovieInfo[] = details.map((detail) => ({
             imdbID: detail.imdbID,
             title: detail.title,
+            year: detail.year,
             detail: detail,
             poster: posters.find((p) => p.imdbID === detail.imdbID),
             status: statuses.find((s) => s.imdbID === detail.imdbID),
@@ -118,9 +120,7 @@ export const useMovieLibraryStore = create<MovieLibraryState>()(
           set((state) => {
             state.movies.push(movie);
           });
-          toast.success('Movie added successfully');
         } catch (err) {
-          toast.error('Failed to add movie');
           logger.error('Failed to add movie:', err);
         }
       },
@@ -175,6 +175,9 @@ export const useMovieLibraryStore = create<MovieLibraryState>()(
           logger.error('Failed to delete category:', err);
         }
       },
+
+      getCategory: (name: string): Category | undefined =>
+        get()?.categories.find((c) => c.name === name),
 
       updateCategory: async (categoryId: number, name: string) => {
         try {

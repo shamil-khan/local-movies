@@ -1,62 +1,136 @@
-import { useCallback } from 'react';
-
-import { useMovieProcessWorkflow } from '@/hooks/useMovieProcessWorkflow';
-import { toMovieFiles } from '@/utils/MovieFileHelper';
-import { type MovieUploadInfo } from '@/models/MovieModel';
-import logger from '@/core/logger';
+import { toast } from 'sonner';
+import type { Category, MovieFile, MovieInfo } from '@/models/MovieModel';
 import { useMovieProcessorStore } from '@/store/useMovieProcessorStore';
 import { useMovieLibraryStore } from '@/store/useMovieLibraryStore';
+import { toMovieDetail } from '@/utils/MovieFileHelper';
+import { movieDbService } from '@/services/MovieDbService';
+import { omdbApiService } from '@/services/OmdbApiService';
+import { utilityApiService } from '@/services/UtilityApiService';
+import logger from '@/core/logger';
+import { pluralName } from '@/utils/Helper';
 
 export const useMovieProcessor = () => {
-  const {
-    movies,
-    setMovies,
-    removeFileName: storeRemoveFileName,
-    resetState,
-  } = useMovieProcessorStore();
-  const { runWorkflow } = useMovieProcessWorkflow();
+  const { movies, loadFiles, inDb, setDetail, setPoster, hasError } =
+    useMovieProcessorStore();
+  const { setIsProcessing, setIsCompleted } = useMovieProcessorStore();
+  const addMovie = useMovieLibraryStore((state) => state.addMovie);
 
-  const loadFiles = useCallback(
-    async (fileNames: string[]) => {
-      logger.info(`useMovieProcessor processing ${fileNames.length} files`);
-
-      const movies: MovieUploadInfo[] =
-        fileNames.length > 0
-          ? toMovieFiles(fileNames).map((f) => ({
-              file: f,
-            }))
-          : [];
-      setMovies(movies);
-    },
-    [setMovies],
-  );
-
-  const removeMovie = useCallback(
-    async (fileName: string) => {
-      const movie = movies.find((m) => m.file.fileName === fileName);
-      if (movie && movie.detail?.imdbID) {
-        // If processed, remove from library/DB
-        const isComplete = useMovieProcessorStore.getState().isComplete;
-        if (isComplete) {
-          await useMovieLibraryStore
-            .getState()
-            .removeMovie(movie.detail.imdbID);
-        }
+  const processFile = async (
+    file: MovieFile,
+    categories: Category[],
+  ): Promise<void> => {
+    const foundTitle = await movieDbService.findMovieDetailByTitle(
+      file.title,
+      file.year,
+    );
+    if (foundTitle) {
+      setDetail(file, foundTitle);
+      const poster = await movieDbService.getPoster(foundTitle.imdbID);
+      inDb(file, true);
+      if (poster) {
+        setPoster(file, poster.blob);
       }
-      storeRemoveFileName(fileName);
-    },
-    [movies, storeRemoveFileName],
-  );
+      return;
+    }
+
+    const detail = await omdbApiService.getMovieByTitle(file.title, file.year);
+    if (detail.Response === 'False') {
+      inDb(file, false);
+      hasError(file, {
+        message: 'Movie detail response is false.',
+        detail: detail,
+      });
+      return;
+    }
+
+    const movieDetail = toMovieDetail(detail);
+    const foundImdb = await movieDbService.findMovieDetailByImdbID(
+      movieDetail.imdbID,
+    );
+    if (foundImdb && movieDetail.imdbID === foundImdb.imdbID) {
+      setDetail(file, foundImdb);
+      const poster = await movieDbService.getPoster(foundImdb.imdbID);
+      inDb(file, true);
+      if (poster) {
+        setPoster(file, poster.blob);
+      }
+      return;
+    }
+
+    inDb(file, false);
+    setDetail(file, movieDetail);
+
+    let posterBlob: Blob | undefined = undefined;
+    if (movieDetail.poster !== 'N/A') {
+      posterBlob = await utilityApiService.getPosterImage(movieDetail.poster);
+      setPoster(file, posterBlob);
+    }
+
+    const movieInfo: MovieInfo = {
+      imdbID: movieDetail.imdbID,
+      title: movieDetail.title,
+      year: movieDetail.year,
+      detail: movieDetail,
+      poster: posterBlob
+        ? {
+            url: movieDetail.poster,
+            mime: posterBlob.type,
+            blob: posterBlob,
+          }
+        : undefined,
+      categories: categories,
+    };
+
+    await addMovie(movieInfo);
+  };
+
+  const processFiles = async (categories: Category[]) => {
+    if (movies.length === 0) {
+      const message = 'There is no file available to process.';
+      logger.info(message);
+      toast(message);
+      return;
+    }
+
+    setIsProcessing(true);
+    setIsCompleted(false);
+
+    logger.info(
+      `Started processing ${movies.length} ${pluralName(movies, 'file')}.`,
+    );
+    setIsProcessing(true);
+    const responses = await Promise.allSettled(
+      movies.map((m) => processFile(m.file, categories)),
+    );
+
+    responses.forEach((r, index) => {
+      const movie = movies[index];
+      if (!movie) return;
+
+      if (r.status === 'fulfilled') {
+        logger.success('File processed', movie.file);
+      } else {
+        const reason = r.reason as Error | unknown as Error;
+        hasError(movie.file, {
+          message: reason?.message ?? 'Failed to process file',
+        });
+        logger.fail('File processed', movie.file);
+      }
+    });
+    setIsProcessing(false);
+    setIsCompleted(true);
+    toast(
+      `The processing of ${movies.length} ${pluralName(movies, 'file has', 'files have')} been done.`,
+    );
+  };
 
   return {
-    movies: movies,
-    load: loadFiles,
-    process: runWorkflow,
-    removeByFileName: removeMovie,
-    clear: resetState,
-    categoryIds: useMovieProcessorStore((state) => state.categoryIds),
-    setCategoryIds: useMovieProcessorStore((state) => state.setCategoryIds),
+    movies,
+    loadFiles,
+    processFiles,
+    removeFile: useMovieProcessorStore((state) => state.remove),
+    clear: useMovieProcessorStore((state) => state.reset),
     isProcessing: useMovieProcessorStore((state) => state.isProcessing),
-    isComplete: useMovieProcessorStore((state) => state.isComplete),
+    isCompleted: useMovieProcessorStore((state) => state.isCompleted),
   };
 };

@@ -108,7 +108,7 @@ class OmdbApiService {
    */
   getMovieByTitle = async (
     title: string,
-    year?: number,
+    year?: string,
   ): Promise<OmdbMovieResult> => {
     try {
       const params: Record<string, string | number> = {

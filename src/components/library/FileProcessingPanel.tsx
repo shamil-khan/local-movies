@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { FileProcessingHeader } from '@/components/library/FileProcessingHeader';
-import { useMovieProcessor } from '@/hooks/useMovieProcessor';
 import { FileProcessingEntriesList } from '@/components/library/FileProcessingEntriesList';
+import { useMovieProcessor } from '@/hooks/useMovieProcessor';
 
 interface FileProcessingPanelProps {
   fileNames: string[];
@@ -12,11 +12,11 @@ export const FileProcessingPanel = ({
   fileNames,
 }: FileProcessingPanelProps) => {
   const [panelVisible, setPanelVisible] = useState(false);
-  const { movies, load } = useMovieProcessor();
+  const { movies, loadFiles } = useMovieProcessor();
 
   useEffect(() => {
     if (fileNames.length > 0) {
-      load(fileNames);
+      loadFiles(fileNames);
     }
   }, [fileNames]); // Remove 'load' from dependencies to prevent re-execution loop if 'load' isn't stable
 
@@ -42,9 +42,9 @@ export const FileProcessingPanel = ({
         </Button>
       )}
 
-      {panelVisible && (
+      {movies.length > 0 && panelVisible && (
         <div className='w-full bg-background border border-border rounded-lg shadow-sm mt-1 animate-in fade-in slide-in-from-top-2 duration-200'>
-          <FileProcessingHeader onClose={() => setPanelVisible(false)} />
+          <FileProcessingHeader />
 
           <div className='max-h-80 overflow-y-auto'>
             <FileProcessingEntriesList />

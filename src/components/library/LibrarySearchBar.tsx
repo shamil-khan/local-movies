@@ -1,22 +1,20 @@
 import { useRef, useState, useEffect } from 'react';
-import { Input } from '@/components/ui/input';
 import { X } from 'lucide-react';
+import { toast } from 'sonner';
+import { Input } from '@/components/ui/input';
+import type { MovieInfo } from '@/models/MovieModel';
+import { useMovieFilters } from '@/hooks/useMovieFilters';
 import {
   tmdbApiService,
   type TmdbMovieResult,
 } from '@/services/TmdbApiService';
-import { logger } from '@/core/logger';
-import { toast } from 'sonner';
 import { omdbApiService } from '@/services/OmdbApiService';
-import {
-  movieDbService,
-  SYSTEM_CATEGORY_SEARCHED,
-} from '@/services/MovieDbService';
+import { SYSTEM_CATEGORY_SEARCHED } from '@/services/MovieDbService';
 import { utilityApiService } from '@/services/UtilityApiService';
-import { type MovieInfo } from '@/models/MovieModel';
-import { useMovieFilters } from '@/hooks/useMovieFilters';
 import { toMovieDetail } from '@/utils/MovieFileHelper';
 import { useMovieLibrary } from '@/hooks/useMovieLibrary';
+import { cn } from '@/lib/utils';
+import { logger } from '@/core/logger';
 
 export const LibrarySearchBar = () => {
   const { filters, onFiltersUpdated } = useMovieFilters();
@@ -26,7 +24,6 @@ export const LibrarySearchBar = () => {
   const [activeIndex, setActiveIndex] = useState(-1);
   const ignoreSearch = useRef(false);
 
-  // Directly update filters.query on type for live filtering
   const onQueryChange = (query: string) => {
     onFiltersUpdated({ ...filters, query: query });
     setActiveIndex(-1); // Reset active index on query change
@@ -114,6 +111,7 @@ export const LibrarySearchBar = () => {
         const movie: MovieInfo = {
           imdbID: movieFromApi.imdbID,
           title: movieFromApi.Title,
+          year: movieFromApi.Year,
           detail: toMovieDetail(movieFromApi),
           poster: {
             url: movieFromApi.Poster,
@@ -122,13 +120,12 @@ export const LibrarySearchBar = () => {
           },
           categories: searchedCategory ? [searchedCategory] : [],
         };
-        await movieDbService.addMovie(movie);
+        handleAddMovie(movie);
         toast.success(
           `Movie added to library${
             searchedCategory ? ` (in "${SYSTEM_CATEGORY_SEARCHED}")` : ''
           }`,
         );
-        handleAddMovie(movie);
       } else {
         toast.info('Detailed information not found.');
       }
@@ -164,10 +161,20 @@ export const LibrarySearchBar = () => {
 
   return (
     <div className='relative flex-1'>
-      <div className='relative w-full'>
+      <div className='relative flex items-center gap-3 rounded-2xl bg-white/80 p-2 shadow-sm ring-1 ring-zinc-200 focus-within:ring-2 focus-within:ring-red-500/30 transition-all'>
+        <div className='pl-2 border-r border-zinc-100 pr-3'>
+          <span
+            className={cn(
+              'text-[#d80f1c] font-black leading-none shadow-sm transition-all shrink-0',
+              'hover:brightness-105 active:scale-95',
+              'text-[10px] px-1.5 py-0.5 rounded-md',
+            )}>
+            LMDb
+          </span>
+        </div>
         <Input
           type='text'
-          placeholder='Search Movie Title...'
+          placeholder='Search or Filter Movie Title...'
           value={filters.query}
           onChange={(e) => {
             ignoreSearch.current = false;
@@ -180,7 +187,7 @@ export const LibrarySearchBar = () => {
           onBlur={() => {
             setTimeout(() => setShowDropdown(false), 200);
           }}
-          className='w-full pr-8'
+          className='h-10 border-none bg-transparent shadow-none focus-visible:ring-0 text-sm font-semibold text-zinc-900 placeholder:text-zinc-400'
         />
         {filters.query && (
           <button

@@ -1,3 +1,5 @@
+import { useState, useEffect } from 'react';
+import { Trash2, Edit2, Plus, Check, X, Lock } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -5,17 +7,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Trash2, Edit2, Plus, Check, X, Lock } from 'lucide-react';
 import { useMovieLibraryStore } from '@/store/useMovieLibraryStore';
 import { useCategoryDialog } from '@/hooks/useCategoryDialog';
-import { cn } from '@/lib/utils';
 import {
   SYSTEM_CATEGORY_SEARCHED,
   SYSTEM_CATEGORY_UPLOADED,
 } from '@/services/MovieDbService';
+import { cn } from '@/lib/utils';
 
 export const CategoryDialog = () => {
   const { isOpen, close, selectedMovie } = useCategoryDialog();
@@ -95,7 +95,7 @@ export const CategoryDialog = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && close()}>
-      <DialogContent className='w-[calc(100%-2rem)] sm:max-w-[425px] rounded-lg'>
+      <DialogContent className='w-[calc(100%-2rem)] sm:max-w-106.25 rounded-lg'>
         <DialogHeader>
           <DialogTitle>
             {activeMovie
@@ -126,7 +126,7 @@ export const CategoryDialog = () => {
           </Button>
         </div>
 
-        <div className='bg-accent/20 rounded-md p-2 max-h-[300px] overflow-y-auto space-y-2'>
+        <div className='bg-accent/20 rounded-md p-2 max-h-75 overflow-y-auto space-y-2'>
           {categories.length === 0 && (
             <p className='text-center text-muted-foreground py-4 text-sm'>
               No categories yet.
