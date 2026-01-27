@@ -37,7 +37,7 @@ export const LibraryFilterBar = () => {
 
   return (
     <div className='flex w-full flex-wrap items-center gap-2 p-4 bg-accent/20 rounded-lg animate-in slide-in-from-top-2 fade-in duration-200'>
-      <div className='min-w-30'>
+      <div className='min-w-35'>
         <MultiSelect
           options={availableGenres.map((g) => ({ label: g, value: g }))}
           selected={filters.genre}
@@ -45,7 +45,7 @@ export const LibraryFilterBar = () => {
           placeholder='Genre'
         />
       </div>
-      <div className='min-w-30'>
+      <div className='min-w-35'>
         <MultiSelect
           options={availableYears.map((y) => ({ label: y, value: y }))}
           selected={filters.year}
@@ -61,7 +61,7 @@ export const LibraryFilterBar = () => {
           placeholder='Rating'
         />
       </div>
-      <div className='min-w-30'>
+      <div className='min-w-35'>
         <MultiSelect
           options={availableRated.map((r) => ({ label: r, value: r }))}
           selected={filters.rated}
@@ -69,7 +69,7 @@ export const LibraryFilterBar = () => {
           placeholder='Rated'
         />
       </div>
-      <div className='min-w-30'>
+      <div className='min-w-35'>
         <MultiSelect
           options={availableLanguages.map((l) => ({ label: l, value: l }))}
           selected={filters.language}
@@ -77,7 +77,7 @@ export const LibraryFilterBar = () => {
           placeholder='Language'
         />
       </div>
-      <div className='min-w-30'>
+      <div className='min-w-45'>
         <MultiSelect
           options={availableCountries.map((c) => ({ label: c, value: c }))}
           selected={filters.country}
@@ -86,7 +86,7 @@ export const LibraryFilterBar = () => {
         />
       </div>
       {availableCategories.length > 0 && (
-        <div className='min-w-35'>
+        <div className='min-w-40'>
           <MultiSelect
             options={availableCategories.map((c) => ({
               label: c.label,
