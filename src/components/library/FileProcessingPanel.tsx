@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { FileProcessingHeader } from '@/components/library/FileProcessingHeader';
+import {
+  FileProcessingHeader,
+  FileProcessingStatus,
+  type FileProcessingStatusType,
+} from '@/components/library/FileProcessingHeader';
 import { FileProcessingEntriesList } from '@/components/library/FileProcessingEntriesList';
 import { useMovieProcessor } from '@/hooks/useMovieProcessor';
 
@@ -12,12 +16,19 @@ export const FileProcessingPanel = ({
   fileNames,
 }: FileProcessingPanelProps) => {
   const [panelVisible, setPanelVisible] = useState(false);
+  const [status, setStatus] = useState<FileProcessingStatusType>(
+    FileProcessingStatus.All,
+  );
   const { movies, loadFiles } = useMovieProcessor();
 
   useEffect(() => {
-    if (fileNames.length > 0) {
-      loadFiles(fileNames);
-    }
+    const loadingFiles = async () => {
+      if (fileNames.length > 0) {
+        loadFiles(fileNames);
+        setStatus(FileProcessingStatus.All);
+      }
+    };
+    void loadingFiles();
   }, [fileNames]); // Remove 'load' from dependencies to prevent re-execution loop if 'load' isn't stable
 
   useEffect(() => {
@@ -44,10 +55,10 @@ export const FileProcessingPanel = ({
 
       {movies.length > 0 && panelVisible && (
         <div className='w-full bg-background border border-border rounded-lg shadow-sm mt-1 animate-in fade-in slide-in-from-top-2 duration-200'>
-          <FileProcessingHeader />
+          <FileProcessingHeader onChangeStatus={setStatus} />
 
           <div className='max-h-80 overflow-y-auto'>
-            <FileProcessingEntriesList />
+            <FileProcessingEntriesList status={status} />
           </div>
         </div>
       )}

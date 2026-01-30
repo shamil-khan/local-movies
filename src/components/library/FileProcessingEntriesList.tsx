@@ -8,9 +8,19 @@ import {
 } from '@/components/ui/tooltip';
 import { useMovieProcessor } from '@/hooks/useMovieProcessor';
 import type { MovieUploadInfo } from '@/store/useMovieProcessorStore';
+import {
+  type FileProcessingStatusType,
+  isMovieInStatus,
+} from '@/components/library/FileProcessingHeader';
 import { cn } from '@/lib/utils';
 
-export const FileProcessingEntriesList = () => {
+interface FileProcessingEntriesListProps {
+  status: FileProcessingStatusType;
+}
+
+export const FileProcessingEntriesList = ({
+  status,
+}: FileProcessingEntriesListProps) => {
   const { movies, removeFile } = useMovieProcessor();
 
   const getTooltipFlagStyle = (movie: MovieUploadInfo) =>
@@ -61,78 +71,82 @@ export const FileProcessingEntriesList = () => {
 
   return (
     <div className='px-3 pb-3 space-y-1'>
-      {movies.map((movie, index) => {
-        const movieTitle = `${movie.file.title}${movie.file.year ? ` (${movie.file.year})` : ''}`;
-        const movieFileName = movie.file.fileName;
-        const headingClass = 'text-sm font-semibold text-foreground';
-        const detailClass = 'text-xs text-muted-foreground truncate';
-        const tooltip = getTooltipContent(movie);
+      {movies
+        .filter((m) => isMovieInStatus(status, m))
+        .map((movie, index) => {
+          const movieTitle = `${movie.file.title}${movie.file.year ? ` (${movie.file.year})` : ''}`;
+          const movieFileName = movie.file.fileName;
+          const headingClass = 'text-sm font-semibold text-foreground';
+          const detailClass = 'text-xs text-muted-foreground truncate';
+          const tooltip = getTooltipContent(movie);
 
-        return (
-          <div
-            key={`${movie.file.title}-${index}`}
-            className='group flex items-center justify-between py-1.5'>
-            <div className='flex items-center gap-3 overflow-hidden'>
-              <div className='shrink-0 w-7 h-7 flex items-center justify-center overflow-hidden'>
-                {movie.poster ? (
-                  <img
-                    // src='/generic-movie-poster.svg'
-                    src={URL.createObjectURL(movie.poster)}
-                    alt={movie.file.title}
-                    className='w-full h-full object-cover rounded'
-                  />
-                ) : (
-                  <Film className='w-3 h-3' />
-                )}
-              </div>
-              <div className='flex flex-col overflow-hidden items-start text-left'>
-                <span className={`truncate ${headingClass}`}>{movieTitle}</span>
-                {movieFileName && (
-                  <span className={detailClass}>{movieFileName}</span>
-                )}
-              </div>
-            </div>
-            <div className='flex items-center gap-2'>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div
-                      className={`w-4 h-4 flex items-center justify-center ${getTooltipFlagStyle(movie)}`}>
-                      <Flag />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <div className='max-w-xs'>
-                      <p className='text-xs font-semibold mb-1'>
-                        {tooltip.message}
-                      </p>
-                      {tooltip.detail && (
-                        <pre className='whitespace-pre-wrap text-[10px]'>
-                          {tooltip.detail}
-                        </pre>
-                      )}
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              {!movie.isProcessed && (
-                <Button
-                  variant='ghost'
-                  size='icon'
-                  className={cn(
-                    'h-7 w-7',
-                    'opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity',
-                    'text-destructive md:text-muted-foreground md:hover:text-destructive',
+          return (
+            <div
+              key={`${movie.file.title}-${index}`}
+              className='group flex items-center justify-between py-1.5'>
+              <div className='flex items-center gap-3 overflow-hidden'>
+                <div className='shrink-0 w-7 h-7 flex items-center justify-center overflow-hidden'>
+                  {movie.poster ? (
+                    <img
+                      // src='/generic-movie-poster.svg'
+                      src={URL.createObjectURL(movie.poster)}
+                      alt={movie.file.title}
+                      className='w-full h-full object-cover rounded'
+                    />
+                  ) : (
+                    <Film className='w-3 h-3' />
                   )}
-                  onClick={() => removeFile(movie.file)}
-                  title='Remove from list'>
-                  <X className='w-4 h-4' />
-                </Button>
-              )}
+                </div>
+                <div className='flex flex-col overflow-hidden items-start text-left'>
+                  <span className={`truncate ${headingClass}`}>
+                    {movieTitle}
+                  </span>
+                  {movieFileName && (
+                    <span className={detailClass}>{movieFileName}</span>
+                  )}
+                </div>
+              </div>
+              <div className='flex items-center gap-2'>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div
+                        className={`w-4 h-4 flex items-center justify-center ${getTooltipFlagStyle(movie)}`}>
+                        <Flag />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <div className='max-w-xs'>
+                        <p className='text-xs font-semibold mb-1'>
+                          {tooltip.message}
+                        </p>
+                        {tooltip.detail && (
+                          <pre className='whitespace-pre-wrap text-[10px]'>
+                            {tooltip.detail}
+                          </pre>
+                        )}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                {!movie.isProcessed && (
+                  <Button
+                    variant='ghost'
+                    size='icon'
+                    className={cn(
+                      'h-7 w-7',
+                      'opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity',
+                      'text-destructive md:text-muted-foreground md:hover:text-destructive',
+                    )}
+                    onClick={() => removeFile(movie.file)}
+                    title='Remove from list'>
+                    <X className='w-4 h-4' />
+                  </Button>
+                )}
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
     </div>
   );
 };

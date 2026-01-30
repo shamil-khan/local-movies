@@ -71,8 +71,15 @@ export const toMovieFiles = (filenames: string[]): MovieFile[] => {
       a.title.localeCompare(b.title, undefined, { sensitivity: 'base' }),
     );
 
-  logger.info(`Parsed ${movieFiles.length} movie files from provided files.`);
-  return movieFiles;
+  const titles = new Set<string>();
+  const uniqued = movieFiles.filter((m) => {
+    const found = titles.has(`title: ${m.title}, year: ${m.year}`);
+    titles.add(`title: ${m.title}, year: ${m.year}`);
+    return !found;
+  });
+
+  logger.info(`Parsed ${uniqued.length} movie files from provided files.`);
+  return uniqued;
 };
 
 export async function compressImageBuffer(
