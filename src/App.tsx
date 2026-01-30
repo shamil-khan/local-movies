@@ -9,6 +9,8 @@ import { CategoryDialog } from '@/components/CategoryDialog';
 import { useMovieFilters } from '@/hooks/useMovieFilters';
 import { pluralName } from '@/utils/Helper';
 
+const APP_TITLE = import.meta.env.VITE_APP_TITLE;
+
 function App() {
   const { movies, loadMovies } = useMovieLibrary();
   const { hasActiveFilters, filteredMovies } = useMovieFilters();
@@ -21,7 +23,7 @@ function App() {
     <ErrorBoundary>
       <div className='p-1 w-full'>
         <h3 className='text-2xl font-bold'>
-          Movie Library has {movies.length} {pluralName(movies, 'movie')}
+          {APP_TITLE} Library has {movies.length} {pluralName(movies, 'movie')}
         </h3>
         {hasActiveFilters && (
           <h6 className='text-md text-muted-foreground font-medium'>

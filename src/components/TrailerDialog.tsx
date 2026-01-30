@@ -20,8 +20,7 @@ interface TrailerDialogProps {
   onClose: () => void;
 }
 
-const Youtube_Site_Embed = 'https://www.youtube.com/embed/';
-const Youtube_Site_Search = 'https://www.youtube.com/results?search_query=';
+const YOUTUBE_URL = import.meta.env.VITE_YOUTUBE_URL;
 
 export const TrailerDialog = ({ movie, open, onClose }: TrailerDialogProps) => {
   const [searchYT, setSearchYT] = useState<string>('');
@@ -113,7 +112,7 @@ export const TrailerDialog = ({ movie, open, onClose }: TrailerDialogProps) => {
   const handleSearchYoutube = async () => {
     const searchable = encodeSearchMovie(searchYT);
 
-    const url = `${Youtube_Site_Search}${searchable}`;
+    const url = `${YOUTUBE_URL}/results?search_query=${searchable}`;
     logger.info(`Youtube Search Triggered ${searchable}`);
 
     // Update search history in localStorage
@@ -192,7 +191,7 @@ export const TrailerDialog = ({ movie, open, onClose }: TrailerDialogProps) => {
             {!loading && !error && trailer?.youtubeKey && (
               <iframe
                 className='w-full h-full shadow-inner animate-in fade-in zoom-in-95 duration-700'
-                src={`${Youtube_Site_Embed}/${trailer.youtubeKey}?autoplay=1&modestbranding=1`}
+                src={`${YOUTUBE_URL}/embed/${trailer.youtubeKey}?autoplay=1&modestbranding=1`}
                 title={trailer.name}
                 allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
                 allowFullScreen
@@ -207,7 +206,7 @@ export const TrailerDialog = ({ movie, open, onClose }: TrailerDialogProps) => {
                 </div>
                 <div className='text-sm lg:text-lg animate-pulse font-bold text-zinc-900 tracking-widest p-4'>
                   <a
-                    href={`${Youtube_Site_Search}${encodeSearchMovie('Trailer')}`}
+                    href={`${YOUTUBE_URL}/results?search_query=${encodeSearchMovie('Trailer')}`}
                     target='_blank'
                     rel='noopener noreferrer'>
                     Click here to watch trailer on youtube.

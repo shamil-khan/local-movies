@@ -1,12 +1,12 @@
 import logger from '@/core/logger';
 import { ApiService } from '@/services/ApiService';
 
-const baseURL = import.meta.env.VITE_OMDB_API_URL;
-const apiKey = import.meta.env.VITE_OMDB_API_KEY;
+const OMDB_API_URL = import.meta.env.VITE_OMDB_API_URL;
+const OMDB_API_KEY = import.meta.env.VITE_OMDB_API_KEY;
 
-logger.info(`OmdbApiService: baseURL: ${baseURL}`);
+logger.info(`OmdbApiService: baseURL: ${OMDB_API_URL}`);
 logger.info(
-  `OmdbApiService: apiKey: ${apiKey ? '***configured***' : 'NOT SET'}`,
+  `OmdbApiService: apiKey: ${OMDB_API_KEY ? '***configured***' : 'NOT SET'}`,
 );
 
 // Response interfaces
@@ -63,7 +63,7 @@ class OmdbApiService {
 
   constructor() {
     this.apiService = new ApiService({
-      baseURL: baseURL,
+      baseURL: OMDB_API_URL,
       timeout: 10000,
       headers: {
         'Content-Type': 'application/json',
@@ -80,7 +80,7 @@ class OmdbApiService {
   ): Promise<OmdbSearchMovie[]> => {
     try {
       const params: Record<string, string | number> = {
-        apikey: apiKey,
+        apikey: OMDB_API_KEY,
         s: query,
       };
       if (year) params.y = year;
@@ -112,7 +112,7 @@ class OmdbApiService {
   ): Promise<OmdbMovieResult> => {
     try {
       const params: Record<string, string | number> = {
-        apikey: apiKey,
+        apikey: OMDB_API_KEY,
         t: title,
       };
       if (year) params.y = year;
@@ -142,7 +142,7 @@ class OmdbApiService {
     try {
       const response = await this.apiService.get<OmdbMovieResult>('', {
         params: {
-          apikey: apiKey,
+          apikey: OMDB_API_KEY,
           i: imdbId,
         },
       });

@@ -16,6 +16,8 @@ import { useMovieLibrary } from '@/hooks/useMovieLibrary';
 import { cn } from '@/lib/utils';
 import { logger } from '@/core/logger';
 
+const TMDB_IMAGE_URL = import.meta.env.VITE_TMDB_IMAGE_URL;
+
 export const LibrarySearchBar = () => {
   const { filters, onFiltersUpdated } = useMovieFilters();
   const { handleAddMovie, movies, categories } = useMovieLibrary();
@@ -220,7 +222,7 @@ export const LibrarySearchBar = () => {
               onMouseEnter={() => setActiveIndex(index)}>
               {result.poster_path ? (
                 <img
-                  src={`https://image.tmdb.org/t/p/w92${result.poster_path}`}
+                  src={`${TMDB_IMAGE_URL}/w92${result.poster_path}`}
                   alt={result.title}
                   className='w-10 h-14 object-cover rounded'
                 />

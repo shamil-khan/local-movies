@@ -25,3 +25,6 @@ dist-ssr
 *.sln
 *.sw?
 *.eslintcache
+.env.local
+.env.development
+passwords.txt

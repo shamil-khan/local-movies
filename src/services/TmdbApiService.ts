@@ -3,12 +3,12 @@ import { ApiService } from '@/services/ApiService';
 import { compressImageBuffer } from '@/utils/MovieFileHelper';
 
 const TMDB_IMAGE_URL = import.meta.env.VITE_TMDB_IMAGE_URL;
-const baseURL = import.meta.env.VITE_TMDB_API_URL;
-const apiKey = import.meta.env.VITE_TMDB_API_KEY;
+const TMDB_API_URL = import.meta.env.VITE_TMDB_API_URL;
+const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 
-logger.info(`TmdbApiService: baseURL: ${baseURL}`);
+logger.info(`TmdbApiService: baseURL: ${TMDB_API_URL}`);
 logger.info(
-  `TmdbApiService: apiKey: ${apiKey ? '***configured***' : 'NOT SET'}`,
+  `TmdbApiService: apiKey: ${TMDB_API_KEY ? '***configured***' : 'NOT SET'}`,
 );
 
 interface TmdbFindResponse {
@@ -65,7 +65,7 @@ class TmdbApiService {
 
   constructor() {
     this.apiService = new ApiService({
-      baseURL: baseURL,
+      baseURL: TMDB_API_URL,
       timeout: 10000,
       headers: {
         'Content-Type': 'application/json',
@@ -82,7 +82,7 @@ class TmdbApiService {
         '/search/movie',
         {
           params: {
-            api_key: apiKey,
+            api_key: TMDB_API_KEY,
             query: query,
             include_adult: false,
           },
@@ -105,7 +105,7 @@ class TmdbApiService {
         `/movie/${movieId}/external_ids`,
         {
           params: {
-            api_key: apiKey,
+            api_key: TMDB_API_KEY,
           },
         },
       );
@@ -131,7 +131,7 @@ class TmdbApiService {
         `/find/${imdbId}`,
         {
           params: {
-            api_key: apiKey,
+            api_key: TMDB_API_KEY,
             external_source: 'imdb_id',
           },
         },
@@ -161,7 +161,7 @@ class TmdbApiService {
         `/movie/${movieId}/videos`,
         {
           params: {
-            api_key: apiKey,
+            api_key: TMDB_API_KEY,
           },
         },
       );
@@ -215,7 +215,7 @@ class TmdbApiService {
 
   getPosterImage = async (posterPath: string): Promise<Blob> => {
     const response = await this.apiService.get(
-      `${TMDB_IMAGE_URL}/${posterPath}`,
+      `${TMDB_IMAGE_URL}/w342${posterPath}`,
       {
         responseType: 'arraybuffer',
       },

@@ -90,11 +90,11 @@ class ApiService {
   // Add other methods (put, delete, etc.) as needed
 }
 
-const baseURL = import.meta.env.VITE_API_URL;
-logger.info(`App hosted at ${baseURL}`);
+const API_URL = import.meta.env.VITE_API_URL;
+logger.info(`App hosted at ${API_URL}`);
 
 const apiService = new ApiService({
-  baseURL: baseURL,
+  baseURL: API_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

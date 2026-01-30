@@ -6,7 +6,7 @@ interface ImdbLinkProps {
   size?: 'sm' | 'md' | 'lg'; // Added size prop
 }
 
-const IMDB_MOVIE_TITLE = 'https://www.imdb.com/title/';
+const IMDB_URL = import.meta.env.VITE_IMDB_URL;
 
 export const ImdbLink = ({ imdbID, title, size = 'md' }: ImdbLinkProps) => {
   // Define scaling map for the logo
@@ -18,7 +18,7 @@ export const ImdbLink = ({ imdbID, title, size = 'md' }: ImdbLinkProps) => {
 
   return (
     <a
-      href={`${IMDB_MOVIE_TITLE}${imdbID}`}
+      href={`${IMDB_URL}/title/${imdbID}`}
       target='_blank'
       rel='noopener noreferrer'
       className='group/imdb relative inline-flex items-center w-fit'>
