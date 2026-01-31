@@ -7,6 +7,7 @@ import { ActionTooltip } from './ActionTooltip';
 import { cn } from '@/lib/utils';
 import { tmdbApiService } from '@/services/TmdbApiService';
 import { toast } from 'sonner';
+import { utilityApiService } from '@/services/UtilityApiService';
 
 interface MovieCardBottomBarProps {
   movie: MovieInfo;
@@ -36,9 +37,8 @@ export const MovieCardBottomBar = ({
       );
       return;
     }
-    const [posterBlob, posterURL] = await tmdbApiService.getPosterImage(
-      tmdbMovie.poster_path,
-    );
+    const posterURL = tmdbApiService.getPosterURL(tmdbMovie.poster_path);
+    const posterBlob = await utilityApiService.getPosterImage(posterURL);
     const plot =
       movie.detail.plot === 'N/A' ? tmdbMovie.overview : movie.detail.plot;
     const year =

@@ -1,6 +1,5 @@
 import logger from '@/core/logger';
 import { ApiService } from '@/services/ApiService';
-import { compressImageBuffer } from '@/utils/MovieFileHelper';
 
 const TMDB_IMAGE_URL = import.meta.env.VITE_TMDB_IMAGE_URL;
 const TMDB_API_URL = import.meta.env.VITE_TMDB_API_URL;
@@ -83,6 +82,7 @@ class TmdbApiService {
       timeout: 10000,
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${TMDB_API_KEY}`,
       },
     });
   }
@@ -96,7 +96,6 @@ class TmdbApiService {
         '/search/movie',
         {
           params: {
-            api_key: TMDB_API_KEY,
             query: query,
             include_adult: false,
           },
@@ -117,11 +116,6 @@ class TmdbApiService {
     try {
       const response = await this.apiService.get<TmdbExternalIdsResponse>(
         `/movie/${movieId}/external_ids`,
-        {
-          params: {
-            api_key: TMDB_API_KEY,
-          },
-        },
       );
 
       return response.data.imdb_id;
@@ -135,7 +129,7 @@ class TmdbApiService {
   };
 
   /**
-   * Find TMDb movie ID using IMDb ID
+   * Find TMDb movie using IMDb ID
    */
   private findMovieByImdbId = async <
     T extends TmdbFindSimpleResponse | TmdbFindDetailResponse,
@@ -147,7 +141,6 @@ class TmdbApiService {
         `/find/${imdbId}`,
         {
           params: {
-            api_key: TMDB_API_KEY,
             external_source: 'imdb_id',
           },
         },
@@ -175,11 +168,6 @@ class TmdbApiService {
     try {
       const response = await this.apiService.get<TmdbVideosResponse>(
         `/movie/${movieId}/videos`,
-        {
-          params: {
-            api_key: TMDB_API_KEY,
-          },
-        },
       );
 
       return response.data.results || [];
@@ -230,19 +218,8 @@ class TmdbApiService {
     }
   };
 
-  getPosterImage = async (posterPath: string): Promise<[Blob, string]> => {
-    const posterURL = `${TMDB_IMAGE_URL}/w342${posterPath}`;
-    const response = await this.apiService.get(posterURL, {
-      responseType: 'arraybuffer',
-    });
-
-    const blob = await compressImageBuffer(
-      response.data as ArrayBuffer,
-      response.headers['content-type'],
-    );
-
-    return [blob, posterURL];
-  };
+  getPosterURL = (posterPath: string): string =>
+    `${TMDB_IMAGE_URL}/w342${posterPath}`;
 
   getMovieByImdbId = async (
     imdbId: string,

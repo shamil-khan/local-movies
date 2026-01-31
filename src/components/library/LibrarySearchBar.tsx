@@ -95,19 +95,12 @@ export const LibrarySearchBar = () => {
       const movieFromApi = await omdbApiService.getMovieByImdbId(imdbId);
 
       if (movieFromApi && movieFromApi.Response === 'True') {
-        let posterBlob: Blob | undefined = undefined;
-        if (movieFromApi.Poster !== 'N/A') {
-          posterBlob = await utilityApiService.getPosterImage(
-            movieFromApi.Poster,
-          );
-        } else if (tmdbMovie?.poster_path !== null) {
-          const [blob, posterURL] = await tmdbApiService.getPosterImage(
-            tmdbMovie.poster_path,
-          );
-          posterBlob = blob;
-          movieFromApi.Poster = posterURL;
-        }
-
+        const posterURL =
+          movieFromApi.Poster === 'N/A' && tmdbMovie?.poster_path !== null
+            ? tmdbApiService.getPosterURL(tmdbMovie.poster_path)
+            : movieFromApi.Poster;
+        const posterBlob = await utilityApiService.getPosterImage(posterURL);
+        movieFromApi.Poster = posterURL;
         movieFromApi.Plot =
           movieFromApi.Plot === 'N/A' ? tmdbMovie.overview : movieFromApi.Plot;
         movieFromApi.Year =
