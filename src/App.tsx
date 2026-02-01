@@ -1,12 +1,13 @@
 import '@/App.css';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Toaster } from 'sonner';
+import { Spinner } from '@/components/ui/spinner';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useMovieLibrary } from '@/hooks/useMovieLibrary';
+import { useMovieFilters } from '@/hooks/useMovieFilters';
 import { LibraryHeader } from '@/components/library/LibraryHeader';
 import { MovieGallery } from '@/components/MovieGallery';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { CategoryDialog } from '@/components/CategoryDialog';
-import { useMovieFilters } from '@/hooks/useMovieFilters';
 import { pluralName } from '@/utils/Helper';
 
 const APP_TITLE = import.meta.env.VITE_APP_TITLE;
@@ -14,10 +15,34 @@ const APP_TITLE = import.meta.env.VITE_APP_TITLE;
 function App() {
   const { movies, loadMovies } = useMovieLibrary();
   const { hasActiveFilters, filteredMovies } = useMovieFilters();
+  const appRef = useRef(false);
+  const [loaded, setLoaded] = useState<boolean>(false);
 
   useEffect(() => {
-    loadMovies();
+    if (appRef.current) {
+      return;
+    }
+
+    const loadingId = setTimeout(() => {
+      appRef.current = true;
+      const loadAll = async () => {
+        await loadMovies();
+        setLoaded(true);
+      };
+      void loadAll();
+    }, 500);
+
+    return () => clearTimeout(loadingId);
   }, [loadMovies]);
+
+  if (!loaded) {
+    return (
+      <div className='flex items-center justify-center h-screen'>
+        <Spinner className='h-10 w-10 text-blue-600' />
+        <span className='font-bold'>Loading {APP_TITLE} Library </span>
+      </div>
+    );
+  }
 
   return (
     <ErrorBoundary>
@@ -45,8 +70,9 @@ function App() {
       ) : (
         <MovieGallery />
       )}
-      <Toaster />
+
       <CategoryDialog />
+      <Toaster />
     </ErrorBoundary>
   );
 }

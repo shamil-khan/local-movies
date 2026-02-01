@@ -124,6 +124,11 @@ export const useMovieLibraryStore = create<MovieLibraryState>()(
 
       addMovie: async (movie: MovieInfo) => {
         try {
+          const found = get().movies.find((m) => m.imdbID === movie.imdbID);
+          if (found) {
+            logger.info('Movie already exists.');
+            return;
+          }
           await movieDbService.addMovie(movie);
           set((state) => {
             state.movies.push(movie);

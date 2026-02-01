@@ -53,7 +53,7 @@ export const LibraryFilterBar = () => {
           placeholder='Year'
         />
       </div>
-      <div className='min-w-30'>
+      <div className='min-w-35'>
         <MultiSelect
           options={availableRatings.map((r) => ({ label: r, value: r }))}
           selected={filters.rating}

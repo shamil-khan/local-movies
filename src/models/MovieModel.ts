@@ -89,11 +89,6 @@ export const movieCategorySchema: Schema<MovieCategory> = {
   categoryId: 'categoryId',
 };
 
-export const MovieNotFound = {
-  Response: 'False',
-  Error: 'Movie not found!',
-};
-
 export interface MovieFilterCriteria {
   query: string;
   genre: string[];

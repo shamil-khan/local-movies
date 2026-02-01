@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
-import { X } from 'lucide-react';
 import { toast } from 'sonner';
+import { X } from 'lucide-react';
+import { Spinner } from '@/components/ui/spinner';
 import { Input } from '@/components/ui/input';
 import type { MovieInfo } from '@/models/MovieModel';
 import { useMovieFilters } from '@/hooks/useMovieFilters';
@@ -8,13 +9,13 @@ import {
   tmdbApiService,
   type TmdbMovieResult,
 } from '@/services/TmdbApiService';
-import { omdbApiService } from '@/services/OmdbApiService';
+import { omdbApiService, OmdbApi } from '@/services/OmdbApiService';
 import { SYSTEM_CATEGORY_SEARCHED } from '@/services/MovieDbService';
 import { utilityApiService } from '@/services/UtilityApiService';
-import { toMovieDetail } from '@/utils/MovieFileHelper';
 import { useMovieLibrary } from '@/hooks/useMovieLibrary';
-import { cn } from '@/lib/utils';
+import { toMovieDetail } from '@/utils/MovieFileHelper';
 import { logger } from '@/core/logger';
+import { cn } from '@/lib/utils';
 
 const TMDB_IMAGE_URL = import.meta.env.VITE_TMDB_IMAGE_URL;
 
@@ -24,6 +25,7 @@ export const LibrarySearchBar = () => {
   const [searchResults, setSearchResults] = useState<TmdbMovieResult[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [loading, setLoading] = useState(false);
   const ignoreSearch = useRef(false);
 
   const onQueryChange = (query: string) => {
@@ -36,6 +38,7 @@ export const LibrarySearchBar = () => {
     setSearchResults([]);
     setShowDropdown(false);
     setActiveIndex(-1);
+    setLoading(false);
   };
 
   // Fetch TMDB suggestions based on filters.query
@@ -65,80 +68,89 @@ export const LibrarySearchBar = () => {
   }, [filters.query]);
 
   const handleSelectMovie = async (tmdbMovie: TmdbMovieResult) => {
-    ignoreSearch.current = true; // Prevent search effect from re-opening dropdown
+    ignoreSearch.current = true;
+    setShowDropdown(false);
+    onQueryChange(tmdbMovie.title);
 
-    // Check if movie already exists in library (by title match, fuzzy)
     const existingMovie = movies.find(
       (m) => m.title.toLowerCase() === tmdbMovie.title.toLowerCase(),
     );
 
     if (existingMovie) {
-      logger.info(`Movie already in library: ${tmdbMovie.title}`);
-      toast.info(`"${tmdbMovie.title}" is already in your library.`);
-      setShowDropdown(false);
-      onQueryChange(tmdbMovie.title); // Update filter to show the existing movie
+      toast.info(`"${tmdbMovie.title}" already exists in your library.`);
       return;
     }
 
     logger.info(`Selected movie: ${tmdbMovie.title} (${tmdbMovie.id})`);
-    setShowDropdown(false);
-    onQueryChange(tmdbMovie.title);
+    setLoading(true);
 
     try {
       const imdbId = await tmdbApiService.getExternalIds(tmdbMovie.id);
 
       if (!imdbId) {
-        toast.error('Could not find detailed information for this movie.');
+        toast.info(`"${tmdbMovie.title}" IMDB ID is not available.`);
         return;
       }
 
-      const movieFromApi = await omdbApiService.getMovieByImdbId(imdbId);
-
-      if (movieFromApi && movieFromApi.Response === 'True') {
-        const posterURL =
-          movieFromApi.Poster === 'N/A' && tmdbMovie?.poster_path !== null
-            ? tmdbApiService.getPosterURL(tmdbMovie.poster_path)
-            : movieFromApi.Poster;
-        const posterBlob = await utilityApiService.getPosterImage(posterURL);
-        movieFromApi.Poster = posterURL;
-        movieFromApi.Plot =
-          movieFromApi.Plot === 'N/A' ? tmdbMovie.overview : movieFromApi.Plot;
-        movieFromApi.Year =
-          movieFromApi.Year === 'N/A'
-            ? new Date(tmdbMovie.release_date).getFullYear().toString()
-            : movieFromApi.Year;
-
-        // Find "Searched" category
-        const searchedCategory = categories.find(
-          (c) => c.name === SYSTEM_CATEGORY_SEARCHED,
-        );
-
-        const movie: MovieInfo = {
-          imdbID: movieFromApi.imdbID,
-          title: movieFromApi.Title,
-          year: movieFromApi.Year,
-          detail: toMovieDetail(movieFromApi),
-          poster: posterBlob
-            ? {
-                url: movieFromApi.Poster,
-                mime: posterBlob?.type,
-                blob: posterBlob,
-              }
-            : undefined,
-          categories: searchedCategory ? [searchedCategory] : [],
-        };
-        handleAddMovie(movie);
-        toast.success(
-          `Movie added to library${
-            searchedCategory ? ` (in "${SYSTEM_CATEGORY_SEARCHED}")` : ''
-          }`,
-        );
-      } else {
-        toast.info('Detailed information not found.');
+      if (movies.findIndex((m) => m.imdbID === imdbId) !== -1) {
+        toast.info(`"${tmdbMovie.title}" already exists in your library.`);
+        return;
       }
+
+      const imdbMovie = await omdbApiService.getMovieByImdbId(imdbId);
+      if (!imdbMovie || imdbMovie.Response === OmdbApi.ReservedWords.False) {
+        toast.info(`"${tmdbMovie.title}" IMDB information is not available.`);
+        return;
+      }
+
+      const posterURL =
+        imdbMovie.Poster === OmdbApi.ReservedWords.NotAvailable &&
+        tmdbMovie?.poster_path !== null
+          ? tmdbApiService.getPosterURL(tmdbMovie.poster_path)
+          : imdbMovie.Poster;
+      const posterBlob = await utilityApiService.getPosterImage(posterURL);
+      imdbMovie.Poster = posterURL;
+      imdbMovie.Plot =
+        imdbMovie.Plot === OmdbApi.ReservedWords.NotAvailable
+          ? tmdbMovie.overview
+          : imdbMovie.Plot;
+      imdbMovie.Year =
+        imdbMovie.Year === OmdbApi.ReservedWords.NotAvailable
+          ? new Date(tmdbMovie.release_date).getFullYear().toString()
+          : imdbMovie.Year;
+
+      // Find "Searched" category
+      const searchedCategory = categories.find(
+        (c) => c.name === SYSTEM_CATEGORY_SEARCHED,
+      );
+
+      const movie: MovieInfo = {
+        imdbID: imdbMovie.imdbID,
+        title: imdbMovie.Title,
+        year: imdbMovie.Year,
+        detail: toMovieDetail(imdbMovie),
+        poster: posterBlob
+          ? {
+              url: imdbMovie.Poster,
+              mime: posterBlob?.type,
+              blob: posterBlob,
+            }
+          : undefined,
+        categories: searchedCategory ? [searchedCategory] : [],
+      };
+      handleAddMovie(movie);
+      toast.success(
+        `Movie added to library${
+          searchedCategory ? ` (in "${SYSTEM_CATEGORY_SEARCHED}")` : ''
+        }`,
+      );
     } catch (err) {
       logger.error('An error occurred during selection:', err);
-      toast.error('Failed to load movie details: ' + (err as Error).message);
+      toast.error(
+        `The "${tmdbMovie.title}" is failed to load as ${(err as Error).message}`,
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -198,26 +210,31 @@ export const LibrarySearchBar = () => {
         />
         {filters.query && (
           <button
+            disabled={loading}
             onClick={onClear}
             className='absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1'>
-            <X className='h-4 w-4' />
+            {loading ? (
+              <Spinner className='h-4 w-4' />
+            ) : (
+              <X className='h-4 w-4' />
+            )}
           </button>
         )}
       </div>
       {showDropdown && searchResults.length > 0 && (
         <div className='absolute top-full left-0 right-0 bg-background border border-border shadow-lg rounded-b-md overflow-hidden max-h-96 overflow-y-auto z-50'>
-          {searchResults.map((result, index) => (
+          {searchResults.map((movie, index) => (
             <div
-              key={result.id}
+              key={movie.id}
               className={`flex items-center gap-3 p-2 cursor-pointer transition-colors ${
                 index === activeIndex ? 'bg-accent' : 'hover:bg-accent'
               }`}
-              onClick={() => handleSelectMovie(result)}
+              onClick={() => handleSelectMovie(movie)}
               onMouseEnter={() => setActiveIndex(index)}>
-              {result.poster_path ? (
+              {movie.poster_path ? (
                 <img
-                  src={`${TMDB_IMAGE_URL}/w92${result.poster_path}`}
-                  alt={result.title}
+                  src={`${TMDB_IMAGE_URL}/w92${movie.poster_path}`}
+                  alt={movie.title}
                   className='w-10 h-14 object-cover rounded'
                 />
               ) : (
@@ -227,11 +244,11 @@ export const LibrarySearchBar = () => {
               )}
               <div className='flex flex-col text-left'>
                 <span className='font-medium text-sm truncate'>
-                  {result.title}
+                  {movie.title}
                 </span>
                 <span className='text-xs text-muted-foreground'>
-                  {result.release_date
-                    ? result.release_date.split('-')[0]
+                  {movie.release_date
+                    ? movie.release_date.split('-')[0]
                     : 'Unknown'}
                 </span>
               </div>

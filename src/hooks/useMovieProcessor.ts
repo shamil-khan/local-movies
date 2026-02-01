@@ -4,7 +4,7 @@ import { useMovieProcessorStore } from '@/store/useMovieProcessorStore';
 import { useMovieLibraryStore } from '@/store/useMovieLibraryStore';
 import { toMovieDetail } from '@/utils/MovieFileHelper';
 import { movieDbService } from '@/services/MovieDbService';
-import { omdbApiService } from '@/services/OmdbApiService';
+import { OmdbApi, omdbApiService } from '@/services/OmdbApiService';
 import { utilityApiService } from '@/services/UtilityApiService';
 import logger from '@/core/logger';
 import { pluralName } from '@/utils/Helper';
@@ -34,7 +34,7 @@ export const useMovieProcessor = () => {
     }
 
     const detail = await omdbApiService.getMovieByTitle(file.title, file.year);
-    if (detail.Response === 'False') {
+    if (detail.Response === OmdbApi.ReservedWords.False) {
       inDb(file, false);
       hasError(file, {
         message: 'Movie detail response is false.',
@@ -61,7 +61,7 @@ export const useMovieProcessor = () => {
     setDetail(file, movieDetail);
 
     let posterBlob: Blob | undefined = undefined;
-    if (movieDetail.poster !== 'N/A') {
+    if (movieDetail.poster !== OmdbApi.ReservedWords.NotAvailable) {
       posterBlob = await utilityApiService.getPosterImage(movieDetail.poster);
       setPoster(file, posterBlob);
     }

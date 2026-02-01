@@ -1,6 +1,11 @@
 import { useMemo } from 'react';
 import { type MovieFilterCriteria } from '@/models/MovieModel';
 import { useMovieLibraryStore } from '@/store/useMovieLibraryStore';
+import { OmdbApi } from '@/services/OmdbApiService';
+
+const NotAvailable = 'None';
+const toNotAvailable = (value: string): string =>
+  value === OmdbApi.ReservedWords.NotAvailable ? NotAvailable : value;
 
 export const useMovieFilters = () => {
   const { movies, categories, filters, updatedFilters, clearFilters } =
@@ -14,6 +19,7 @@ export const useMovieFilters = () => {
         new Set(
           movieDetails
             .flatMap((m) => m.genre.split(',').map((g) => g.trim()))
+            .map((g) => toNotAvailable(g))
             .filter(Boolean),
         ),
       ).sort(),
@@ -28,7 +34,7 @@ export const useMovieFilters = () => {
       .map((y) => {
         const year = parseInt(y, 10);
         if (Number.isNaN(year)) {
-          return 'N/A';
+          return NotAvailable;
         }
         const yStart = Math.floor(year / 5) * 5;
         const yEnd = yStart + 4;
@@ -36,10 +42,13 @@ export const useMovieFilters = () => {
       });
     return Array.from(new Set(spans));
   }, [movieDetails]);
+
   const availableRated = useMemo(
     () =>
       Array.from(
-        new Set(movieDetails.map((m) => m.rated).filter(Boolean)),
+        new Set(
+          movieDetails.map((m) => toNotAvailable(m.rated)).filter(Boolean),
+        ),
       ).sort(),
     [movieDetails],
   );
@@ -51,7 +60,7 @@ export const useMovieFilters = () => {
       .sort((a, b) => parseFloat(b) - parseFloat(a))
       .map((r) => {
         const rating = parseFloat(r);
-        if (Number.isNaN(rating)) return 'N/A';
+        if (Number.isNaN(rating)) return NotAvailable;
         const start = Math.floor(rating * 2) / 2;
         const end = start + 0.4;
         return `${start.toFixed(1)} - ${end.toFixed(1)}`;
@@ -65,7 +74,8 @@ export const useMovieFilters = () => {
       Array.from(
         new Set(
           movieDetails
-            .flatMap((m) => m.language.split(',').map((l) => l.trim()))
+            .flatMap((m) => m.language.split(',').map((v) => v.trim()))
+            .map((v) => toNotAvailable(v))
             .filter(Boolean),
         ),
       ).sort(),
@@ -78,6 +88,7 @@ export const useMovieFilters = () => {
         new Set(
           movieDetails
             .flatMap((m) => m.country.split(',').map((c) => c.trim()))
+            .map((c) => toNotAvailable(c))
             .filter(Boolean),
         ),
       ).sort(),
@@ -99,7 +110,7 @@ export const useMovieFilters = () => {
     const isYearInGroups = (value: string): boolean => {
       const year = parseInt(value);
       if (Number.isNaN(year)) {
-        return filters.year.includes('N/A');
+        return filters.year.includes(NotAvailable);
       }
 
       const spanStart = Math.floor(year / 5) * 5;
@@ -111,7 +122,7 @@ export const useMovieFilters = () => {
     const isRatingInGroups = (value: string): boolean => {
       const rating = parseFloat(value);
       if (Number.isNaN(rating)) {
-        return filters.rating.includes('N/A');
+        return filters.rating.includes(NotAvailable);
       }
       const spanStart = Math.floor(rating * 2) / 2;
       const spanEnd = spanStart + 0.4;

@@ -1,19 +1,11 @@
-import { Loader2 } from 'lucide-react';
 import { MovieCard } from '@/components/MovieCard';
 import { useMovieFilters } from '@/hooks/useMovieFilters';
 
 export const MovieGallery = () => {
-  const loading = false;
   const { filteredMovies } = useMovieFilters();
 
   return (
     <div className='relative'>
-      {loading && (
-        <div className='absolute inset-0 z-10 flex items-center justify-center bg-white/50 backdrop-blur-sm'>
-          <Loader2 className='h-12 w-12 animate-spin' />
-        </div>
-      )}
-
       {filteredMovies.length > 0 ? (
         <div className='grid grid-flow-row-dense grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'>
           {filteredMovies.map((movie) => (
@@ -24,7 +16,7 @@ export const MovieGallery = () => {
         <div className='flex h-64 items-center justify-center '>
           <div className='relative flex rounded-full'>
             <div className='animate-pulse text-3xl font-semibold'>
-              There is no movie in Local Library for your search.
+              Filtered returns no movie.
             </div>
           </div>
         </div>

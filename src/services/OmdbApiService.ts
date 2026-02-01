@@ -9,6 +9,14 @@ logger.info(
   `OmdbApiService: apiKey: ${OMDB_API_KEY ? '***configured***' : 'NOT SET'}`,
 );
 
+export const OmdbApi = {
+  ReservedWords: {
+    NotAvailable: 'N/A',
+    True: 'True',
+    False: 'False',
+  },
+} as const;
+
 // Response interfaces
 export interface OmdbSearchMovie {
   Title: string;
@@ -89,7 +97,7 @@ class OmdbApiService {
         params,
       });
 
-      if (response.data.Response === 'False') {
+      if (response.data.Response === OmdbApi.ReservedWords.False) {
         logger.warn(
           `No movies found for query '${query}': ${response.data.Error}`,
         );
@@ -121,7 +129,7 @@ class OmdbApiService {
         params,
       });
 
-      if (response.data.Response === 'False') {
+      if (response.data.Response === OmdbApi.ReservedWords.False) {
         logger.warn(
           `Movie not found for title '${title}': ${response.data.Error}`,
         );
@@ -147,7 +155,7 @@ class OmdbApiService {
         },
       });
 
-      if (response.data.Response === 'False') {
+      if (response.data.Response === OmdbApi.ReservedWords.False) {
         logger.warn(
           `Movie not found for IMDb ID '${imdbId}': ${response.data.Error}`,
         );

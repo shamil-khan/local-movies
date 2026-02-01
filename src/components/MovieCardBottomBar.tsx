@@ -1,13 +1,16 @@
-import { type MovieInfo } from '@/models/MovieModel';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { Trash2, Heart, Eye, Tag, RefreshCw } from 'lucide-react';
+import { Spinner } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { ActionTooltip } from '@/components/ActionTooltip';
+import { type MovieInfo } from '@/models/MovieModel';
 import { useMovieLibrary } from '@/hooks/useMovieLibrary';
-import { ActionTooltip } from './ActionTooltip';
-import { cn } from '@/lib/utils';
 import { tmdbApiService } from '@/services/TmdbApiService';
-import { toast } from 'sonner';
 import { utilityApiService } from '@/services/UtilityApiService';
+import { cn } from '@/lib/utils';
+import { OmdbApi } from '@/services/OmdbApiService';
 
 interface MovieCardBottomBarProps {
   movie: MovieInfo;
@@ -24,30 +27,37 @@ export const MovieCardBottomBar = ({
     handleToggleMovieFavorite,
     handleToggleMovieWatched,
   } = useMovieLibrary();
+  const [loading, setLoading] = useState(false);
 
   const loadPoster = async (movie: MovieInfo) => {
+    setLoading(true);
     const tmdbMovie = await tmdbApiService.getMovieByImdbId(movie.imdbID);
     if (tmdbMovie === null) {
       toast.info(`${movie.title} does not exists in TMDB`);
+      setLoading(false);
       return;
     }
     if (!tmdbMovie.poster_path) {
       toast.info(
         `${movie.title} has not valid poster ${tmdbMovie.poster_path} in TMDB`,
       );
+      setLoading(false);
       return;
     }
     const posterURL = tmdbApiService.getPosterURL(tmdbMovie.poster_path);
     const posterBlob = await utilityApiService.getPosterImage(posterURL);
     const plot =
-      movie.detail.plot === 'N/A' ? tmdbMovie.overview : movie.detail.plot;
+      movie.detail.plot === OmdbApi.ReservedWords.NotAvailable
+        ? tmdbMovie.overview
+        : movie.detail.plot;
     const year =
-      movie.detail.year === 'N/A'
+      movie.detail.year === OmdbApi.ReservedWords.NotAvailable
         ? new Date(tmdbMovie.release_date).getFullYear().toString()
         : movie.detail.year;
 
     await updateMovie(movie.imdbID, posterBlob, posterURL, plot, year);
     toast.success(`${movie.title} loaded from TMDB`);
+    setLoading(false);
   };
 
   return (
@@ -77,7 +87,11 @@ export const MovieCardBottomBar = ({
                   e.stopPropagation();
                   loadPoster(movie);
                 }}>
-                <RefreshCw className='w-5 h-5 text-blue-600' />
+                {loading ? (
+                  <Spinner className='w-5 h-5 text-blue-600' />
+                ) : (
+                  <RefreshCw className='w-5 h-5 text-blue-600' />
+                )}
               </Button>
             </ActionTooltip>
           )}
