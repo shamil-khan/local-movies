@@ -56,15 +56,15 @@
 
 ## 🛠️ Technologies
 
-| Category      | Technology                      | Purpose                                  |
-| :------------ | :------------------------------ | :--------------------------------------- |
-| **Core**      | [Vite] + [React] + [TypeScript] | Modern build setup and type safety.      |
-| **Styling**   | [TailwindV4] + [Shadcn]         | Utility-first CSS and component library. |
-| **State**     | [Zustand] + [Immer]             | Optimized state management.              |
-| **Data**      | [Dexie]                         | IndexedDB wrapper for offline storage.   |
-| **Network**   | [Axios]                         | HTTP client for data fetching.           |
-| **Dev Tools** | [ESLint] + [Prettier]           | Code quality and formatting standards.   |
-| **Logging**   | [Consola] + [Chalk]             | Terminal logging utilities.              |
+| Category      | Technology                         | Purpose                                  |
+| :------------ | :--------------------------------- | :--------------------------------------- |
+| **Core**      | [Vite] + [React] + [TypeScript]    | Modern build setup and type safety.      |
+| **Styling**   | [TailwindV4] + [Shadcn]            | Utility-first CSS and component library. |
+| **State**     | [Zustand] + [Immer]                | Optimized state management.              |
+| **Data**      | `![Dexie](https://img.shields.io)` | IndexedDB wrapper for offline storage.   |
+| **Network**   | [Axios]                            | HTTP client for data fetching.           |
+| **Dev Tools** | [ESLint] + [Prettier]              | Code quality and formatting standards.   |
+| **Logging**   | [Consola] + [Chalk]                | Terminal logging utilities.              |
 
 ---
 
