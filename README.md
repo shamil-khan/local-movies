@@ -2,8 +2,9 @@
 
 ### _The Ultimate Effortless Local-First Cinematic Intelligence Movie Management & Discovery_
 
-[![License: AGPL v3](https://img.shields.io)](https://www.gnu.org)
-[![Built with React](https://img.shields.io)](https://react.dev)
+[![GitHub license](https://img.shields.io)](https://www.gnu.org)
+[![Built with React](https://img.shields.io/badge/Built%20with-React-61dafb?logo=react&style=for-the-badge)
+](https://react.dev)
 [![Powered by Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev)
 
 **#CineVault** CineVault is a cutting-edge Progressive Web App (PWA) designed to empower movie enthusiasts with seamless management of their personal film collections. By intelligently parsing local movie files, fetching enriched metadata from premier sources like IMDb and TMDB, and offering advanced categorization and filtering, CineVault transforms scattered downloads into a curated, offline-accessible cinematic repository. Whether you're archiving classics or discovering hidden gems, this app delivers a mind-blowing experience that blends local storage efficiency with global database insights—ensuring your library is always at your fingertips, even without an internet connection.Built for cross-platform compatibility. CineVault supports iOS and Android devices, allowing effortless installation as a native-like app directly from your browser.
